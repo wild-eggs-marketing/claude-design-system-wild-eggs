@@ -21,13 +21,19 @@
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
 
-    html, body {
+    html {
+      overflow-x: hidden; /* prevent Framer iframe canvas-offset scroll */
+      scroll-behavior: auto;
+    }
+    body {
       font-family: var(--font);
       background: var(--cream);
       color: var(--brown);
       font-size: 14px;
       line-height: 1.5;
-      /* No overflow hidden — let Framer embed size to content */
+      overflow-x: hidden;
+      position: relative;
+      left: 0;
     }
 
     /* ── OUTER LAYOUT: filter bar fixed at top, list scrolls below ── */
@@ -35,6 +41,9 @@
       display: flex;
       flex-direction: column;
       min-height: 100%;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     /* ── FILTER PANEL (non-sticky — sits at top of embed in normal flow) ── */
@@ -1140,6 +1149,10 @@ backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 's
 buildCatNav();
 render();
 setupCatObserver();
+
+// Reset any scroll offset Framer's iframe canvas positioning injects
+window.scrollTo(0, 0);
+window.addEventListener('load', () => window.scrollTo(0, 0));
 </script>
 </body>
 </html>
