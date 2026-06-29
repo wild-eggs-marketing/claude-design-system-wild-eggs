@@ -702,7 +702,13 @@
 
     /* ── @MEDIA PRINT ── */
     @media print {
-      html, body { overflow: visible; background: #fff; }
+      /* page-wrap is the scroll container at runtime — flatten it for print */
+      html, body, .page-wrap {
+        overflow: visible !important;
+        height: auto !important;
+        background: #fff;
+      }
+      .sticky-header { position: static !important; }
       .filter-panel, .cat-nav, .back-to-top, .print-btn, .allergen-legal { display: none !important; }
       .item-body { display: block !important; grid-template-rows: 1fr !important; }
       .item-body-inner { overflow: visible !important; }
