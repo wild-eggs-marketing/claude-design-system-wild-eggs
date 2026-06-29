@@ -22,7 +22,8 @@
     }
 
     html {
-      overflow-x: hidden; /* prevent Framer iframe canvas-offset scroll */
+      /* overflow-x NOT set on html — setting it here causes Safari to elect html
+         as the scroll root, breaking body.scrollHeight and postMessage height reporting */
       scroll-behavior: auto;
     }
     body {
@@ -31,7 +32,7 @@
       color: var(--brown);
       font-size: 14px;
       line-height: 1.5;
-      overflow-x: hidden;
+      overflow-x: hidden; /* canvas-offset fix lives here only */
       position: relative;
       left: 0;
     }
@@ -40,7 +41,7 @@
     .page-wrap {
       display: flex;
       flex-direction: column;
-      min-height: 100%;
+      min-height: 100vh; /* at minimum fill the iframe viewport */
       width: 100%;
       max-width: 100%;
       overflow-x: hidden;
@@ -215,6 +216,9 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      /* prevent horizontal scroll container from capturing vertical scroll gestures */
+      overscroll-behavior-x: contain;
+      touch-action: pan-x pan-y;
       /* right-edge fade — signals more categories exist */
       -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
       mask-image: linear-gradient(to right, black 80%, transparent 100%);
@@ -799,7 +803,7 @@
             <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </span>
-        <input type="text" id="search-input" class="search-input" placeholder="Search dishes or allergens..." autocomplete="off" spellcheck="false">
+        <input type="text" id="search-input" class="search-input" placeholder="Search dishes by name…" autocomplete="off" spellcheck="false">
         <button class="search-clear" id="search-clear" aria-label="Clear search">
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
             <path d="M1.5 1.5L9.5 9.5M9.5 1.5L1.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -1103,13 +1107,12 @@ function highlight(str, q) {
   return esc(str.slice(0, idx)) + '<mark>' + esc(str.slice(idx, idx + q.length)) + '</mark>' + esc(str.slice(idx + q.length));
 }
 
-// ── Visibility check — matches name OR allergen names ──
+// ── Visibility check — name match only (allergen filtering via pill buttons) ──
+// Searching allergen names AND excluding them simultaneously produces 0 results —
+// a logical paradox. Keep these two filter axes independent.
 function itemIsVisible(item) {
   if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    const nameMatch = item.name.toLowerCase().includes(q);
-    const allergenMatch = item.allergens.some(a => a.toLowerCase().includes(q));
-    if (!nameMatch && !allergenMatch) return false;
+    if (!item.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
   }
   for (const a of activeAllergens) if (item.allergens.includes(a)) return false;
   return true;
@@ -1519,7 +1522,7 @@ document.getElementById('sort-btn').addEventListener('click', () => {
 
 // ── SEARCH PLACEHOLDER CYCLING ── (#5)
 (function() {
-  const hints = ['Try "Loco Hash"…','Search "wheat"…','Try "Chicken"…','Search "egg"…','Try "Mimosa"…'];
+  const hints = ['Try "Loco Hash"…','Try "Chicken"…','Try "Waffle"…','Try "Salad"…','Try "Mimosa"…'];
   const input = document.getElementById('search-input');
   let i = 0;
   setInterval(() => {
@@ -1565,6 +1568,34 @@ setupCatObserver();
 // Reset any scroll offset Framer's iframe canvas positioning injects
 window.scrollTo(0, 0);
 window.addEventListener('load', () => window.scrollTo(0, 0));
+
+// ── FRAMER IFRAME AUTO-RESIZE ──
+// Continuously reports content height so Framer embed can expand to fit.
+// Framer's HTML embed component auto-sizes when it receives { type: 'setHeight', value: n }.
+// Falls back gracefully — no error if not inside Framer.
+(function () {
+  function postHeight() {
+    const h = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.scrollHeight
+    );
+    try {
+      window.parent.postMessage({ type: 'setHeight', value: h }, '*');
+      // Also send legacy format some Framer versions expect
+      window.parent.postMessage({ frameHeight: h }, '*');
+    } catch (_) {}
+  }
+
+  // Fire after layout settles
+  postHeight();
+  window.addEventListener('load', postHeight);
+
+  // Watch for content changes (accordion open/close, filter renders)
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(postHeight).observe(document.body);
+  }
+})();
 </script>
 </body>
 </html>
