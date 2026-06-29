@@ -969,6 +969,26 @@
 // ── SCROLL CONTAINER — page-wrap is the scroll root, not window ──
 const pageWrap = document.querySelector('.page-wrap');
 
+// Detect whether page-wrap is actually scrollable.
+// In fixed-height iframe mode (Framer sets explicit height): page-wrap clips content → scrollable.
+// In auto-height iframe mode (Framer sizes via postMessage): iframe = full content height →
+//   100vh = content height → page-wrap.clientHeight ≈ scrollHeight → not scrollable.
+// We route scroll calls through this helper so both modes work correctly.
+function pageWrapIsScrollable() {
+  return pageWrap.scrollHeight > pageWrap.clientHeight + 10;
+}
+
+function scrollPageTo(targetTop) {
+  if (pageWrapIsScrollable()) {
+    pageWrap.scrollTo({ top: targetTop, behavior: 'smooth' });
+  } else {
+    // Auto-height mode: page-wrap fills the iframe, outer Framer page scrolls.
+    // getBoundingClientRect().top is relative to the iframe viewport.
+    // window.scrollTo scrolls the iframe's own window (works when body has overflow).
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+  }
+}
+
 const ALLERGENS_ALL = ["Egg","Fish","Milk","Peanuts","Sesame","Shellfish","Soy","Tree Nuts","Wheat"];
 
 const DAILY_VALUES = {
@@ -1363,8 +1383,10 @@ function buildCatNav() {
       if (!sec) return;
       const stickyHeader = document.getElementById('sticky-header');
       const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 0;
-      const secTop = sec.getBoundingClientRect().top - pageWrap.getBoundingClientRect().top + pageWrap.scrollTop;
-      pageWrap.scrollTo({ top: secTop - headerHeight - 8, behavior: 'smooth' });
+      const scrollRoot = pageWrapIsScrollable() ? pageWrap : document.documentElement;
+      const rootTop = scrollRoot.getBoundingClientRect ? scrollRoot.getBoundingClientRect().top : 0;
+      const secTop = sec.getBoundingClientRect().top - rootTop + scrollRoot.scrollTop;
+      scrollPageTo(secTop - headerHeight - 8);
     });
     inner.appendChild(btn);
   });
@@ -1391,8 +1413,12 @@ function buildCatNav() {
 let catObserver = null;
 function setupCatObserver() {
   if (catObserver) catObserver.disconnect();
+
+  // root: pageWrap when it's scrollable (fixed-height iframe, content clips inside page-wrap).
+  // root: null (viewport) when page-wrap is non-scrollable (auto-height iframe, Framer scrolls).
+  const obsRoot = pageWrapIsScrollable() ? pageWrap : null;
+
   catObserver = new IntersectionObserver((entries) => {
-    // Pick the topmost intersecting section
     let topEntry = null;
     for (const entry of entries) {
       if (entry.isIntersecting) {
@@ -1406,12 +1432,11 @@ function setupCatObserver() {
     document.querySelectorAll('.cat-pill').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.cat === cat);
     });
-    // scroll the active pill into view in the nav
     const activePill = document.querySelector(`.cat-pill[data-cat="${cat}"]`);
     if (activePill) activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, {
-    root: pageWrap,
-    rootMargin: '-180px 0px -50% 0px'  // top offset = sticky header height; bottom half triggers
+    root: obsRoot,
+    rootMargin: '-180px 0px -50% 0px'
   });
 
   document.querySelectorAll('.category-section').forEach(sec => catObserver.observe(sec));
@@ -1554,10 +1579,21 @@ searchClear.addEventListener('click', () => {
 
 // ── BACK TO TOP ──
 const backToTop = document.getElementById('back-to-top');
+
+function getScrollTop() {
+  return pageWrapIsScrollable() ? pageWrap.scrollTop : (window.scrollY || window.pageYOffset || 0);
+}
+
 pageWrap.addEventListener('scroll', () => {
-  backToTop.classList.toggle('visible', pageWrap.scrollTop > 400);
+  backToTop.classList.toggle('visible', getScrollTop() > 400);
 }, { passive: true });
-backToTop.addEventListener('click', () => pageWrap.scrollTo({ top: 0, behavior: 'smooth' }));
+window.addEventListener('scroll', () => {
+  // Also listen to window scroll for auto-height iframe mode
+  if (!pageWrapIsScrollable()) {
+    backToTop.classList.toggle('visible', getScrollTop() > 400);
+  }
+}, { passive: true });
+backToTop.addEventListener('click', () => scrollPageTo(0));
 
 // ── SORT BUTTON ──
 document.getElementById('sort-btn').addEventListener('click', () => {
@@ -1625,30 +1661,31 @@ pageWrap.scrollTop = 0;
 window.addEventListener('load', () => { pageWrap.scrollTop = 0; });
 
 // ── FRAMER IFRAME AUTO-RESIZE ──
-// Continuously reports content height so Framer embed can expand to fit.
-// Framer's HTML embed component auto-sizes when it receives { type: 'setHeight', value: n }.
-// Falls back gracefully — no error if not inside Framer.
+// page-wrap is the scroll container (height:100vh; overflow-y:auto), so
+// document.body.scrollHeight only sees the page-wrap box — NOT the content inside it.
+// We must read pageWrap.scrollHeight, which always returns the full content height
+// including the overflowed portion, regardless of the clip at 100vh.
 (function () {
+  let _lastReportedHeight = 0;
+
   function postHeight() {
-    const h = Math.max(
-      document.body.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.scrollHeight
-    );
+    // pageWrap.scrollHeight = full content height (overflow included), even when clipped.
+    // document.body.scrollHeight = just the page-wrap box (100vh) — WRONG source.
+    const h = Math.max(pageWrap.scrollHeight, 400); // 400px floor prevents 0-height collapse
+    if (h === _lastReportedHeight) return; // skip no-op sends
+    _lastReportedHeight = h;
     try {
       window.parent.postMessage({ type: 'setHeight', value: h }, '*');
-      // Also send legacy format some Framer versions expect
-      window.parent.postMessage({ frameHeight: h }, '*');
+      window.parent.postMessage({ frameHeight: h }, '*'); // legacy Framer format
     } catch (_) {}
   }
 
-  // Fire after layout settles
   postHeight();
   window.addEventListener('load', postHeight);
 
-  // Watch for content changes (accordion open/close, filter renders)
+  // Observe page-wrap (not body) — body never resizes when content changes inside page-wrap
   if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(postHeight).observe(document.body);
+    new ResizeObserver(postHeight).observe(pageWrap);
   }
 })();
 </script>
