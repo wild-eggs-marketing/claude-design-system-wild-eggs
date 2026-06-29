@@ -15,71 +15,70 @@
       --brown:  #1e1a14;
       --white:  #ffffff;
       --blue:   #2596be;
+      --red:    #c0392b;
       --border: rgba(47,92,100,0.12);
       --border-light: rgba(47,92,100,0.07);
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
 
-    html { scroll-behavior: smooth; }
-
-    body {
+    html, body {
       font-family: var(--font);
       background: var(--cream);
       color: var(--brown);
       font-size: 14px;
       line-height: 1.5;
+      /* No overflow hidden — let Framer embed size to content */
     }
 
-    /* ── HEADER ── */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: var(--cream);
-      border-bottom: 1px solid var(--border);
+    /* ── OUTER LAYOUT: filter bar fixed at top, list scrolls below ── */
+    .page-wrap {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      height: 48px;
-    }
-    .site-header .wordmark {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--teal-1);
-      letter-spacing: -0.02em;
-    }
-    .site-header .tagline {
-      font-size: 12px;
-      color: var(--teal-2);
-      text-align: right;
+      flex-direction: column;
+      min-height: 100%;
     }
 
-    /* ── FILTER BAR ── */
-    .filter-bar {
-      position: sticky;
-      top: 48px;
-      z-index: 99;
+    /* ── FILTER PANEL (non-sticky — sits at top of embed in normal flow) ── */
+    .filter-panel {
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      padding: 12px 16px 10px;
+      padding: 14px 20px 10px;
+      position: relative;
     }
+
+    .filter-top-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .filter-heading {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--teal-1);
+      white-space: nowrap;
+    }
+
+    /* Search */
     .search-wrap {
       position: relative;
-      max-width: 400px;
+      flex: 1;
+      max-width: 380px;
     }
     .search-icon {
       position: absolute;
       left: 10px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 15px;
-      pointer-events: none;
+      font-size: 14px;
       color: var(--teal-2);
+      pointer-events: none;
     }
     .search-input {
       width: 100%;
-      padding: 8px 36px 8px 34px;
+      padding: 8px 32px 8px 32px;
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
@@ -100,26 +99,63 @@
       border: none;
       cursor: pointer;
       color: var(--teal-2);
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1;
       padding: 4px;
       display: none;
     }
     .search-clear.visible { display: block; }
 
+    /* Diet presets (Upgrade 2) */
+    .diet-presets {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .preset-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      border-radius: 20px;
+      border: 1.5px solid var(--teal-1);
+      background: transparent;
+      color: var(--teal-1);
+      font-size: 12px;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .preset-btn:hover { background: rgba(47,92,100,0.06); }
+    .preset-btn.active {
+      background: var(--teal-1);
+      color: #fff;
+    }
+    .preset-icon { font-size: 13px; }
+
+    /* Allergen pills */
+    .allergen-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal-2);
+      margin-bottom: 6px;
+    }
     .allergen-pills {
       display: flex;
-      flex-wrap: wrap;
       gap: 6px;
-      margin-top: 10px;
+      flex-wrap: wrap;
     }
     .pill {
-      padding: 5px 11px;
+      padding: 4px 10px;
       border-radius: 20px;
       border: 1px solid var(--teal-2);
       background: transparent;
       color: var(--teal-2);
-      font-size: 12px;
+      font-size: 11px;
       font-family: var(--font);
       font-weight: 500;
       cursor: pointer;
@@ -128,80 +164,144 @@
     }
     .pill:hover { border-color: var(--teal-1); color: var(--teal-1); }
     .pill.active {
-      background: #c0392b;
-      border-color: #c0392b;
+      background: var(--red);
+      border-color: var(--red);
       color: #fff;
     }
-    .pill.active:hover { background: #a93226; border-color: #a93226; }
 
+    /* Safe-for-me banner (Upgrade 3) */
+    .safe-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(47,92,100,0.08);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--teal-1);
+      font-weight: 500;
+      gap: 8px;
+    }
+    .safe-banner.visible { display: flex; }
+    .safe-banner-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--teal-2);
+      font-family: var(--font);
+      white-space: nowrap;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    /* Filter status */
     .filter-status {
       margin-top: 8px;
-      font-size: 12px;
-      color: var(--teal-2);
-      min-height: 18px;
-    }
-
-    /* ── MAIN CONTENT ── */
-    .main {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 16px 48px;
-    }
-
-    .pending-note {
-      margin: 16px 0 8px;
-      font-size: 12px;
-      color: var(--teal-2);
-    }
-
-    /* ── CATEGORY HEADERS ── */
-    .category-section { margin-top: 28px; }
-    .category-header {
       font-size: 11px;
+      color: var(--teal-2);
+      min-height: 16px;
+    }
+
+    /* ── CATEGORY JUMP NAV (Upgrade 1) ── */
+    .cat-nav {
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .cat-nav::-webkit-scrollbar { display: none; }
+    .cat-nav-inner {
+      display: flex;
+      gap: 2px;
+      padding: 8px 0;
+    }
+    .cat-pill {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--teal-2);
+      cursor: pointer;
+      white-space: nowrap;
+      background: none;
+      border: none;
+      font-family: var(--font);
+      transition: background 0.15s, color 0.15s;
+    }
+    .cat-pill:hover { color: var(--teal-1); }
+    .cat-pill.active {
+      background: var(--teal-1);
+      color: #fff;
+    }
+
+    /* ── PENDING NOTE ── */
+    .pending-note {
+      margin: 16px 20px 0;
+      font-size: 12px;
+      color: var(--teal-2);
+    }
+
+    /* ── MAIN LIST ── */
+    .main {
+      padding: 0 0 48px;
+    }
+
+    /* ── CATEGORY SECTIONS ── */
+    .category-section { margin-top: 24px; }
+    .category-header {
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--teal-2);
-      padding: 8px 0 6px;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 2px;
+      padding: 6px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     .category-section[data-empty="true"] { display: none; }
 
-    /* ── ACCORDION ROW ── */
+    /* ── ACCORDION ROWS ── */
     .item-row {
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-light);
       background: var(--white);
     }
-    .item-row:first-of-type { border-radius: 0; }
     .item-trigger {
       display: flex;
       align-items: center;
       gap: 12px;
       width: 100%;
-      padding: 12px 8px 12px 0;
+      padding: 11px 20px 11px 16px;
       background: none;
       border: none;
       cursor: pointer;
       text-align: left;
       font-family: var(--font);
+      transition: background 0.12s;
     }
-    .item-trigger:hover .item-name { color: var(--teal-1); }
+    .item-trigger:hover { background: rgba(47,92,100,0.03); }
 
+    /* Calorie pill */
     .cal-pill {
       flex-shrink: 0;
       background: var(--teal-1);
       color: var(--cream);
       font-size: 12px;
       font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 12px;
-      min-width: 64px;
+      padding: 4px 0;
+      border-radius: 10px;
+      width: 72px;
       text-align: center;
     }
     .cal-pill.no-data {
-      background: var(--teal-2);
-      opacity: 0.5;
+      background: var(--border);
+      color: var(--teal-2);
     }
 
     .item-meta { flex: 1; min-width: 0; }
@@ -209,8 +309,26 @@
       font-size: 14px;
       font-weight: 500;
       color: var(--brown);
-      transition: color 0.15s;
+      transition: color 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
+    .item-trigger:hover .item-name { color: var(--teal-1); }
+
+    /* Diet badge (Upgrade 4 — GF / DF / EF) */
+    .diet-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(47,92,100,0.1);
+      color: var(--teal-1);
+      flex-shrink: 0;
+    }
+
     .item-allergen-chips {
       display: flex;
       flex-wrap: wrap;
@@ -218,21 +336,19 @@
       margin-top: 4px;
     }
     .allergen-chip {
-      font-size: 11px;
+      font-size: 10px;
       background: var(--blue);
       color: #fff;
-      padding: 2px 7px;
-      border-radius: 10px;
+      padding: 2px 6px;
+      border-radius: 8px;
       font-weight: 500;
     }
 
+    /* Chevron */
     .chevron {
       flex-shrink: 0;
       width: 20px;
       height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       color: var(--teal-2);
       transition: transform 0.2s ease;
     }
@@ -244,8 +360,7 @@
       overflow: hidden;
       transition: max-height 0.22s ease;
     }
-    .item-body.open { max-height: 1200px; }
-
+    .item-body.open { max-height: 1400px; }
     .item-body-inner { border-top: 1px solid var(--border-light); }
 
     /* ── TABS ── */
@@ -255,67 +370,97 @@
       background: var(--white);
     }
     .tab-btn {
-      padding: 10px 16px;
+      padding: 10px 20px;
       background: none;
       border: none;
       border-bottom: 2px solid transparent;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       font-family: var(--font);
       color: var(--teal-2);
       cursor: pointer;
       margin-bottom: -1px;
       transition: color 0.15s, border-color 0.15s;
     }
-    .tab-btn.active {
-      color: var(--teal-1);
-      border-bottom-color: var(--teal-1);
-    }
+    .tab-btn.active { color: var(--teal-1); border-bottom-color: var(--teal-1); }
 
-    .tab-panel { display: none; padding: 16px; background: var(--white); }
+    .tab-panel { display: none; padding: 16px 20px; background: var(--white); }
     .tab-panel.active { display: block; }
 
-    /* ── NUTRITION TAB ── */
-    .cal-display { text-align: center; margin-bottom: 16px; }
-    .cal-big { font-size: 32px; font-weight: 700; color: var(--brown); line-height: 1; }
-    .cal-label { font-size: 12px; color: var(--teal-2); margin-top: 2px; }
+    /* ── MACRO BAR (Upgrade 5) ── */
+    .macro-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .macro-cell {
+      background: var(--cream);
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .macro-value {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brown);
+      line-height: 1;
+    }
+    .macro-label {
+      display: block;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal-2);
+      margin-top: 3px;
+    }
 
+    /* ── NUTRITION TAB ── */
     .nutrient-table { width: 100%; border-collapse: collapse; }
     .nutrient-row { border-bottom: 1px solid var(--border-light); }
     .nutrient-row:last-child { border-bottom: none; }
     .nutrient-row td { padding: 5px 0; font-size: 13px; }
     .nutrient-row.bold td { font-weight: 600; }
-    .nutrient-row.sub td:first-child { padding-left: 16px; color: var(--teal-2); font-size: 12px; }
+    .nutrient-row.sub td:first-child { padding-left: 14px; color: var(--teal-2); font-size: 12px; }
     .nutrient-row.sub td { font-size: 12px; }
     .nutrient-name { width: 60%; }
     .nutrient-amount { text-align: right; }
-    .nutrient-dv { font-size: 11px; color: var(--teal-2); margin-left: 6px; }
+    .nutrient-dv { font-size: 10px; color: var(--teal-2); margin-left: 5px; }
 
     .pending-message {
       color: var(--teal-2);
       font-size: 13px;
       text-align: center;
       padding: 24px 8px;
+      line-height: 1.6;
     }
 
     /* ── ALLERGENS TAB ── */
     .allergen-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 12px;
     }
-    @media (max-width: 400px) { .allergen-grid { grid-template-columns: repeat(2, 1fr); } }
     .allergen-cell {
-      padding: 7px 10px;
+      padding: 7px 8px;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
     }
     .allergen-cell.present { background: var(--blue); color: #fff; }
     .allergen-cell.absent { background: var(--cream); color: var(--teal-2); }
-    .allergen-cell .a-symbol { margin-right: 4px; }
     .allergen-disclaimer {
       font-size: 11px;
       color: var(--teal-2);
@@ -325,21 +470,32 @@
     /* ── DISCLAIMER BAND ── */
     .disclaimer-band {
       background: var(--cream);
-      padding: 10px 16px;
+      padding: 10px 20px;
       font-size: 10px;
       color: var(--teal-2);
       border-top: 1px solid var(--border-light);
+      line-height: 1.5;
     }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      color: var(--teal-2);
+      font-size: 14px;
+      padding: 48px 20px;
+      display: none;
+    }
+    .empty-state.visible { display: block; }
 
     /* ── FOOTER ── */
     .site-footer {
       background: var(--cream);
       border-top: 1px solid var(--border);
-      padding: 20px 16px;
-      text-align: center;
+      padding: 20px;
       font-size: 11px;
       color: var(--teal-2);
       line-height: 1.6;
+      text-align: center;
     }
 
     /* ── BACK TO TOP ── */
@@ -357,8 +513,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 2px 10px rgba(47,92,100,0.3);
+      font-size: 20px;
+      box-shadow: 0 2px 12px rgba(47,92,100,0.25);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s;
@@ -366,61 +522,117 @@
     }
     .back-to-top.visible { opacity: 1; pointer-events: auto; }
 
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center;
-      color: var(--teal-2);
-      font-size: 14px;
-      padding: 48px 16px;
-      display: none;
-    }
-    .empty-state.visible { display: block; }
-
     /* ── HIDDEN ── */
     .item-row[data-hidden="true"] { display: none; }
+
+    /* ── MARK (search highlight, Upgrade 6) ── */
+    mark {
+      background: rgba(47,92,100,0.12);
+      color: var(--teal-1);
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 479px) {
+      .filter-panel { padding: 12px 14px 10px; }
+      .filter-top-row { gap: 8px; }
+      .filter-heading { display: none; }
+      .search-wrap { max-width: 100%; }
+      .allergen-pills { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+      .allergen-pills::-webkit-scrollbar { display: none; }
+      .cat-nav { padding: 0 14px; }
+      .main { padding-bottom: 32px; }
+      .category-header { padding: 5px 14px; }
+      .item-trigger { padding: 10px 14px 10px 12px; }
+      .allergen-grid { grid-template-columns: repeat(2, 1fr); }
+      .macro-bar { grid-template-columns: repeat(4, 1fr); }
+      .macro-value { font-size: 15px; }
+      .tab-btn { padding: 10px 14px; font-size: 10px; }
+      .diet-presets { gap: 5px; }
+      .preset-btn { font-size: 11px; padding: 4px 9px; }
+    }
+
+    @media (min-width: 480px) and (max-width: 767px) {
+      .allergen-pills { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .allergen-pills::-webkit-scrollbar { display: none; }
+      .allergen-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (min-width: 768px) {
+      .filter-panel { padding: 16px 32px 12px; }
+      .cat-nav { padding: 0 32px; }
+      .pending-note { margin: 16px 32px 0; }
+      .category-header { padding: 6px 32px; }
+      .item-trigger { padding: 12px 32px 12px 24px; }
+      .tab-panel { padding: 18px 32px; }
+      .disclaimer-band { padding: 10px 32px; }
+      .site-footer { padding: 24px 32px; }
+      .allergen-grid { grid-template-columns: repeat(3, 1fr); }
+      .main { padding-bottom: 64px; }
+    }
   </style>
 </head>
 <body>
+<div class="page-wrap">
 
-<!-- HEADER -->
-<header class="site-header">
-  <span class="wordmark">Wild Eggs</span>
-  <span class="tagline">Scratch kitchen. Every crack of dawn.</span>
-</header>
+  <!-- FILTER PANEL -->
+  <div class="filter-panel" id="filter-panel">
 
-<!-- FILTER BAR -->
-<div class="filter-bar">
-  <div class="search-wrap">
-    <span class="search-icon" aria-hidden="true">&#128269;</span>
-    <input
-      type="text"
-      id="search-input"
-      class="search-input"
-      placeholder="Search dishes..."
-      autocomplete="off"
-      spellcheck="false"
-    >
-    <button class="search-clear" id="search-clear" aria-label="Clear search">&#10005;</button>
+    <!-- Top row: heading + search -->
+    <div class="filter-top-row">
+      <span class="filter-heading">Find a dish</span>
+      <div class="search-wrap">
+        <span class="search-icon" aria-hidden="true">&#128269;</span>
+        <input type="text" id="search-input" class="search-input" placeholder="Search dishes..." autocomplete="off" spellcheck="false">
+        <button class="search-clear" id="search-clear" aria-label="Clear search">&#10005;</button>
+      </div>
+    </div>
+
+    <!-- Diet presets -->
+    <div class="diet-presets" role="group" aria-label="Quick diet presets">
+      <button class="preset-btn" data-preset="Milk" aria-pressed="false"><span class="preset-icon">&#9749;</span>Dairy-Free</button>
+      <button class="preset-btn" data-preset="Wheat" aria-pressed="false"><span class="preset-icon">&#127807;</span>Gluten-Free</button>
+      <button class="preset-btn" data-preset="Egg" aria-pressed="false"><span class="preset-icon">&#129295;</span>Egg-Free</button>
+    </div>
+
+    <!-- Individual allergen pills -->
+    <div class="allergen-section-label">Or exclude by allergen</div>
+    <div class="allergen-pills" id="allergen-pills" role="group" aria-label="Allergen exclusion filters"></div>
+
+    <!-- Safe-for-me banner -->
+    <div class="safe-banner" id="safe-banner" role="status">
+      <span id="safe-banner-text"></span>
+      <button class="safe-banner-clear" id="safe-banner-clear">Clear all</button>
+    </div>
+
+    <!-- Status -->
+    <div class="filter-status" aria-live="polite" id="filter-status"></div>
   </div>
-  <div class="allergen-pills" id="allergen-pills" role="group" aria-label="Filter by allergen (excludes items containing selected allergen)">
-  </div>
-  <div class="filter-status" aria-live="polite" id="filter-status"></div>
-</div>
 
-<!-- MAIN -->
-<main class="main">
+  <!-- CATEGORY JUMP NAV -->
+  <nav class="cat-nav" aria-label="Jump to menu category">
+    <div class="cat-nav-inner" id="cat-nav-inner"></div>
+  </nav>
+
+  <!-- PENDING NOTE -->
   <p class="pending-note" id="pending-note" style="display:none">
     Some items are pending final nutrition confirmation from our culinary team. Data shown where available.
   </p>
-  <div id="menu-list"></div>
-  <div class="empty-state" id="empty-state" aria-live="polite">No dishes match your search or filters.</div>
-</main>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-  <p>&#169; 2024 Wild Eggs. Nutrition values estimated &#177;10% per serving.</p>
-  <p>Ask your server about gluten-friendly options and any dietary needs. Wild Eggs is a gluten-friendly kitchen &#8212; cross-contact is possible. Consuming raw or undercooked eggs may increase risk of foodborne illness.</p>
-</footer>
+  <!-- MENU LIST -->
+  <main class="main">
+    <div id="menu-list"></div>
+    <div class="empty-state" id="empty-state" aria-live="polite">No dishes match your search or filters.</div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>&#169; 2024 Wild Eggs. Nutrition values estimated &#177;10% per serving.</p>
+    <p>Ask your server about gluten-friendly options and any dietary needs. Wild Eggs is a gluten-friendly kitchen &#8212; cross-contact is possible. Consuming raw or undercooked eggs may increase risk of foodborne illness.</p>
+  </footer>
+
+</div><!-- /page-wrap -->
 
 <!-- BACK TO TOP -->
 <button class="back-to-top" id="back-to-top" aria-label="Back to top">&#8679;</button>
@@ -439,150 +651,122 @@ const DAILY_VALUES = {
 };
 
 const CATEGORY_ORDER = [
-  "Wild Eggs Creations",
-  "Breakfast Basics",
-  "Omelets",
-  "Bonnies Bennies",
-  "Breakfast Sandwiches",
-  "French Toast",
-  "Pancakes & Waffles",
-  "Shareables",
-  "Salads",
-  "Burgers & Sandwiches",
-  "Sides",
-  "Mimosas",
-  "Wild Spirits",
-  "Spirited Coffee",
-  "Coffee, Tea & Espresso",
-  "Juices & Soft Drinks",
+  "Wild Eggs Creations","Breakfast Basics","Omelets","Bonnies Bennies",
+  "Breakfast Sandwiches","French Toast","Pancakes & Waffles","Shareables",
+  "Salads","Burgers & Sandwiches","Sides","Mimosas","Wild Spirits",
+  "Spirited Coffee","Coffee, Tea & Espresso","Juices & Soft Drinks",
 ];
 
 const MENU_DATA = [
-
 // Wild Eggs Creations
 { id:"breakfast-burrito", name:"Breakfast Burrito", category:"Wild Eggs Creations", calories:1420, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"98",unit:"g",bold:true},{label:"Saturated Fat",value:"34",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"11",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"25",unit:"g",sub:true},{label:"Cholesterol",value:"900",unit:"mg",bold:true},{label:"Sodium",value:"2500",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"87",unit:"g",bold:true},{label:"Dietary Fiber",value:"8",unit:"g",sub:true},{label:"Total Sugars",value:"8",unit:"g",sub:true},{label:"Protein",value:"55",unit:"g",bold:true}] },
 { id:"farmers-market-skillet", name:"Farmer's Market Skillet", category:"Wild Eggs Creations", calories:650, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"48",unit:"g",bold:true},{label:"Saturated Fat",value:"11",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"10",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"21",unit:"g",sub:true},{label:"Cholesterol",value:"450",unit:"mg",bold:true},{label:"Sodium",value:"990",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"35",unit:"g",bold:true},{label:"Dietary Fiber",value:"6",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Protein",value:"25",unit:"g",bold:true}] },
 { id:"mexico-city-chilaquiles", name:"Mexico City Chilaquiles", category:"Wild Eggs Creations", calories:730, allergens:["Egg","Milk"], nutrients:[{label:"Total Fat",value:"46",unit:"g",bold:true},{label:"Saturated Fat",value:"15",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"7",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"16",unit:"g",sub:true},{label:"Cholesterol",value:"335",unit:"mg",bold:true},{label:"Sodium",value:"1880",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"45",unit:"g",bold:true},{label:"Dietary Fiber",value:"9",unit:"g",sub:true},{label:"Total Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"26",unit:"g",bold:true}] },
 { id:"potato-head-casserole", name:"Potato Head Casserole", category:"Wild Eggs Creations", calories:890, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"72",unit:"g",bold:true},{label:"Saturated Fat",value:"31",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"7",unit:"g",sub:true},{label:"Cholesterol",value:"355",unit:"mg",bold:true},{label:"Sodium",value:"2090",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"30",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"7",unit:"g",sub:true},{label:"Protein",value:"31",unit:"g",bold:true}] },
 { id:"the-carolina-casserole", name:"The Carolina Casserole", category:"Wild Eggs Creations", calories:1300, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"102",unit:"g",bold:true},{label:"Saturated Fat",value:"32",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"13",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"32",unit:"g",sub:true},{label:"Cholesterol",value:"565",unit:"mg",bold:true},{label:"Sodium",value:"2380",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"54",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"8",unit:"g",sub:true},{label:"Protein",value:"37",unit:"g",bold:true}] },
-{ id:"kalamity-katies-border-benedict", name:"Kalamity Katie's Border Benedict", category:"Wild Eggs Creations", calories:1010, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"72",unit:"g",bold:true},{label:"Saturated Fat",value:"27",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"10",unit:"g",sub:true},{label:"Cholesterol",value:"570",unit:"mg",bold:true},{label:"Sodium",value:"2030",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"58",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"19",unit:"g",sub:true},{label:"Added Sugars",value:"12",unit:"g",sub:true},{label:"Protein",value:"37",unit:"g",bold:true}] },
+{ id:"kalamity-katies", name:"Kalamity Katie's Border Benedict", category:"Wild Eggs Creations", calories:1010, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"72",unit:"g",bold:true},{label:"Saturated Fat",value:"27",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"10",unit:"g",sub:true},{label:"Cholesterol",value:"570",unit:"mg",bold:true},{label:"Sodium",value:"2030",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"58",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"19",unit:"g",sub:true},{label:"Added Sugars",value:"12",unit:"g",sub:true},{label:"Protein",value:"37",unit:"g",bold:true}] },
 { id:"kelsey-ky-brown", name:"Kelsey KY Brown", category:"Wild Eggs Creations", calories:850, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"62",unit:"g",bold:true},{label:"Saturated Fat",value:"27",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"7",unit:"g",sub:true},{label:"Cholesterol",value:"390",unit:"mg",bold:true},{label:"Sodium",value:"1840",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"33",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"40",unit:"g",bold:true}] },
 { id:"loco-hash", name:"Loco Hash", category:"Wild Eggs Creations", calories:1090, allergens:["Egg","Milk"], nutrients:[{label:"Total Fat",value:"80",unit:"g",bold:true},{label:"Saturated Fat",value:"24",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"13",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"28",unit:"g",sub:true},{label:"Cholesterol",value:"565",unit:"mg",bold:true},{label:"Sodium",value:"2450",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"48",unit:"g",bold:true},{label:"Dietary Fiber",value:"8",unit:"g",sub:true},{label:"Total Sugars",value:"7",unit:"g",sub:true},{label:"Protein",value:"49",unit:"g",bold:true}] },
 { id:"wild-mushroom-scramble", name:"Wild Mushroom & Roasted Garlic Scramble", category:"Wild Eggs Creations", calories:620, allergens:["Egg","Milk"], nutrients:[{label:"Total Fat",value:"50",unit:"g",bold:true},{label:"Saturated Fat",value:"14",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"7",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"16",unit:"g",sub:true},{label:"Cholesterol",value:"1055",unit:"mg",bold:true},{label:"Sodium",value:"520",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"6",unit:"g",bold:true},{label:"Total Sugars",value:"4",unit:"g",sub:true},{label:"Protein",value:"37",unit:"g",bold:true}] },
 { id:"creole", name:"Creole", category:"Wild Eggs Creations", calories:null, allergens:["Egg","Milk","Shellfish"], nutrients:[] },
 { id:"huevos-rancheros", name:"Huevos Rancheros", category:"Wild Eggs Creations", calories:null, allergens:["Egg","Milk","Shellfish","Soy"], nutrients:[] },
 { id:"kellys-quesadilla", name:"Kelly's Quesadilla", category:"Wild Eggs Creations", calories:null, allergens:["Egg","Milk","Soy"], nutrients:[] },
-
 // Omelets
-{ id:"bacon-city-omelet", name:"Bacon City Omelet", category:"Omelets", calories:1040, allergens:["Egg","Milk","Soy"], nutrients:[{label:"Total Fat",value:"86",unit:"g",bold:true},{label:"Saturated Fat",value:"31",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"1175",unit:"mg",bold:true},{label:"Sodium",value:"1880",unit:"mg",bold:true},{label:"Potassium",value:"400",unit:"mg"},{label:"Total Carbohydrate",value:"7",unit:"g",bold:true},{label:"Dietary Fiber",value:"1",unit:"g",sub:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"63",unit:"g",bold:true}] },
+{ id:"bacon-city-omelet", name:"Bacon City Omelet", category:"Omelets", calories:1040, allergens:["Egg","Milk","Soy"], nutrients:[{label:"Total Fat",value:"86",unit:"g",bold:true},{label:"Saturated Fat",value:"31",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"1175",unit:"mg",bold:true},{label:"Sodium",value:"1880",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"7",unit:"g",bold:true},{label:"Dietary Fiber",value:"1",unit:"g",sub:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"63",unit:"g",bold:true}] },
 { id:"buffalo-chicken-omelet", name:"Buffalo Chicken Omelet", category:"Omelets", calories:null, allergens:["Egg","Milk"], nutrients:[] },
 { id:"southwest-steak-cheese", name:"Southwest Steak & Cheese Omelet", category:"Omelets", calories:null, allergens:["Egg","Milk"], nutrients:[] },
 { id:"surfer-girl-omelet", name:"Surfer Girl Omelet", category:"Omelets", calories:null, allergens:["Egg","Milk","Soy"], nutrients:[] },
 { id:"wild-western-omelet", name:"Wild Western Omelet", category:"Omelets", calories:null, allergens:["Egg","Milk"], nutrients:[] },
-
 // Bonnies Bennies
 { id:"steak-bennie", name:"Steak Bennie", category:"Bonnies Bennies", calories:null, allergens:["Egg","Milk","Shellfish","Soy"], nutrients:[] },
 { id:"veggie-bennie", name:"Veggie Bennie Florentine", category:"Bonnies Bennies", calories:null, allergens:["Egg","Milk","Shellfish","Soy"], nutrients:[] },
 { id:"corned-beef-hash-bennie", name:"Corned Beef Hash Bennie", category:"Bonnies Bennies", calories:null, allergens:[], nutrients:[] },
 { id:"california-bennie", name:"California Bennie", category:"Bonnies Bennies", calories:null, allergens:[], nutrients:[] },
-
 // Breakfast Sandwiches
-{ id:"breakfast-sammie", name:"Breakfast Sammie", category:"Breakfast Sandwiches", calories:1050, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"80",unit:"g",bold:true},{label:"Saturated Fat",value:"24",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"4.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"14",unit:"g",sub:true},{label:"Cholesterol",value:"620",unit:"mg",bold:true},{label:"Sodium",value:"1530",unit:"mg",bold:true},{label:"Potassium",value:"420",unit:"mg"},{label:"Total Carbohydrate",value:"44",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"42",unit:"g",bold:true}] },
+{ id:"breakfast-sammie", name:"Breakfast Sammie", category:"Breakfast Sandwiches", calories:1050, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"80",unit:"g",bold:true},{label:"Saturated Fat",value:"24",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"4.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"14",unit:"g",sub:true},{label:"Cholesterol",value:"620",unit:"mg",bold:true},{label:"Sodium",value:"1530",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"44",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"42",unit:"g",bold:true}] },
 { id:"yellow-submarine", name:"Yellow Submarine", category:"Breakfast Sandwiches", calories:1240, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"83",unit:"g",bold:true},{label:"Saturated Fat",value:"25",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"9",unit:"g",sub:true},{label:"Cholesterol",value:"660",unit:"mg",bold:true},{label:"Sodium",value:"3400",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"51",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"8",unit:"g",sub:true},{label:"Added Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"54",unit:"g",bold:true}] },
-
 // French Toast
-{ id:"classic-french-toast", name:"Classic French Toast", category:"French Toast", calories:590, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"31",unit:"g",bold:true},{label:"Saturated Fat",value:"15",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"80",unit:"mg",bold:true},{label:"Sodium",value:"730",unit:"mg",bold:true},{label:"Potassium",value:"200",unit:"mg"},{label:"Total Carbohydrate",value:"65",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
-{ id:"stuffed-french-toast", name:"Stuffed French Toast", category:"French Toast", calories:570, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"27",unit:"g",bold:true},{label:"Saturated Fat",value:"15",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"120",unit:"mg",bold:true},{label:"Sodium",value:"490",unit:"mg",bold:true},{label:"Potassium",value:"320",unit:"mg"},{label:"Total Carbohydrate",value:"71",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"25",unit:"g",sub:true},{label:"Added Sugars",value:"13",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
-{ id:"choc-hazelnut-french-toast", name:"Chocolate Hazelnut Stuffed French Toast", category:"French Toast", calories:null, allergens:["Egg","Milk","Tree Nuts","Wheat"], nutrients:[] },
-
+{ id:"classic-french-toast", name:"Classic French Toast", category:"French Toast", calories:590, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"31",unit:"g",bold:true},{label:"Saturated Fat",value:"15",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"80",unit:"mg",bold:true},{label:"Sodium",value:"730",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"65",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
+{ id:"stuffed-french-toast", name:"Stuffed French Toast", category:"French Toast", calories:570, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"27",unit:"g",bold:true},{label:"Saturated Fat",value:"15",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"120",unit:"mg",bold:true},{label:"Sodium",value:"490",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"71",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"25",unit:"g",sub:true},{label:"Added Sugars",value:"13",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
+{ id:"choc-hazelnut-ft", name:"Chocolate Hazelnut Stuffed French Toast", category:"French Toast", calories:null, allergens:["Egg","Milk","Tree Nuts","Wheat"], nutrients:[] },
 // Pancakes & Waffles
-{ id:"belgian-waffle", name:"Belgian Waffle", category:"Pancakes & Waffles", calories:530, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"33",unit:"g",bold:true},{label:"Saturated Fat",value:"14",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0.5",unit:"g",sub:true},{label:"Cholesterol",value:"85",unit:"mg",bold:true},{label:"Sodium",value:"1020",unit:"mg",bold:true},{label:"Potassium",value:"0",unit:"mg"},{label:"Total Carbohydrate",value:"49",unit:"g",bold:true},{label:"Dietary Fiber",value:"1",unit:"g",sub:true},{label:"Total Sugars",value:"4",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"7",unit:"g",bold:true}] },
-{ id:"big-stack", name:"Big Stack Pancakes", category:"Pancakes & Waffles", calories:1270, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"58",unit:"g",bold:true},{label:"Saturated Fat",value:"20",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"6",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"13",unit:"g",sub:true},{label:"Cholesterol",value:"315",unit:"mg",bold:true},{label:"Sodium",value:"2640",unit:"mg",bold:true},{label:"Potassium",value:"940",unit:"mg"},{label:"Total Carbohydrate",value:"150",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"42",unit:"g",sub:true},{label:"Added Sugars",value:"25",unit:"g",sub:true},{label:"Protein",value:"33",unit:"g",bold:true}] },
-{ id:"chicken-and-waffle", name:"Chicken & Waffle", category:"Pancakes & Waffles", calories:1600, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"94",unit:"g",bold:true},{label:"Saturated Fat",value:"30",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"8",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"23",unit:"g",sub:true},{label:"Cholesterol",value:"255",unit:"mg",bold:true},{label:"Sodium",value:"3830",unit:"mg",bold:true},{label:"Potassium",value:"730",unit:"mg"},{label:"Total Carbohydrate",value:"118",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"48",unit:"g",sub:true},{label:"Added Sugars",value:"40",unit:"g",sub:true},{label:"Protein",value:"67",unit:"g",bold:true}] },
-{ id:"strawberry-tall-cakes", name:"Strawberry Tall Cakes", category:"Pancakes & Waffles", calories:1190, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"45",unit:"g",bold:true},{label:"Saturated Fat",value:"18",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"6",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"14",unit:"g",sub:true},{label:"Cholesterol",value:"320",unit:"mg",bold:true},{label:"Sodium",value:"1310",unit:"mg",bold:true},{label:"Potassium",value:"850",unit:"mg"},{label:"Total Carbohydrate",value:"167",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"108",unit:"g",sub:true},{label:"Added Sugars",value:"89",unit:"g",sub:true},{label:"Protein",value:"25",unit:"g",bold:true}] },
-
+{ id:"belgian-waffle", name:"Belgian Waffle", category:"Pancakes & Waffles", calories:530, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"33",unit:"g",bold:true},{label:"Saturated Fat",value:"14",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0.5",unit:"g",sub:true},{label:"Cholesterol",value:"85",unit:"mg",bold:true},{label:"Sodium",value:"1020",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"49",unit:"g",bold:true},{label:"Dietary Fiber",value:"1",unit:"g",sub:true},{label:"Total Sugars",value:"4",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"7",unit:"g",bold:true}] },
+{ id:"big-stack", name:"Big Stack Pancakes", category:"Pancakes & Waffles", calories:1270, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"58",unit:"g",bold:true},{label:"Saturated Fat",value:"20",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"6",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"13",unit:"g",sub:true},{label:"Cholesterol",value:"315",unit:"mg",bold:true},{label:"Sodium",value:"2640",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"150",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"42",unit:"g",sub:true},{label:"Added Sugars",value:"25",unit:"g",sub:true},{label:"Protein",value:"33",unit:"g",bold:true}] },
+{ id:"chicken-and-waffle", name:"Chicken & Waffle", category:"Pancakes & Waffles", calories:1600, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"94",unit:"g",bold:true},{label:"Saturated Fat",value:"30",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"8",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"23",unit:"g",sub:true},{label:"Cholesterol",value:"255",unit:"mg",bold:true},{label:"Sodium",value:"3830",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"118",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"48",unit:"g",sub:true},{label:"Added Sugars",value:"40",unit:"g",sub:true},{label:"Protein",value:"67",unit:"g",bold:true}] },
+{ id:"strawberry-tall-cakes", name:"Strawberry Tall Cakes", category:"Pancakes & Waffles", calories:1190, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"45",unit:"g",bold:true},{label:"Saturated Fat",value:"18",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"6",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"14",unit:"g",sub:true},{label:"Cholesterol",value:"320",unit:"mg",bold:true},{label:"Sodium",value:"1310",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"167",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"108",unit:"g",sub:true},{label:"Added Sugars",value:"89",unit:"g",sub:true},{label:"Protein",value:"25",unit:"g",bold:true}] },
 // Salads
-{ id:"grilled-chicken-salad", name:"Grilled Chicken Salad", category:"Salads", calories:740, allergens:["Egg","Milk"], nutrients:[{label:"Total Fat",value:"44",unit:"g",bold:true},{label:"Saturated Fat",value:"12",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"11",unit:"g",sub:true},{label:"Cholesterol",value:"345",unit:"mg",bold:true},{label:"Sodium",value:"2500",unit:"mg",bold:true},{label:"Potassium",value:"880",unit:"mg"},{label:"Total Carbohydrate",value:"24",unit:"g",bold:true},{label:"Dietary Fiber",value:"10",unit:"g",sub:true},{label:"Total Sugars",value:"9",unit:"g",sub:true},{label:"Protein",value:"62",unit:"g",bold:true}] },
-{ id:"the-chicken-or-the-egg", name:"The Chicken or the Egg", category:"Salads", calories:560, allergens:["Egg","Wheat"], nutrients:[{label:"Total Fat",value:"36",unit:"g",bold:true},{label:"Saturated Fat",value:"6",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"90",unit:"mg",bold:true},{label:"Sodium",value:"1550",unit:"mg",bold:true},{label:"Potassium",value:"640",unit:"mg"},{label:"Total Carbohydrate",value:"24",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"16",unit:"g",sub:true},{label:"Added Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"30",unit:"g",bold:true}] },
+{ id:"grilled-chicken-salad", name:"Grilled Chicken Salad", category:"Salads", calories:740, allergens:["Egg","Milk"], nutrients:[{label:"Total Fat",value:"44",unit:"g",bold:true},{label:"Saturated Fat",value:"12",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"11",unit:"g",sub:true},{label:"Cholesterol",value:"345",unit:"mg",bold:true},{label:"Sodium",value:"2500",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"24",unit:"g",bold:true},{label:"Dietary Fiber",value:"10",unit:"g",sub:true},{label:"Total Sugars",value:"9",unit:"g",sub:true},{label:"Protein",value:"62",unit:"g",bold:true}] },
+{ id:"the-chicken-or-the-egg", name:"The Chicken or the Egg", category:"Salads", calories:560, allergens:["Egg","Wheat"], nutrients:[{label:"Total Fat",value:"36",unit:"g",bold:true},{label:"Saturated Fat",value:"6",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"90",unit:"mg",bold:true},{label:"Sodium",value:"1550",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"24",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"16",unit:"g",sub:true},{label:"Added Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"30",unit:"g",bold:true}] },
 { id:"taco-salad", name:"Taco Salad", category:"Salads", calories:null, allergens:[], nutrients:[] },
-
 // Burgers & Sandwiches
-{ id:"classic-burger", name:"Classic Burger", category:"Burgers & Sandwiches", calories:660, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"36",unit:"g",bold:true},{label:"Saturated Fat",value:"16",unit:"g",sub:true},{label:"Trans Fat",value:"1.5",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"10",unit:"g",sub:true},{label:"Cholesterol",value:"145",unit:"mg",bold:true},{label:"Sodium",value:"1770",unit:"mg",bold:true},{label:"Potassium",value:"510",unit:"mg"},{label:"Total Carbohydrate",value:"43",unit:"g",bold:true},{label:"Total Sugars",value:"7",unit:"g",sub:true},{label:"Added Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"39",unit:"g",bold:true}] },
-{ id:"pops-egg-salad", name:"Pops' Popping Egg Salad", category:"Burgers & Sandwiches", calories:740, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"49",unit:"g",bold:true},{label:"Saturated Fat",value:"16",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"2.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"7",unit:"g",sub:true},{label:"Cholesterol",value:"780",unit:"mg",bold:true},{label:"Sodium",value:"1650",unit:"mg",bold:true},{label:"Potassium",value:"430",unit:"mg"},{label:"Total Carbohydrate",value:"46",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"0",unit:"g",sub:true},{label:"Protein",value:"29",unit:"g",bold:true}] },
-{ id:"wild-club", name:"Wild Club", category:"Burgers & Sandwiches", calories:1040, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"68",unit:"g",bold:true},{label:"Saturated Fat",value:"24",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"195",unit:"mg",bold:true},{label:"Sodium",value:"3330",unit:"mg",bold:true},{label:"Potassium",value:"260",unit:"mg"},{label:"Total Carbohydrate",value:"48",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"57",unit:"g",bold:true}] },
-{ id:"yard-bird-chicken-salad", name:"Yard Bird Chicken Salad Sandwich", category:"Burgers & Sandwiches", calories:980, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"63",unit:"g",bold:true},{label:"Saturated Fat",value:"21",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"160",unit:"mg",bold:true},{label:"Sodium",value:"2420",unit:"mg",bold:true},{label:"Potassium",value:"660",unit:"mg"},{label:"Total Carbohydrate",value:"56",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"14",unit:"g",sub:true},{label:"Added Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"44",unit:"g",bold:true}] },
-{ id:"laredo-steak-cheese", name:"Laredo Steak & Cheese Sandwich", category:"Burgers & Sandwiches", calories:null, allergens:[], nutrients:[] },
+{ id:"classic-burger", name:"Classic Burger", category:"Burgers & Sandwiches", calories:660, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"36",unit:"g",bold:true},{label:"Saturated Fat",value:"16",unit:"g",sub:true},{label:"Trans Fat",value:"1.5",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"10",unit:"g",sub:true},{label:"Cholesterol",value:"145",unit:"mg",bold:true},{label:"Sodium",value:"1770",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"43",unit:"g",bold:true},{label:"Total Sugars",value:"7",unit:"g",sub:true},{label:"Added Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"39",unit:"g",bold:true}] },
+{ id:"pops-egg-salad", name:"Pops' Popping Egg Salad", category:"Burgers & Sandwiches", calories:740, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"49",unit:"g",bold:true},{label:"Saturated Fat",value:"16",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"2.5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"7",unit:"g",sub:true},{label:"Cholesterol",value:"780",unit:"mg",bold:true},{label:"Sodium",value:"1650",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"46",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"0",unit:"g",sub:true},{label:"Protein",value:"29",unit:"g",bold:true}] },
+{ id:"wild-club", name:"Wild Club", category:"Burgers & Sandwiches", calories:1040, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"68",unit:"g",bold:true},{label:"Saturated Fat",value:"24",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"195",unit:"mg",bold:true},{label:"Sodium",value:"3330",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"48",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"57",unit:"g",bold:true}] },
+{ id:"yard-bird", name:"Yard Bird Chicken Salad Sandwich", category:"Burgers & Sandwiches", calories:980, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"63",unit:"g",bold:true},{label:"Saturated Fat",value:"21",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"160",unit:"mg",bold:true},{label:"Sodium",value:"2420",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"56",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"14",unit:"g",sub:true},{label:"Added Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"44",unit:"g",bold:true}] },
+{ id:"laredo-steak", name:"Laredo Steak & Cheese Sandwich", category:"Burgers & Sandwiches", calories:null, allergens:[], nutrients:[] },
 { id:"reuben", name:"Reuben", category:"Burgers & Sandwiches", calories:null, allergens:[], nutrients:[] },
-{ id:"kellys-quesadilla-bns", name:"Kelly's Quesadilla", category:"Burgers & Sandwiches", calories:null, allergens:["Egg","Milk","Soy"], nutrients:[] },
-{ id:"the-chicken-or-egg-sandwich", name:"The Chicken or the Egg Sandwich", category:"Burgers & Sandwiches", calories:null, allergens:["Egg","Milk","Soy"], nutrients:[] },
-
+{ id:"kellys-q-bns", name:"Kelly's Quesadilla", category:"Burgers & Sandwiches", calories:null, allergens:["Egg","Milk","Soy"], nutrients:[] },
+{ id:"chicken-egg-sandwich", name:"The Chicken or the Egg Sandwich", category:"Burgers & Sandwiches", calories:null, allergens:["Egg","Milk","Soy"], nutrients:[] },
 // Shareables
-{ id:"breakfast-tots", name:"Breakfast Tots", category:"Shareables", calories:440, allergens:["Milk","Soy"], nutrients:[{label:"Total Fat",value:"34",unit:"g",bold:true},{label:"Saturated Fat",value:"11",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"11",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"960",unit:"mg",bold:true},{label:"Potassium",value:"240",unit:"mg"},{label:"Total Carbohydrate",value:"21",unit:"g",bold:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"8",unit:"g",bold:true}] },
+{ id:"breakfast-tots", name:"Breakfast Tots", category:"Shareables", calories:440, allergens:["Milk","Soy"], nutrients:[{label:"Total Fat",value:"34",unit:"g",bold:true},{label:"Saturated Fat",value:"11",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"11",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"960",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"21",unit:"g",bold:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"8",unit:"g",bold:true}] },
 { id:"totchos-skillet", name:"Totchos Skillet", category:"Shareables", calories:null, allergens:[], nutrients:[] },
-
 // Sides
-{ id:"applewood-bacon", name:"Applewood Bacon", category:"Sides", calories:320, allergens:[], nutrients:[{label:"Total Fat",value:"28",unit:"g",bold:true},{label:"Saturated Fat",value:"8",unit:"g",sub:true},{label:"Sodium",value:"60",unit:"mg",bold:true},{label:"Potassium",value:"1040",unit:"mg"},{label:"Protein",value:"20",unit:"g",bold:true}] },
+{ id:"applewood-bacon", name:"Applewood Bacon", category:"Sides", calories:320, allergens:[], nutrients:[{label:"Total Fat",value:"28",unit:"g",bold:true},{label:"Saturated Fat",value:"8",unit:"g",sub:true},{label:"Sodium",value:"60",unit:"mg",bold:true},{label:"Protein",value:"20",unit:"g",bold:true}] },
 { id:"canadian-bacon", name:"Canadian Bacon", category:"Sides", calories:90, allergens:[], nutrients:[{label:"Total Fat",value:"2.5",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"30",unit:"mg",bold:true},{label:"Sodium",value:"1040",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"3",unit:"g",bold:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Added Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"15",unit:"g",bold:true}] },
-{ id:"sausage-links", name:"Sausage Links", category:"Sides", calories:460, allergens:[], nutrients:[{label:"Total Fat",value:"45",unit:"g",bold:true},{label:"Saturated Fat",value:"17",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"570",unit:"mg",bold:true},{label:"Potassium",value:"250",unit:"mg"},{label:"Total Carbohydrate",value:"1",unit:"g",bold:true},{label:"Protein",value:"14",unit:"g",bold:true}] },
-{ id:"turkey-sausage", name:"Turkey Sausage", category:"Sides", calories:270, allergens:[], nutrients:[{label:"Total Fat",value:"21",unit:"g",bold:true},{label:"Saturated Fat",value:"6",unit:"g",sub:true},{label:"Cholesterol",value:"120",unit:"mg",bold:true},{label:"Sodium",value:"910",unit:"mg",bold:true},{label:"Potassium",value:"270",unit:"mg"},{label:"Protein",value:"21",unit:"g",bold:true}] },
-{ id:"french-fries", name:"French Fries", category:"Sides", calories:440, allergens:[], nutrients:[{label:"Total Fat",value:"30",unit:"g",bold:true},{label:"Saturated Fat",value:"3.5",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"6",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"13",unit:"g",sub:true},{label:"Sodium",value:"1500",unit:"mg",bold:true},{label:"Potassium",value:"420",unit:"mg"},{label:"Total Carbohydrate",value:"38",unit:"g",bold:true},{label:"Total Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
-{ id:"skillet-potatoes", name:"Skillet Potatoes", category:"Sides", calories:230, allergens:[], nutrients:[{label:"Total Fat",value:"9",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"4.5",unit:"g",sub:true},{label:"Sodium",value:"750",unit:"mg",bold:true},{label:"Potassium",value:"420",unit:"mg"},{label:"Total Carbohydrate",value:"34",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"4",unit:"g",sub:true},{label:"Protein",value:"4",unit:"g",bold:true}] },
-{ id:"hashbrown-casserole", name:"Hashbrown Casserole", category:"Sides", calories:440, allergens:["Milk","Soy"], nutrients:[{label:"Total Fat",value:"34",unit:"g",bold:true},{label:"Saturated Fat",value:"11",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"9",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"960",unit:"mg",bold:true},{label:"Potassium",value:"260",unit:"mg"},{label:"Total Carbohydrate",value:"21",unit:"g",bold:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"9",unit:"g",bold:true}] },
-{ id:"fresh-fruit", name:"Fresh Fruit", category:"Sides", calories:110, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"15",unit:"mg",bold:true},{label:"Potassium",value:"420",unit:"mg"},{label:"Total Carbohydrate",value:"28",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"23",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
-{ id:"side-salad", name:"Side Salad", category:"Sides", calories:160, allergens:[], nutrients:[{label:"Total Fat",value:"10",unit:"g",bold:true},{label:"Saturated Fat",value:"5",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"190",unit:"mg",bold:true},{label:"Potassium",value:"650",unit:"mg"},{label:"Total Carbohydrate",value:"12",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
+{ id:"sausage-links", name:"Sausage Links", category:"Sides", calories:460, allergens:[], nutrients:[{label:"Total Fat",value:"45",unit:"g",bold:true},{label:"Saturated Fat",value:"17",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"570",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"1",unit:"g",bold:true},{label:"Protein",value:"14",unit:"g",bold:true}] },
+{ id:"turkey-sausage", name:"Turkey Sausage", category:"Sides", calories:270, allergens:[], nutrients:[{label:"Total Fat",value:"21",unit:"g",bold:true},{label:"Saturated Fat",value:"6",unit:"g",sub:true},{label:"Cholesterol",value:"120",unit:"mg",bold:true},{label:"Sodium",value:"910",unit:"mg",bold:true},{label:"Protein",value:"21",unit:"g",bold:true}] },
+{ id:"french-fries", name:"French Fries", category:"Sides", calories:440, allergens:[], nutrients:[{label:"Total Fat",value:"30",unit:"g",bold:true},{label:"Saturated Fat",value:"3.5",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"6",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"13",unit:"g",sub:true},{label:"Sodium",value:"1500",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"38",unit:"g",bold:true},{label:"Total Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
+{ id:"skillet-potatoes", name:"Skillet Potatoes", category:"Sides", calories:230, allergens:[], nutrients:[{label:"Total Fat",value:"9",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"3",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"4.5",unit:"g",sub:true},{label:"Sodium",value:"750",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"34",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"4",unit:"g",sub:true},{label:"Protein",value:"4",unit:"g",bold:true}] },
+{ id:"hashbrown-casserole", name:"Hashbrown Casserole", category:"Sides", calories:440, allergens:["Milk","Soy"], nutrients:[{label:"Total Fat",value:"34",unit:"g",bold:true},{label:"Saturated Fat",value:"11",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"5",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"9",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"960",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"21",unit:"g",bold:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Protein",value:"9",unit:"g",bold:true}] },
+{ id:"fresh-fruit", name:"Fresh Fruit", category:"Sides", calories:110, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"15",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"28",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"23",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
+{ id:"side-salad", name:"Side Salad", category:"Sides", calories:160, allergens:[], nutrients:[{label:"Total Fat",value:"10",unit:"g",bold:true},{label:"Saturated Fat",value:"5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"190",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"12",unit:"g",bold:true},{label:"Dietary Fiber",value:"5",unit:"g",sub:true},{label:"Total Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
 { id:"stone-ground-grits", name:"Stone-Ground Grits", category:"Sides", calories:130, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"6",unit:"g",bold:true},{label:"Saturated Fat",value:"3",unit:"g",sub:true},{label:"Cholesterol",value:"4",unit:"mg",bold:true},{label:"Sodium",value:"750",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"15",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
-{ id:"sauteed-spinach", name:"Sautéed Spinach", category:"Sides", calories:150, allergens:[], nutrients:[{label:"Total Fat",value:"15",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"4",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"9",unit:"g",sub:true},{label:"Sodium",value:"540",unit:"mg",bold:true},{label:"Potassium",value:"550",unit:"mg"},{label:"Total Carbohydrate",value:"4",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"3",unit:"g",bold:true}] },
+{ id:"sauteed-spinach", name:"Sautéed Spinach", category:"Sides", calories:150, allergens:[], nutrients:[{label:"Total Fat",value:"15",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Trans Fat",value:"0",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"4",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"9",unit:"g",sub:true},{label:"Sodium",value:"540",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"4",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"3",unit:"g",bold:true}] },
 { id:"fresh-veg", name:"Fresh Veg of the Day", category:"Sides", calories:40, allergens:["Soy"], nutrients:[{label:"Total Fat",value:"2.5",unit:"g",bold:true},{label:"Sodium",value:"1970",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"4",unit:"g",bold:true},{label:"Total Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
-{ id:"blueberry-muffin", name:"Blueberry Muffin", category:"Sides", calories:350, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"10",unit:"g",bold:true},{label:"Saturated Fat",value:"4.5",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Sodium",value:"660",unit:"mg",bold:true},{label:"Potassium",value:"65",unit:"mg"},{label:"Total Carbohydrate",value:"60",unit:"g",bold:true},{label:"Total Sugars",value:"36",unit:"g",sub:true},{label:"Added Sugars",value:"32",unit:"g",sub:true},{label:"Protein",value:"3",unit:"g",bold:true}] },
-{ id:"everything-muffin", name:"Everything Muffin", category:"Sides", calories:430, allergens:["Egg","Milk","Sesame","Wheat"], nutrients:[{label:"Total Fat",value:"22",unit:"g",bold:true},{label:"Saturated Fat",value:"10",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"0",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"920",unit:"mg",bold:true},{label:"Potassium",value:"130",unit:"mg"},{label:"Total Carbohydrate",value:"48",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"13",unit:"g",sub:true},{label:"Added Sugars",value:"11",unit:"g",sub:true},{label:"Protein",value:"7",unit:"g",bold:true}] },
-{ id:"pancake-side", name:"Side Pancake", category:"Sides", calories:530, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"30",unit:"g",bold:true},{label:"Saturated Fat",value:"12",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"2",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"4.5",unit:"g",sub:true},{label:"Cholesterol",value:"105",unit:"mg",bold:true},{label:"Sodium",value:"990",unit:"mg",bold:true},{label:"Potassium",value:"310",unit:"mg"},{label:"Total Carbohydrate",value:"51",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"16",unit:"g",sub:true},{label:"Added Sugars",value:"10",unit:"g",sub:true},{label:"Protein",value:"11",unit:"g",bold:true}] },
-{ id:"french-toast-side", name:"Side French Toast", category:"Sides", calories:310, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"21",unit:"g",bold:true},{label:"Saturated Fat",value:"10",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"0",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"350",unit:"mg",bold:true},{label:"Potassium",value:"70",unit:"mg"},{label:"Total Carbohydrate",value:"24",unit:"g",bold:true},{label:"Dietary Fiber",value:"1",unit:"g",sub:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"3",unit:"g",bold:true}] },
+{ id:"blueberry-muffin", name:"Blueberry Muffin", category:"Sides", calories:350, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"10",unit:"g",bold:true},{label:"Saturated Fat",value:"4.5",unit:"g",sub:true},{label:"Sodium",value:"660",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"60",unit:"g",bold:true},{label:"Total Sugars",value:"36",unit:"g",sub:true},{label:"Added Sugars",value:"32",unit:"g",sub:true},{label:"Protein",value:"3",unit:"g",bold:true}] },
+{ id:"everything-muffin", name:"Everything Muffin", category:"Sides", calories:430, allergens:["Egg","Milk","Sesame","Wheat"], nutrients:[{label:"Total Fat",value:"22",unit:"g",bold:true},{label:"Saturated Fat",value:"10",unit:"g",sub:true},{label:"Cholesterol",value:"50",unit:"mg",bold:true},{label:"Sodium",value:"920",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"48",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"13",unit:"g",sub:true},{label:"Added Sugars",value:"11",unit:"g",sub:true},{label:"Protein",value:"7",unit:"g",bold:true}] },
+{ id:"pancake-side", name:"Side Pancake", category:"Sides", calories:530, allergens:["Egg","Milk","Soy","Wheat"], nutrients:[{label:"Total Fat",value:"30",unit:"g",bold:true},{label:"Saturated Fat",value:"12",unit:"g",sub:true},{label:"Polyunsaturated Fat",value:"2",unit:"g",sub:true},{label:"Monounsaturated Fat",value:"4.5",unit:"g",sub:true},{label:"Cholesterol",value:"105",unit:"mg",bold:true},{label:"Sodium",value:"990",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"51",unit:"g",bold:true},{label:"Dietary Fiber",value:"2",unit:"g",sub:true},{label:"Total Sugars",value:"16",unit:"g",sub:true},{label:"Added Sugars",value:"10",unit:"g",sub:true},{label:"Protein",value:"11",unit:"g",bold:true}] },
+{ id:"french-toast-side", name:"Side French Toast", category:"Sides", calories:310, allergens:["Egg","Milk","Wheat"], nutrients:[{label:"Total Fat",value:"21",unit:"g",bold:true},{label:"Saturated Fat",value:"10",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"350",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"24",unit:"g",bold:true},{label:"Dietary Fiber",value:"1",unit:"g",sub:true},{label:"Total Sugars",value:"3",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"3",unit:"g",bold:true}] },
 { id:"biscuit", name:"Biscuit", category:"Sides", calories:null, allergens:[], nutrients:[] },
 { id:"toast", name:"Toast", category:"Sides", calories:null, allergens:[], nutrients:[] },
 { id:"eggs-side", name:"Eggs", category:"Sides", calories:null, allergens:[], nutrients:[] },
 { id:"grits-of-the-day", name:"Grits of the Day", category:"Sides", calories:null, allergens:[], nutrients:[] },
 { id:"gf-toast", name:"Gluten-Free Toast", category:"Sides", calories:null, allergens:[], nutrients:[] },
-
 // Mimosas
-{ id:"mimosa", name:"Mimosa", category:"Mimosas", calories:110, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"0",unit:"mg",bold:true},{label:"Potassium",value:"140",unit:"mg"},{label:"Total Carbohydrate",value:"8",unit:"g",bold:true},{label:"Total Sugars",value:"7",unit:"g",sub:true},{label:"Added Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
-{ id:"gran-mimosa", name:"Gran Mimosa", category:"Mimosas", calories:180, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"0",unit:"mg",bold:true},{label:"Potassium",value:"140",unit:"mg"},{label:"Total Carbohydrate",value:"17",unit:"g",bold:true},{label:"Total Sugars",value:"15",unit:"g",sub:true},{label:"Added Sugars",value:"9",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
-{ id:"orange-pineapple-mimosa", name:"Orange Pineapple Mimosa", category:"Mimosas", calories:170, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Potassium",value:"150",unit:"mg"},{label:"Total Carbohydrate",value:"11",unit:"g",bold:true},{label:"Total Sugars",value:"9",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
-{ id:"pomegranate-mimosa", name:"Pomegranate Mimosa", category:"Mimosas", calories:180, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"10",unit:"mg",bold:true},{label:"Potassium",value:"140",unit:"mg"},{label:"Total Carbohydrate",value:"33",unit:"g",bold:true},{label:"Total Sugars",value:"30",unit:"g",sub:true},{label:"Added Sugars",value:"23",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
-{ id:"strawberry-lemonade-mimosa", name:"Strawberry Lemonade Mimosa", category:"Mimosas", calories:150, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Potassium",value:"0",unit:"mg"},{label:"Total Carbohydrate",value:"7",unit:"g",bold:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"6",unit:"g",sub:true}] },
-
+{ id:"mimosa", name:"Mimosa", category:"Mimosas", calories:110, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"0",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"8",unit:"g",bold:true},{label:"Total Sugars",value:"7",unit:"g",sub:true},{label:"Added Sugars",value:"1",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
+{ id:"gran-mimosa", name:"Gran Mimosa", category:"Mimosas", calories:180, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"0",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"17",unit:"g",bold:true},{label:"Total Sugars",value:"15",unit:"g",sub:true},{label:"Added Sugars",value:"9",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
+{ id:"orange-pineapple-mimosa", name:"Orange Pineapple Mimosa", category:"Mimosas", calories:170, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Total Carbohydrate",value:"11",unit:"g",bold:true},{label:"Total Sugars",value:"9",unit:"g",sub:true},{label:"Added Sugars",value:"2",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
+{ id:"pomegranate-mimosa", name:"Pomegranate Mimosa", category:"Mimosas", calories:180, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"10",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"33",unit:"g",bold:true},{label:"Total Sugars",value:"30",unit:"g",sub:true},{label:"Added Sugars",value:"23",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
+{ id:"strawberry-lemonade-mimosa", name:"Strawberry Lemonade Mimosa", category:"Mimosas", calories:150, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Total Carbohydrate",value:"7",unit:"g",bold:true},{label:"Total Sugars",value:"6",unit:"g",sub:true},{label:"Added Sugars",value:"6",unit:"g",sub:true}] },
 // Wild Spirits
 { id:"bluegrass-sunrise", name:"Bluegrass Sunrise", category:"Wild Spirits", calories:210, allergens:[], nutrients:[{label:"Total Carbohydrate",value:"30",unit:"g",bold:true},{label:"Total Sugars",value:"27",unit:"g",sub:true},{label:"Added Sugars",value:"25",unit:"g",sub:true}] },
 { id:"proud-mary", name:"Proud Mary", category:"Wild Spirits", calories:180, allergens:["Soy"], nutrients:[{label:"Total Fat",value:"2",unit:"g",bold:true},{label:"Sodium",value:"2840",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"11",unit:"g",bold:true},{label:"Dietary Fiber",value:"3",unit:"g",sub:true},{label:"Total Sugars",value:"5",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
 { id:"tequila-sunrise", name:"Tequila Sunrise", category:"Wild Spirits", calories:280, allergens:[], nutrients:[{label:"Total Carbohydrate",value:"31",unit:"g",bold:true},{label:"Total Sugars",value:"27",unit:"g",sub:true},{label:"Added Sugars",value:"11",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
 { id:"wild-screwdriver", name:"Wild Screwdriver", category:"Wild Spirits", calories:190, allergens:[], nutrients:[{label:"Total Carbohydrate",value:"22",unit:"g",bold:true},{label:"Total Sugars",value:"18",unit:"g",sub:true},{label:"Protein",value:"1",unit:"g",bold:true}] },
 { id:"undertow", name:"Undertow", category:"Wild Spirits", calories:null, allergens:[], nutrients:[] },
-
 // Spirited Coffee
 { id:"chocolate-kiss", name:"Chocolate Kiss", category:"Spirited Coffee", calories:null, allergens:[], nutrients:[] },
 { id:"nutty-irishman", name:"Nutty Irishman", category:"Spirited Coffee", calories:null, allergens:[], nutrients:[] },
 { id:"choc-of-the-morning", name:"Choc of the Morning", category:"Spirited Coffee", calories:null, allergens:[], nutrients:[] },
-
 // Coffee, Tea & Espresso
-{ id:"coffee", name:"Coffee", category:"Coffee, Tea & Espresso", calories:25, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"1.5",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"5",unit:"mg",bold:true},{label:"Sodium",value:"35",unit:"mg",bold:true},{label:"Potassium",value:"580",unit:"mg"},{label:"Total Carbohydrate",value:"0",unit:"g",bold:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
-{ id:"latte", name:"Latte", category:"Coffee, Tea & Espresso", calories:150, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"8",unit:"g",bold:true},{label:"Saturated Fat",value:"4.5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"115",unit:"mg",bold:true},{label:"Potassium",value:"390",unit:"mg"},{label:"Total Carbohydrate",value:"12",unit:"g",bold:true},{label:"Total Sugars",value:"13",unit:"g",sub:true},{label:"Protein",value:"8",unit:"g",bold:true}] },
-{ id:"cappuccino", name:"Cappuccino", category:"Coffee, Tea & Espresso", calories:150, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"8",unit:"g",bold:true},{label:"Saturated Fat",value:"4.5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"115",unit:"mg",bold:true},{label:"Potassium",value:"390",unit:"mg"},{label:"Total Carbohydrate",value:"12",unit:"g",bold:true},{label:"Total Sugars",value:"13",unit:"g",sub:true},{label:"Protein",value:"8",unit:"g",bold:true}] },
-{ id:"cafe-mocha", name:"Café Mocha", category:"Coffee, Tea & Espresso", calories:370, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"10",unit:"g",bold:true},{label:"Saturated Fat",value:"6",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"140",unit:"mg",bold:true},{label:"Potassium",value:"390",unit:"mg"},{label:"Total Carbohydrate",value:"60",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"57",unit:"g",sub:true},{label:"Added Sugars",value:"44",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
-{ id:"americano", name:"Americano", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"15",unit:"mg",bold:true},{label:"Potassium",value:"70",unit:"mg"},{label:"Protein",value:"0",unit:"g",bold:true}] },
-{ id:"espresso", name:"Espresso", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"10",unit:"mg",bold:true},{label:"Potassium",value:"70",unit:"mg"},{label:"Protein",value:"0",unit:"g",bold:true}] },
-{ id:"cold-brew", name:"Cold Brew", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"5",unit:"mg",bold:true},{label:"Potassium",value:"130",unit:"mg"},{label:"Protein",value:"0",unit:"g",bold:true}] },
-{ id:"hot-or-iced-tea", name:"Hot or Iced Tea", category:"Coffee, Tea & Espresso", calories:5, allergens:[], nutrients:[{label:"Sodium",value:"10",unit:"mg",bold:true},{label:"Potassium",value:"150",unit:"mg"},{label:"Total Carbohydrate",value:"3",unit:"g",bold:true},{label:"Protein",value:"0",unit:"g",bold:true}] },
-{ id:"red-eye", name:"Red Eye", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"15",unit:"mg",bold:true},{label:"Potassium",value:"70",unit:"mg"},{label:"Protein",value:"0",unit:"g",bold:true}] },
-{ id:"hot-chocolate", name:"Hot Chocolate", category:"Coffee, Tea & Espresso", calories:490, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"9",unit:"g",bold:true},{label:"Saturated Fat",value:"5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"150",unit:"mg",bold:true},{label:"Potassium",value:"430",unit:"mg"},{label:"Total Carbohydrate",value:"98",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"80",unit:"g",sub:true},{label:"Added Sugars",value:"68",unit:"g",sub:true},{label:"Protein",value:"11",unit:"g",bold:true}] },
+{ id:"coffee", name:"Coffee", category:"Coffee, Tea & Espresso", calories:25, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"1.5",unit:"g",bold:true},{label:"Saturated Fat",value:"1",unit:"g",sub:true},{label:"Cholesterol",value:"5",unit:"mg",bold:true},{label:"Sodium",value:"35",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"0",unit:"g",bold:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
+{ id:"latte", name:"Latte", category:"Coffee, Tea & Espresso", calories:150, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"8",unit:"g",bold:true},{label:"Saturated Fat",value:"4.5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"115",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"12",unit:"g",bold:true},{label:"Total Sugars",value:"13",unit:"g",sub:true},{label:"Protein",value:"8",unit:"g",bold:true}] },
+{ id:"cappuccino", name:"Cappuccino", category:"Coffee, Tea & Espresso", calories:150, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"8",unit:"g",bold:true},{label:"Saturated Fat",value:"4.5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"115",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"12",unit:"g",bold:true},{label:"Total Sugars",value:"13",unit:"g",sub:true},{label:"Protein",value:"8",unit:"g",bold:true}] },
+{ id:"cafe-mocha", name:"Café Mocha", category:"Coffee, Tea & Espresso", calories:370, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"10",unit:"g",bold:true},{label:"Saturated Fat",value:"6",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"140",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"60",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"57",unit:"g",sub:true},{label:"Added Sugars",value:"44",unit:"g",sub:true},{label:"Protein",value:"10",unit:"g",bold:true}] },
+{ id:"americano", name:"Americano", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"15",unit:"mg",bold:true},{label:"Protein",value:"0",unit:"g",bold:true}] },
+{ id:"espresso", name:"Espresso", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"10",unit:"mg",bold:true},{label:"Protein",value:"0",unit:"g",bold:true}] },
+{ id:"cold-brew", name:"Cold Brew", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"5",unit:"mg",bold:true},{label:"Protein",value:"0",unit:"g",bold:true}] },
+{ id:"hot-or-iced-tea", name:"Hot or Iced Tea", category:"Coffee, Tea & Espresso", calories:5, allergens:[], nutrients:[{label:"Sodium",value:"10",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"3",unit:"g",bold:true},{label:"Protein",value:"0",unit:"g",bold:true}] },
+{ id:"red-eye", name:"Red Eye", category:"Coffee, Tea & Espresso", calories:0, allergens:[], nutrients:[{label:"Total Fat",value:"0",unit:"g",bold:true},{label:"Sodium",value:"15",unit:"mg",bold:true},{label:"Protein",value:"0",unit:"g",bold:true}] },
+{ id:"hot-chocolate", name:"Hot Chocolate", category:"Coffee, Tea & Espresso", calories:490, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"9",unit:"g",bold:true},{label:"Saturated Fat",value:"5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"150",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"98",unit:"g",bold:true},{label:"Dietary Fiber",value:"4",unit:"g",sub:true},{label:"Total Sugars",value:"80",unit:"g",sub:true},{label:"Added Sugars",value:"68",unit:"g",sub:true},{label:"Protein",value:"11",unit:"g",bold:true}] },
 { id:"iced-vanilla-latte", name:"Iced Vanilla Latte", category:"Coffee, Tea & Espresso", calories:null, allergens:[], nutrients:[] },
 { id:"sweet-tea", name:"Sweet Tea", category:"Coffee, Tea & Espresso", calories:null, allergens:[], nutrients:[] },
-
 // Juices & Soft Drinks
-{ id:"orange-juice", name:"100% Orange Juice", category:"Juices & Soft Drinks", calories:130, allergens:[], nutrients:[{label:"Total Fat",value:"0.5",unit:"g",bold:true},{label:"Sodium",value:"0",unit:"mg",bold:true},{label:"Potassium",value:"560",unit:"mg"},{label:"Total Carbohydrate",value:"29",unit:"g",bold:true},{label:"Total Sugars",value:"23",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
-{ id:"house-lemonade", name:"House Lemonade", category:"Juices & Soft Drinks", calories:150, allergens:[], nutrients:[{label:"Sodium",value:"5",unit:"mg",bold:true},{label:"Potassium",value:"85",unit:"mg"},{label:"Total Carbohydrate",value:"40",unit:"g",bold:true},{label:"Total Sugars",value:"36",unit:"g",sub:true},{label:"Added Sugars",value:"34",unit:"g",sub:true}] },
+{ id:"orange-juice", name:"100% Orange Juice", category:"Juices & Soft Drinks", calories:130, allergens:[], nutrients:[{label:"Total Fat",value:"0.5",unit:"g",bold:true},{label:"Sodium",value:"0",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"29",unit:"g",bold:true},{label:"Total Sugars",value:"23",unit:"g",sub:true},{label:"Protein",value:"2",unit:"g",bold:true}] },
+{ id:"house-lemonade", name:"House Lemonade", category:"Juices & Soft Drinks", calories:150, allergens:[], nutrients:[{label:"Sodium",value:"5",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"40",unit:"g",bold:true},{label:"Total Sugars",value:"36",unit:"g",sub:true},{label:"Added Sugars",value:"34",unit:"g",sub:true}] },
 { id:"wild-juices", name:"Wild Juices", category:"Juices & Soft Drinks", calories:160, allergens:[], nutrients:[{label:"Sodium",value:"35",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"38",unit:"g",bold:true},{label:"Total Sugars",value:"38",unit:"g",sub:true},{label:"Added Sugars",value:"36",unit:"g",sub:true}] },
-{ id:"milk", name:"Milk or Chocolate Milk", category:"Juices & Soft Drinks", calories:170, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"9",unit:"g",bold:true},{label:"Saturated Fat",value:"5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"120",unit:"mg",bold:true},{label:"Potassium",value:"360",unit:"mg"},{label:"Total Carbohydrate",value:"13",unit:"g",bold:true},{label:"Total Sugars",value:"14",unit:"g",sub:true},{label:"Protein",value:"9",unit:"g",bold:true}] },
+{ id:"milk", name:"Milk or Chocolate Milk", category:"Juices & Soft Drinks", calories:170, allergens:["Milk"], nutrients:[{label:"Total Fat",value:"9",unit:"g",bold:true},{label:"Saturated Fat",value:"5",unit:"g",sub:true},{label:"Cholesterol",value:"25",unit:"mg",bold:true},{label:"Sodium",value:"120",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"13",unit:"g",bold:true},{label:"Total Sugars",value:"14",unit:"g",sub:true},{label:"Protein",value:"9",unit:"g",bold:true}] },
 { id:"coca-cola-products", name:"Coca-Cola Products", category:"Juices & Soft Drinks", calories:120, allergens:[], nutrients:[{label:"Sodium",value:"40",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"34",unit:"g",bold:true},{label:"Total Sugars",value:"34",unit:"g",sub:true},{label:"Added Sugars",value:"34",unit:"g",sub:true}] },
-
 ];
 
 // ── STATE ──
@@ -591,7 +775,7 @@ let searchQuery = '';
 let openItemId = null;
 let openTabByItem = {};
 
-// ── HELPERS ──
+// ── DV % ──
 function dvPercent(label, value) {
   const dv = DAILY_VALUES[label];
   if (!dv) return '';
@@ -599,62 +783,88 @@ function dvPercent(label, value) {
   return isNaN(pct) ? '' : `(${pct}%)`;
 }
 
+// ── Auto diet badges (Upgrade 4) ──
+function getDietBadges(allergens) {
+  const badges = [];
+  if (!allergens.includes('Wheat')) badges.push('GF');
+  if (!allergens.includes('Milk')) badges.push('DF');
+  if (!allergens.includes('Egg')) badges.push('EF');
+  return badges;
+}
+
+// ── Macro values from nutrients ──
+function getMacroSummary(item) {
+  if (item.calories === null || !item.nutrients.length) return null;
+  const find = (label) => {
+    const n = item.nutrients.find(r => r.label === label);
+    return n ? `${n.value}${n.unit}` : '—';
+  };
+  return {
+    cal: item.calories !== null ? item.calories : '—',
+    fat: find('Total Fat'),
+    carb: find('Total Carbohydrate'),
+    pro: find('Protein'),
+  };
+}
+
+// ── Escape HTML ──
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Highlight search match (Upgrade 6) ──
+function highlight(str, q) {
+  if (!q) return esc(str);
+  const idx = str.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return esc(str);
+  return esc(str.slice(0, idx)) + '<mark>' + esc(str.slice(idx, idx + q.length)) + '</mark>' + esc(str.slice(idx + q.length));
+}
+
+// ── Visibility check ──
 function itemIsVisible(item) {
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    if (!item.name.toLowerCase().includes(q)) return false;
-  }
-  for (const a of activeAllergens) {
-    if (item.allergens.includes(a)) return false;
-  }
+  if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+  for (const a of activeAllergens) if (item.allergens.includes(a)) return false;
   return true;
 }
 
+// ── Build nutrition tab ──
 function buildNutritionTab(item) {
   if (item.calories === null || !item.nutrients.length) {
     return `<p class="pending-message">Nutrition data for this item is pending confirmation from our culinary team. Please ask your server.</p>`;
   }
-  const cal = item.calories !== null ? item.calories : '—';
-  let rows = item.nutrients.map(n => {
+  const macro = getMacroSummary(item);
+  const macroBar = macro ? `
+    <div class="macro-bar" aria-label="Macro summary">
+      <div class="macro-cell"><span class="macro-value">${macro.cal}</span><span class="macro-label">Cal</span></div>
+      <div class="macro-cell"><span class="macro-value">${macro.fat}</span><span class="macro-label">Fat</span></div>
+      <div class="macro-cell"><span class="macro-value">${macro.carb}</span><span class="macro-label">Carb</span></div>
+      <div class="macro-cell"><span class="macro-value">${macro.pro}</span><span class="macro-label">Protein</span></div>
+    </div>` : '';
+  const rows = item.nutrients.map(n => {
     const cls = n.bold ? 'nutrient-row bold' : (n.sub ? 'nutrient-row sub' : 'nutrient-row');
-    const dv = n.bold || n.sub ? dvPercent(n.label, n.value) : '';
+    const dv = dvPercent(n.label, n.value);
     const dvHtml = dv ? `<span class="nutrient-dv">${dv}</span>` : '';
-    return `<tr class="${cls}">
-      <td class="nutrient-name">${n.label}</td>
-      <td class="nutrient-amount">${n.value}${n.unit}${dvHtml}</td>
-    </tr>`;
+    return `<tr class="${cls}"><td class="nutrient-name">${esc(n.label)}</td><td class="nutrient-amount">${esc(n.value)}${esc(n.unit)}${dvHtml}</td></tr>`;
   }).join('');
-  return `
-    <div class="cal-display">
-      <div class="cal-big">${cal}</div>
-      <div class="cal-label">calories per serving</div>
-    </div>
-    <table class="nutrient-table" aria-label="Nutrition facts for ${escHtml(item.name)}">
-      <tbody>${rows}</tbody>
-    </table>`;
+  return `${macroBar}<table class="nutrient-table" aria-label="Nutrition facts"><tbody>${rows}</tbody></table>
+    <p style="font-size:10px;color:var(--teal-2);margin-top:10px;line-height:1.5">*% Daily Value based on a 2,000 calorie diet.</p>`;
 }
 
+// ── Build allergens tab ──
 function buildAllergensTab(item) {
   const cells = ALLERGENS_ALL.map(a => {
     const present = item.allergens.includes(a);
-    const cls = present ? 'allergen-cell present' : 'allergen-cell absent';
-    const sym = present ? '&#10003;' : '&ndash;';
-    return `<div class="${cls}" aria-label="${a}: ${present ? 'present' : 'not listed'}"><span class="a-symbol" aria-hidden="true">${sym}</span>${a}</div>`;
+    return `<div class="allergen-cell ${present ? 'present' : 'absent'}" aria-label="${a}: ${present ? 'present' : 'not listed'}">
+      <span aria-hidden="true">${present ? '✓' : '–'}</span>${esc(a)}
+    </div>`;
   }).join('');
-  return `
-    <div class="allergen-grid">${cells}</div>
+  return `<div class="allergen-grid">${cells}</div>
     <p class="allergen-disclaimer">These ingredients may have come into contact with, or are produced at facilities that handle other allergens. Please notify your server of any food allergies before ordering.</p>`;
-}
-
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── RENDER ──
 function render() {
   const list = document.getElementById('menu-list');
-
-  // group by category in order
   const byCategory = {};
   for (const item of MENU_DATA) {
     if (!byCategory[item.category]) byCategory[item.category] = [];
@@ -662,18 +872,18 @@ function render() {
   }
 
   let totalVisible = 0;
-  let hasPending = MENU_DATA.some(i => i.calories === null);
-  document.getElementById('pending-note').style.display = hasPending ? 'block' : 'none';
+  document.getElementById('pending-note').style.display =
+    MENU_DATA.some(i => i.calories === null) ? 'block' : 'none';
 
   list.innerHTML = '';
 
   for (const cat of CATEGORY_ORDER) {
     const items = byCategory[cat];
     if (!items) continue;
-
     const section = document.createElement('div');
     section.className = 'category-section';
     section.dataset.category = cat;
+    section.id = 'cat-' + cat.replace(/[^a-z0-9]/gi, '-').toLowerCase();
 
     const header = document.createElement('div');
     header.className = 'category-header';
@@ -681,125 +891,164 @@ function render() {
     section.appendChild(header);
 
     let catVisible = 0;
-
     for (const item of items) {
       const visible = itemIsVisible(item);
       if (visible) { totalVisible++; catVisible++; }
+
+      const badges = getDietBadges(item.allergens);
+      const badgesHtml = badges.map(b => `<span class="diet-badge">${b}</span>`).join('');
+      const chips = item.allergens.map(a => `<span class="allergen-chip">${esc(a)}</span>`).join('');
+      const chipsHtml = chips ? `<div class="item-allergen-chips" aria-label="Contains: ${item.allergens.join(', ')}">${chips}</div>` : '';
+      const calText = item.calories !== null ? `${item.calories} cal` : '— cal';
+      const isOpen = openItemId === item.id;
+      const activeTab = openTabByItem[item.id] || 'nutrition';
 
       const row = document.createElement('div');
       row.className = 'item-row';
       row.dataset.id = item.id;
       if (!visible) row.dataset.hidden = 'true';
 
-      const calText = item.calories !== null ? `${item.calories} cal` : '— cal';
-      const calCls = item.calories === null ? 'cal-pill no-data' : 'cal-pill';
-      const chips = item.allergens.map(a => `<span class="allergen-chip" aria-label="${a}">${a}</span>`).join('');
-      const chipsHtml = chips ? `<div class="item-allergen-chips" aria-label="Contains: ${item.allergens.join(', ')}">${chips}</div>` : '';
-      const isOpen = openItemId === item.id;
-      const activeTab = openTabByItem[item.id] || 'nutrition';
-
       row.innerHTML = `
-        <button class="item-trigger" aria-expanded="${isOpen}" aria-controls="body-${item.id}">
-          <span class="${calCls}" aria-label="${calText}">${calText}</span>
+        <button class="item-trigger" aria-expanded="${isOpen}" aria-controls="body-${esc(item.id)}">
+          <span class="cal-pill${item.calories === null ? ' no-data' : ''}" aria-label="${calText}">${calText}</span>
           <span class="item-meta">
-            <span class="item-name">${escHtml(item.name)}</span>
+            <span class="item-name">${highlight(item.name, searchQuery)}${badgesHtml}</span>
             ${chipsHtml}
           </span>
-          <span class="chevron" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
+          <svg class="chevron" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
-        <div class="item-body${isOpen ? ' open' : ''}" id="body-${item.id}" role="region" aria-label="${escHtml(item.name)} details">
+        <div class="item-body${isOpen ? ' open' : ''}" id="body-${esc(item.id)}" role="region" aria-label="${esc(item.name)} details">
           <div class="item-body-inner">
-            <div class="tabs" role="tablist" aria-label="${escHtml(item.name)} tabs">
-              <button class="tab-btn${activeTab === 'nutrition' ? ' active' : ''}" role="tab" aria-selected="${activeTab === 'nutrition'}" data-tab="nutrition" data-item="${item.id}">Nutrition</button>
-              <button class="tab-btn${activeTab === 'allergens' ? ' active' : ''}" role="tab" aria-selected="${activeTab === 'allergens'}" data-tab="allergens" data-item="${item.id}">Allergens</button>
+            <div class="tabs" role="tablist">
+              <button class="tab-btn${activeTab === 'nutrition' ? ' active' : ''}" role="tab" aria-selected="${activeTab === 'nutrition'}" data-tab="nutrition" data-item="${esc(item.id)}">Nutrition</button>
+              <button class="tab-btn${activeTab === 'allergens' ? ' active' : ''}" role="tab" aria-selected="${activeTab === 'allergens'}" data-tab="allergens" data-item="${esc(item.id)}">Allergens</button>
             </div>
-            <div class="tab-panel${activeTab === 'nutrition' ? ' active' : ''}" role="tabpanel" data-panel="nutrition" data-item="${item.id}">
-              ${buildNutritionTab(item)}
-            </div>
-            <div class="tab-panel${activeTab === 'allergens' ? ' active' : ''}" role="tabpanel" data-panel="allergens" data-item="${item.id}">
-              ${buildAllergensTab(item)}
-            </div>
+            <div class="tab-panel${activeTab === 'nutrition' ? ' active' : ''}" role="tabpanel" data-panel="nutrition" data-item="${esc(item.id)}">${buildNutritionTab(item)}</div>
+            <div class="tab-panel${activeTab === 'allergens' ? ' active' : ''}" role="tabpanel" data-panel="allergens" data-item="${esc(item.id)}">${buildAllergensTab(item)}</div>
             <div class="disclaimer-band">Nutrition shown for base dish only, without sides or modifications. Values estimated &#177;10% per serving. Source: Wild Eggs / MenuTrinfo LLC, April 2024.</div>
           </div>
         </div>`;
-
       section.appendChild(row);
     }
-
     if (catVisible === 0) section.dataset.empty = 'true';
     list.appendChild(section);
   }
 
-  // update status
+  // Update status
   const statusEl = document.getElementById('filter-status');
-  let statusParts = [`${totalVisible} item${totalVisible !== 1 ? 's' : ''} shown`];
-  if (activeAllergens.size > 0) {
-    statusParts.push(`Filtering: ${activeAllergens.size} allergen${activeAllergens.size !== 1 ? 's' : ''} excluded`);
-  }
-  statusEl.textContent = statusParts.join(' · ');
+  statusEl.textContent = `${totalVisible} item${totalVisible !== 1 ? 's' : ''} shown`;
 
-  const emptyState = document.getElementById('empty-state');
-  emptyState.classList.toggle('visible', totalVisible === 0);
+  // Safe-for-me banner (Upgrade 3)
+  const banner = document.getElementById('safe-banner');
+  const bannerText = document.getElementById('safe-banner-text');
+  if (activeAllergens.size > 0) {
+    const excluded = [...activeAllergens].join(' + ');
+    bannerText.textContent = `${totalVisible} dishes safe for your selections · ${excluded} excluded`;
+    banner.classList.add('visible');
+  } else {
+    banner.classList.remove('visible');
+  }
+
+  document.getElementById('empty-state').classList.toggle('visible', totalVisible === 0);
+
+  // Update category nav active state
+  updateCatNav();
+}
+
+// ── CATEGORY NAV ──
+function buildCatNav() {
+  const inner = document.getElementById('cat-nav-inner');
+  inner.innerHTML = '';
+  for (const cat of CATEGORY_ORDER) {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill';
+    btn.dataset.cat = cat;
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      const sec = document.getElementById('cat-' + cat.replace(/[^a-z0-9]/gi, '-').toLowerCase());
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    inner.appendChild(btn);
+  }
+}
+
+function updateCatNav() {
+  // highlight first visible cat
+  const sections = document.querySelectorAll('.category-section:not([data-empty="true"])');
+  if (!sections.length) return;
+  const firstCat = sections[0].dataset.category;
+  document.querySelectorAll('.cat-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === firstCat);
+  });
+}
+
+// IntersectionObserver for cat nav active state
+function setupCatObserver() {
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        const cat = entry.target.dataset.category;
+        document.querySelectorAll('.cat-pill').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.cat === cat);
+        });
+        // scroll the active pill into view in the nav
+        const activePill = document.querySelector(`.cat-pill[data-cat="${cat}"]`);
+        if (activePill) activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        break;
+      }
+    }
+  }, { rootMargin: '-10% 0px -80% 0px' });
+
+  document.querySelectorAll('.category-section').forEach(sec => obs.observe(sec));
 }
 
 // ── ACCORDION ──
-document.getElementById('menu-list').addEventListener('click', function(e) {
-  const trigger = e.target.closest('.item-trigger');
+document.getElementById('menu-list').addEventListener('click', (e) => {
   const tabBtn = e.target.closest('.tab-btn');
-
   if (tabBtn) {
     e.stopPropagation();
     const itemId = tabBtn.dataset.item;
     const tab = tabBtn.dataset.tab;
     openTabByItem[itemId] = tab;
-
     const row = document.querySelector(`.item-row[data-id="${itemId}"]`);
     if (!row) return;
     row.querySelectorAll('.tab-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.tab === tab);
       b.setAttribute('aria-selected', b.dataset.tab === tab);
     });
-    row.querySelectorAll('.tab-panel').forEach(p => {
-      p.classList.toggle('active', p.dataset.panel === tab);
-    });
+    row.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
     return;
   }
 
-  if (trigger) {
-    const row = trigger.closest('.item-row');
-    const itemId = row.dataset.id;
-    const body = row.querySelector('.item-body');
-    const isOpen = openItemId === itemId;
+  const trigger = e.target.closest('.item-trigger');
+  if (!trigger) return;
+  const row = trigger.closest('.item-row');
+  const itemId = row.dataset.id;
+  const body = row.querySelector('.item-body');
+  const isOpen = openItemId === itemId;
 
-    // close current
-    if (openItemId && openItemId !== itemId) {
-      const prevRow = document.querySelector(`.item-row[data-id="${openItemId}"]`);
-      if (prevRow) {
-        prevRow.querySelector('.item-body').classList.remove('open');
-        prevRow.querySelector('.item-trigger').setAttribute('aria-expanded', 'false');
-      }
+  if (openItemId && openItemId !== itemId) {
+    const prev = document.querySelector(`.item-row[data-id="${openItemId}"]`);
+    if (prev) {
+      prev.querySelector('.item-body').classList.remove('open');
+      prev.querySelector('.item-trigger').setAttribute('aria-expanded', 'false');
     }
+  }
 
-    if (isOpen) {
-      body.classList.remove('open');
-      trigger.setAttribute('aria-expanded', 'false');
-      openItemId = null;
-    } else {
-      body.classList.add('open');
-      trigger.setAttribute('aria-expanded', 'true');
-      openItemId = itemId;
-      // scroll into view gently on mobile
-      setTimeout(() => {
-        const rect = row.getBoundingClientRect();
-        if (rect.top < 100) {
-          row.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 50);
-    }
+  if (isOpen) {
+    body.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+    openItemId = null;
+  } else {
+    body.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+    openItemId = itemId;
+    setTimeout(() => {
+      const rect = row.getBoundingClientRect();
+      if (rect.top < 80) row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   }
 });
 
@@ -814,53 +1063,83 @@ for (const a of ALLERGENS_ALL) {
   pillsContainer.appendChild(btn);
 }
 
-pillsContainer.addEventListener('click', function(e) {
+function setAllergen(a, active) {
+  if (active) activeAllergens.add(a);
+  else activeAllergens.delete(a);
+  // sync pill
+  const pill = document.querySelector(`.pill[data-allergen="${a}"]`);
+  if (pill) {
+    pill.classList.toggle('active', active);
+    pill.setAttribute('aria-pressed', active);
+    pill.textContent = active ? `No ${a}` : a;
+  }
+  // sync presets
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const presetAllergen = btn.dataset.preset;
+    btn.classList.toggle('active', activeAllergens.has(presetAllergen));
+    btn.setAttribute('aria-pressed', activeAllergens.has(presetAllergen));
+  });
+}
+
+pillsContainer.addEventListener('click', (e) => {
   const pill = e.target.closest('.pill');
   if (!pill) return;
   const a = pill.dataset.allergen;
-  if (activeAllergens.has(a)) {
-    activeAllergens.delete(a);
-    pill.classList.remove('active');
-    pill.setAttribute('aria-pressed', 'false');
-    pill.textContent = a;
-  } else {
-    activeAllergens.add(a);
-    pill.classList.add('active');
-    pill.setAttribute('aria-pressed', 'true');
-    pill.textContent = `No ${a}`;
-  }
+  setAllergen(a, !activeAllergens.has(a));
+  render();
+});
+
+// ── PRESET BUTTONS (Upgrade 2) ──
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const a = btn.dataset.preset;
+    setAllergen(a, !activeAllergens.has(a));
+    render();
+  });
+});
+
+// ── CLEAR ALL ──
+document.getElementById('safe-banner-clear').addEventListener('click', () => {
+  activeAllergens.clear();
+  document.querySelectorAll('.pill.active').forEach(p => {
+    p.classList.remove('active');
+    p.setAttribute('aria-pressed', 'false');
+    p.textContent = p.dataset.allergen;
+  });
+  document.querySelectorAll('.preset-btn.active').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
+  });
   render();
 });
 
 // ── SEARCH ──
 const searchInput = document.getElementById('search-input');
 const searchClear = document.getElementById('search-clear');
-
-searchInput.addEventListener('input', function() {
-  searchQuery = this.value.trim();
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.trim();
   searchClear.classList.toggle('visible', searchQuery.length > 0);
   render();
 });
-
-searchClear.addEventListener('click', function() {
+searchClear.addEventListener('click', () => {
   searchInput.value = '';
   searchQuery = '';
-  this.classList.remove('visible');
+  searchClear.classList.remove('visible');
   searchInput.focus();
   render();
 });
 
 // ── BACK TO TOP ──
 const backToTop = document.getElementById('back-to-top');
-window.addEventListener('scroll', function() {
+window.addEventListener('scroll', () => {
   backToTop.classList.toggle('visible', window.scrollY > 400);
 }, { passive: true });
-backToTop.addEventListener('click', function() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 // ── INIT ──
+buildCatNav();
 render();
+setupCatObserver();
 </script>
 </body>
 </html>
