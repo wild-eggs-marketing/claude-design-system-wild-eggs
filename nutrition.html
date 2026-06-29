@@ -37,17 +37,26 @@
       left: 0;
     }
 
-    /* ── OUTER LAYOUT: filter bar fixed at top, list scrolls below ── */
+    /* ── OUTER LAYOUT ── */
     .page-wrap {
       display: flex;
       flex-direction: column;
-      min-height: 100vh; /* at minimum fill the iframe viewport */
+      height: 100vh;       /* fill the iframe exactly */
+      overflow-y: auto;    /* THIS is the scroll container — scrollIntoView targets it */
+      overflow-x: hidden;
       width: 100%;
       max-width: 100%;
-      overflow-x: hidden;
+      position: relative;  /* required for sticky children */
     }
 
-    /* ── FILTER PANEL (non-sticky — sits at top of embed in normal flow) ── */
+    /* ── STICKY HEADER: filter panel + category nav stick together ── */
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* ── FILTER PANEL ── */
     .filter-panel {
       background: var(--white);
       border-bottom: 1px solid var(--border);
@@ -160,7 +169,7 @@
       flex-wrap: wrap;
     }
     .pill {
-      padding: 4px 10px;
+      padding: 6px 12px; /* B6: min 36px touch target (was ~29px) */
       border-radius: 20px;
       border: 1px solid var(--teal-2);
       background: transparent;
@@ -310,6 +319,7 @@
       transition: background 0.12s;
     }
     .item-trigger:hover { background: rgba(47,92,100,0.03); }
+    .item-trigger:focus-visible { outline: 2px solid var(--teal-1); outline-offset: -2px; border-radius: 2px; }
 
     /* Calorie pill — color-scaled by energy density */
     .cal-pill {
@@ -323,7 +333,7 @@
       width: 72px;
       text-align: center;
     }
-    .cal-pill.cal-zero { background: rgba(47,92,100,0.10); color: var(--teal-2); } /* 0 cal — muted */
+    .cal-pill.cal-zero { background: rgba(47,92,100,0.10); color: var(--teal-1); } /* 0 cal — muted, teal-1 gives 6.5:1 contrast */
     .cal-pill.cal-low  { background: #3a7d6a; } /* <400 — green-teal */
     .cal-pill.cal-med  { background: var(--teal-1); } /* 400–899 — brand teal */
     .cal-pill.cal-high { background: #7a5c1e; } /* 900–1299 — amber-brown */
@@ -343,7 +353,7 @@
     }
     .item-trigger:hover .item-name { color: var(--teal-1); }
 
-    /* Diet badge (Upgrade 4 — GF / DF / EF) */
+    /* Diet badge (A4: abbr with title — provides accessible label for GF/DF/EF) */
     .diet-badge {
       font-size: 9px;
       font-weight: 700;
@@ -353,6 +363,8 @@
       background: rgba(47,92,100,0.1);
       color: var(--teal-1);
       flex-shrink: 0;
+      text-decoration: none; /* suppress default abbr underline */
+      cursor: default;
     }
 
     .item-allergen-chips {
@@ -360,6 +372,8 @@
       flex-wrap: wrap;
       gap: 4px;
       margin-top: 4px;
+      list-style: none; /* reset <ul> bullet for A5 */
+      padding: 0;
     }
     .allergen-chip {
       font-size: 10px;
@@ -659,7 +673,8 @@
       gap: 5px;
     }
     .allergen-cell.present { background: rgba(47,92,100,0.15); color: var(--teal-1); }
-    .allergen-cell.absent  { background: var(--cream); color: rgba(47,92,100,0.3); }
+    /* B2: absent color was rgba(47,92,100,0.3) = ~1.5:1 contrast. var(--teal-2) = 4.5:1 on cream ✓ */
+    .allergen-cell.absent  { background: var(--cream); color: var(--teal-2); text-decoration: line-through; text-decoration-color: rgba(47,92,100,0.3); }
 
     /* ── CLEAR-ALL INLINE ── */
     .allergen-section-row {
@@ -790,12 +805,15 @@
 <body>
 <div class="page-wrap">
 
+  <!-- STICKY HEADER wraps filter panel + category nav so both stick together -->
+  <div class="sticky-header" id="sticky-header">
+
   <!-- FILTER PANEL -->
   <div class="filter-panel" id="filter-panel">
 
     <!-- Top row: heading + search -->
     <div class="filter-top-row">
-      <span class="filter-heading">Find a dish</span>
+      <label for="search-input" class="filter-heading">Find a dish</label>
       <div class="search-wrap">
         <span class="search-icon" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -840,7 +858,7 @@
     <!-- Individual allergen pills -->
     <div class="allergen-section-row">
       <span class="allergen-section-label">Or exclude by allergen</span>
-      <button class="clear-all-inline" id="clear-all-inline" aria-label="Clear all active filters">
+      <button class="clear-all-inline" id="clear-all-inline" aria-label="Clear all allergen filters">
         <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
           <path d="M1 1L8 8M8 1L1 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
@@ -852,7 +870,7 @@
     <!-- Safe-for-me banner -->
     <div class="safe-banner" id="safe-banner" role="status">
       <span id="safe-banner-text"></span>
-      <button class="safe-banner-clear" id="safe-banner-clear">Clear all</button>
+      <button class="safe-banner-clear" id="safe-banner-clear" aria-label="Clear all allergen filters">Clear all</button>
     </div>
 
     <!-- Status + sort -->
@@ -871,7 +889,7 @@
   <nav class="cat-nav" aria-label="Jump to menu category">
     <div class="cat-nav-inner" id="cat-nav-inner"></div>
   </nav>
-
+  </div><!-- /sticky-header -->
 
   <!-- DIET BADGE LEGEND -->
   <div class="diet-legend" aria-label="Diet badge key">
@@ -883,7 +901,7 @@
   <!-- MENU LIST -->
   <main class="main">
     <div id="menu-list"></div>
-    <div class="empty-state" id="empty-state" aria-live="polite">
+    <div class="empty-state" id="empty-state">
       <div class="empty-icon">
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
           <circle cx="18" cy="18" r="11" stroke="currentColor" stroke-width="1.8"/>
@@ -903,7 +921,7 @@
   </main>
 
   <!-- ALLERGEN LEGAL DISCLAIMER -->
-  <aside class="allergen-legal" role="note" aria-label="Allergen advisory">
+  <aside class="allergen-legal" aria-label="Allergen advisory">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <path d="M7 1.5L13 12.5H1L7 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
       <path d="M7 5.5V8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
@@ -942,6 +960,9 @@
 </button>
 
 <script>
+// ── SCROLL CONTAINER — page-wrap is the scroll root, not window ──
+const pageWrap = document.querySelector('.page-wrap');
+
 const ALLERGENS_ALL = ["Egg","Fish","Milk","Peanuts","Sesame","Shellfish","Soy","Tree Nuts","Wheat"];
 
 const DAILY_VALUES = {
@@ -1160,6 +1181,19 @@ function buildAllergensTab(item) {
     <p class="allergen-disclaimer">Ingredients may have come into contact with other allergens at facilities. Notify your server of any food allergies before ordering.</p>`;
 }
 
+// ── Badge labels for abbr title (A4) ──
+const BADGE_LABELS = { GF: 'Gluten-Free', DF: 'Dairy-Free', EF: 'Egg-Free' };
+
+// ── Calorie pill aria-label — conveys energy tier for AT (B1: not color-only) ──
+function calAriaLabel(cal) {
+  if (cal === null) return 'Calories unavailable';
+  if (cal === 0)   return '0 calories';
+  if (cal < 400)   return `${cal} calories, light`;
+  if (cal < 900)   return `${cal} calories`;
+  if (cal < 1300)  return `${cal} calories, high`;
+  return `${cal} calories, very high`;
+}
+
 // ── Calorie pill color class ──
 function calPillClass(cal) {
   if (cal === null) return 'no-data';
@@ -1225,14 +1259,21 @@ function render() {
       if (visible) { totalVisible++; catVisible++; }
 
       const badges = getDietBadges(item.allergens);
-      const badgesHtml = badges.map(b => `<span class="diet-badge">${b}</span>`).join('');
-      const chips = item.allergens.map(a => `<span class="allergen-chip">${esc(a)}</span>`).join('');
-      const chipsHtml = chips ? `<div class="item-allergen-chips" aria-label="Contains: ${item.allergens.join(', ')}">${chips}</div>` : '';
+      // A4: abbr with title provides accessible label for GF/DF/EF abbreviations
+      const badgesHtml = badges.map(b =>
+        `<abbr class="diet-badge" title="${BADGE_LABELS[b]}">${b}</abbr>`
+      ).join('');
+      // A5: ul/li with role="list" so VoiceOver exposes list semantics even with list-style:none
+      const chips = item.allergens.map(a => `<li class="allergen-chip">${esc(a)}</li>`).join('');
+      const chipsHtml = chips ? `<ul class="item-allergen-chips" role="list" aria-label="Contains: ${item.allergens.join(', ')}">${chips}</ul>` : '';
       const calText = item.calories !== null ? `${item.calories} cal` : '— cal';
       const calClass = calPillClass(item.calories);
       const isOpen = openItemId === item.id;
       const activeTab = openTabByItem[item.id] || 'nutrition';
       const sodiumHtml = sodiumWarnHtml(item);
+      // A2: unique IDs on tab buttons so tabpanels can reference via aria-labelledby
+      const nutTabId = `tab-n-${esc(item.id)}`;
+      const algTabId = `tab-a-${esc(item.id)}`;
 
       const row = document.createElement('div');
       row.className = 'item-row';
@@ -1241,7 +1282,7 @@ function render() {
 
       row.innerHTML = `
         <button class="item-trigger" aria-expanded="${isOpen}" aria-controls="body-${esc(item.id)}">
-          <span class="cal-pill ${calClass}" aria-label="${calText}">${calText}</span>
+          <span class="cal-pill ${calClass}" aria-label="${calAriaLabel(item.calories)}">${calText}</span>
           <span class="item-meta">
             <span class="item-name">${highlight(item.name, searchQuery)}${badgesHtml}${sodiumHtml}</span>
             ${chipsHtml}
@@ -1252,12 +1293,12 @@ function render() {
         </button>
         <div class="item-body${isOpen ? ' open' : ''}" id="body-${esc(item.id)}" role="region" aria-label="${esc(item.name)} details">
           <div class="item-body-inner">
-            <div class="tabs" role="tablist">
-              <button class="tab-btn${activeTab === 'nutrition' ? ' active' : ''}" role="tab" aria-selected="${activeTab === 'nutrition'}" data-tab="nutrition" data-item="${esc(item.id)}">Nutrition</button>
-              <button class="tab-btn${activeTab === 'allergens' ? ' active' : ''}" role="tab" aria-selected="${activeTab === 'allergens'}" data-tab="allergens" data-item="${esc(item.id)}">Allergens</button>
+            <div class="tabs" role="tablist" aria-label="${esc(item.name)} tabs">
+              <button class="tab-btn${activeTab === 'nutrition' ? ' active' : ''}" role="tab" id="${nutTabId}" aria-selected="${activeTab === 'nutrition'}" data-tab="nutrition" data-item="${esc(item.id)}">Nutrition</button>
+              <button class="tab-btn${activeTab === 'allergens' ? ' active' : ''}" role="tab" id="${algTabId}" aria-selected="${activeTab === 'allergens'}" data-tab="allergens" data-item="${esc(item.id)}">Allergens</button>
             </div>
-            <div class="tab-panel${activeTab === 'nutrition' ? ' active' : ''}" role="tabpanel" data-panel="nutrition" data-item="${esc(item.id)}">${buildNutritionTab(item)}</div>
-            <div class="tab-panel${activeTab === 'allergens' ? ' active' : ''}" role="tabpanel" data-panel="allergens" data-item="${esc(item.id)}">${buildAllergensTab(item)}</div>
+            <div class="tab-panel${activeTab === 'nutrition' ? ' active' : ''}" role="tabpanel" aria-labelledby="${nutTabId}" data-panel="nutrition" data-item="${esc(item.id)}">${buildNutritionTab(item)}</div>
+            <div class="tab-panel${activeTab === 'allergens' ? ' active' : ''}" role="tabpanel" aria-labelledby="${algTabId}" data-panel="allergens" data-item="${esc(item.id)}">${buildAllergensTab(item)}</div>
             <div class="disclaimer-band">Nutrition shown for base dish only, without sides or modifications. Values estimated &#177;10% per serving. Source: Wild Eggs / MenuTrinfo LLC, April 2024.</div>
           </div>
         </div>`;
@@ -1296,25 +1337,28 @@ function render() {
     countEl.textContent = count;
   }
 
-  // Update category nav active state
-  updateCatNav();
+  // Re-attach IntersectionObserver to the newly rebuilt DOM sections
+  setupCatObserver();
 }
 
 // ── CATEGORY NAV ──
 function buildCatNav() {
   const inner = document.getElementById('cat-nav-inner');
-  inner.setAttribute('role', 'tablist');
+  // nav role="navigation" already on parent — inner is just a flex row of links
+  inner.removeAttribute('role');
   inner.innerHTML = '';
-  CATEGORY_ORDER.forEach((cat, i) => {
+  CATEGORY_ORDER.forEach((cat) => {
     const btn = document.createElement('button');
     btn.className = 'cat-pill';
     btn.dataset.cat = cat;
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
     btn.innerHTML = `${esc(cat)} <span class="cat-count" data-count-cat="${esc(cat)}">–</span>`;
     btn.addEventListener('click', () => {
       const sec = document.getElementById('cat-' + cat.replace(/[^a-z0-9]/gi, '-').toLowerCase());
-      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!sec) return;
+      const stickyHeader = document.getElementById('sticky-header');
+      const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 0;
+      const secTop = sec.getBoundingClientRect().top - pageWrap.getBoundingClientRect().top + pageWrap.scrollTop;
+      pageWrap.scrollTo({ top: secTop - headerHeight - 8, behavior: 'smooth' });
     });
     inner.appendChild(btn);
   });
@@ -1330,40 +1374,41 @@ function buildCatNav() {
     else if (e.key === 'End') next = pills.length - 1;
     if (next >= 0) {
       e.preventDefault();
-      pills.forEach((p, pi) => p.setAttribute('tabindex', pi === next ? '0' : '-1'));
       pills[next].focus();
     }
   });
 }
 
-function updateCatNav() {
-  // highlight first visible cat
-  const sections = document.querySelectorAll('.category-section:not([data-empty="true"])');
-  if (!sections.length) return;
-  const firstCat = sections[0].dataset.category;
-  document.querySelectorAll('.cat-pill').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.cat === firstCat);
-  });
-}
 
 // IntersectionObserver for cat nav active state
+// Module-level reference so render() can disconnect before re-observing rebuilt DOM
+let catObserver = null;
 function setupCatObserver() {
-  const obs = new IntersectionObserver((entries) => {
+  if (catObserver) catObserver.disconnect();
+  catObserver = new IntersectionObserver((entries) => {
+    // Pick the topmost intersecting section
+    let topEntry = null;
     for (const entry of entries) {
       if (entry.isIntersecting) {
-        const cat = entry.target.dataset.category;
-        document.querySelectorAll('.cat-pill').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.cat === cat);
-        });
-        // scroll the active pill into view in the nav
-        const activePill = document.querySelector(`.cat-pill[data-cat="${cat}"]`);
-        if (activePill) activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        break;
+        if (!topEntry || entry.boundingClientRect.top < topEntry.boundingClientRect.top) {
+          topEntry = entry;
+        }
       }
     }
-  }, { rootMargin: '-10% 0px -80% 0px' });
+    if (!topEntry) return;
+    const cat = topEntry.target.dataset.category;
+    document.querySelectorAll('.cat-pill').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.cat === cat);
+    });
+    // scroll the active pill into view in the nav
+    const activePill = document.querySelector(`.cat-pill[data-cat="${cat}"]`);
+    if (activePill) activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, {
+    root: pageWrap,
+    rootMargin: '-180px 0px -50% 0px'  // top offset = sticky header height; bottom half triggers
+  });
 
-  document.querySelectorAll('.category-section').forEach(sec => obs.observe(sec));
+  document.querySelectorAll('.category-section').forEach(sec => catObserver.observe(sec));
 }
 
 // ── ACCORDION ──
@@ -1503,10 +1548,10 @@ searchClear.addEventListener('click', () => {
 
 // ── BACK TO TOP ──
 const backToTop = document.getElementById('back-to-top');
-window.addEventListener('scroll', () => {
-  backToTop.classList.toggle('visible', window.scrollY > 400);
+pageWrap.addEventListener('scroll', () => {
+  backToTop.classList.toggle('visible', pageWrap.scrollTop > 400);
 }, { passive: true });
-backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+backToTop.addEventListener('click', () => pageWrap.scrollTo({ top: 0, behavior: 'smooth' }));
 
 // ── SORT BUTTON ──
 document.getElementById('sort-btn').addEventListener('click', () => {
@@ -1517,6 +1562,11 @@ document.getElementById('sort-btn').addEventListener('click', () => {
   btn.classList.toggle('active', sortCalories !== null);
   const arrow = sortCalories === 'asc' ? '↑' : sortCalories === 'desc' ? '↓' : '';
   document.getElementById('sort-label').textContent = arrow ? ' ' + arrow : '';
+  // B5: aria-label reflects current sort state for screen readers
+  const sortDesc = sortCalories === 'asc' ? 'Sort by calories: ascending (click for descending)'
+                 : sortCalories === 'desc' ? 'Sort by calories: descending (click to clear)'
+                 : 'Sort by calories';
+  btn.setAttribute('aria-label', sortDesc);
   render();
 });
 
@@ -1562,12 +1612,11 @@ document.getElementById('menu-list').addEventListener('touchend', (e) => {
 
 // ── INIT ──
 buildCatNav();
-render();
-setupCatObserver();
+render(); // render() now calls setupCatObserver() internally
 
 // Reset any scroll offset Framer's iframe canvas positioning injects
-window.scrollTo(0, 0);
-window.addEventListener('load', () => window.scrollTo(0, 0));
+pageWrap.scrollTop = 0;
+window.addEventListener('load', () => { pageWrap.scrollTop = 0; });
 
 // ── FRAMER IFRAME AUTO-RESIZE ──
 // Continuously reports content height so Framer embed can expand to fit.
