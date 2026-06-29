@@ -205,13 +205,7 @@
       padding: 0;
     }
 
-    /* Filter status */
-    .filter-status {
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--teal-2);
-      min-height: 16px;
-    }
+    /* Filter status (layout handled by .filter-status-row) */
 
     /* ── CATEGORY JUMP NAV ── */
     .cat-nav {
@@ -288,13 +282,14 @@
     /* ── CATEGORY SECTIONS ── */
     .category-section { margin-top: 24px; }
     .category-header {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--teal-2);
-      padding: 6px 20px;
+      color: var(--teal-1);
+      padding: 8px 20px 8px 16px;
       border-bottom: 1px solid var(--border);
+      border-left: 3px solid var(--teal-1);
       background: var(--cream);
     }
     .category-section[data-empty="true"] { display: none; }
@@ -319,7 +314,7 @@
     }
     .item-trigger:hover { background: rgba(47,92,100,0.03); }
 
-    /* Calorie pill */
+    /* Calorie pill — color-scaled by energy density */
     .cal-pill {
       flex-shrink: 0;
       background: var(--teal-1);
@@ -331,10 +326,11 @@
       width: 72px;
       text-align: center;
     }
-    .cal-pill.no-data {
-      background: var(--border);
-      color: var(--teal-2);
-    }
+    .cal-pill.cal-low  { background: #3a7d6a; } /* <400 — green-teal */
+    .cal-pill.cal-med  { background: var(--teal-1); } /* 400–899 — brand teal */
+    .cal-pill.cal-high { background: #7a5c1e; } /* 900–1299 — amber-brown */
+    .cal-pill.cal-max  { background: #943028; } /* ≥1300 — deep red */
+    .cal-pill.no-data  { background: var(--border); color: var(--teal-2); }
 
     .item-meta { flex: 1; min-width: 0; }
     .item-name {
@@ -369,11 +365,12 @@
     }
     .allergen-chip {
       font-size: 10px;
-      background: var(--blue);
-      color: #fff;
+      background: rgba(47,92,100,0.12);
+      color: var(--teal-1);
       padding: 2px 6px;
       border-radius: 8px;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
 
     /* Chevron */
@@ -480,19 +477,6 @@
       gap: 6px;
       margin-bottom: 12px;
     }
-    .allergen-cell {
-      padding: 7px 8px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 500;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-    .allergen-cell.present { background: var(--blue); color: #fff; }
-    .allergen-cell.absent { background: var(--cream); color: var(--teal-2); }
     .allergen-disclaimer {
       font-size: 11px;
       color: var(--teal-2);
@@ -605,6 +589,80 @@
     }
     .dv-bar-label { font-size: 10px; color: var(--teal-2); white-space: nowrap; flex-shrink: 0; }
 
+    /* ── SORT BUTTON + STATUS ROW ── */
+    .filter-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      min-height: 20px;
+    }
+    .filter-status { font-size: 11px; color: var(--teal-2); }
+    .sort-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--teal-2);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .sort-btn:hover { border-color: var(--teal-1); color: var(--teal-1); }
+    .sort-btn.active { background: rgba(47,92,100,0.08); border-color: var(--teal-1); color: var(--teal-1); }
+    .sort-arrow { font-style: normal; font-size: 11px; }
+
+    /* ── DIET BADGE LEGEND ── */
+    .diet-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 8px 20px;
+      font-size: 10px;
+      color: var(--teal-2);
+      background: rgba(47,92,100,0.04);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .diet-legend span { display: flex; align-items: center; gap: 4px; }
+    .legend-badge {
+      font-size: 9px; font-weight: 700; padding: 1px 4px;
+      border-radius: 3px; background: rgba(47,92,100,0.1); color: var(--teal-1);
+    }
+
+    /* ── SODIUM WARNING TAG ── */
+    .sodium-warn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      color: #943028;
+      background: rgba(148,48,40,0.08);
+      border-radius: 4px;
+      padding: 2px 5px;
+      flex-shrink: 0;
+    }
+
+    /* ── ALLERGEN GRID ICONS ── */
+    .allergen-cell {
+      padding: 7px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .allergen-cell.present { background: rgba(47,92,100,0.15); color: var(--teal-1); }
+    .allergen-cell.absent  { background: var(--cream); color: rgba(47,92,100,0.3); }
+
     /* ── CLEAR-ALL INLINE ── */
     .allergen-section-row {
       display: flex;
@@ -701,7 +759,9 @@
       .diet-presets { gap: 5px; }
       .preset-btn { font-size: 11px; padding: 4px 9px; }
       .allergen-legal { margin: 14px 14px 0; }
-      .dv-bar-label { display: none; } /* save space on very small screens */
+      .dv-bar-label { display: none; }
+      .category-header { padding-left: 12px; }
+      .diet-legend { padding: 6px 14px; gap: 10px; }
     }
 
     @media (min-width: 480px) and (max-width: 767px) {
@@ -725,6 +785,8 @@
       .main { padding-bottom: 64px; }
       .allergen-legal { margin: 20px 32px 0; }
       .dv-bar-label { display: block; }
+      .category-header { padding-left: 28px; border-left-width: 4px; }
+      .diet-legend { padding: 8px 32px; }
     }
   </style>
 </head>
@@ -796,8 +858,16 @@
       <button class="safe-banner-clear" id="safe-banner-clear">Clear all</button>
     </div>
 
-    <!-- Status -->
-    <div class="filter-status" aria-live="polite" id="filter-status"></div>
+    <!-- Status + sort -->
+    <div class="filter-status-row">
+      <span class="filter-status" aria-live="polite" id="filter-status"></span>
+      <button class="sort-btn" id="sort-btn" aria-label="Sort by calories">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+          <path d="M3 2v6M1.5 6.5L3 8.5L4.5 6.5M7 8V2M5.5 3.5L7 1.5L8.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Calories
+      </button>
+    </div>
   </div>
 
   <!-- CATEGORY JUMP NAV -->
@@ -805,6 +875,13 @@
     <div class="cat-nav-inner" id="cat-nav-inner"></div>
   </nav>
 
+
+  <!-- DIET BADGE LEGEND -->
+  <div class="diet-legend" aria-label="Diet badge key">
+    <span><span class="legend-badge">GF</span> Gluten-Free</span>
+    <span><span class="legend-badge">DF</span> Dairy-Free</span>
+    <span><span class="legend-badge">EF</span> Egg-Free</span>
+  </div>
 
   <!-- MENU LIST -->
   <main class="main">
@@ -968,11 +1045,25 @@ const MENU_DATA = [
 { id:"coca-cola-products", name:"Coca-Cola Products", category:"Juices & Soft Drinks", calories:120, allergens:[], nutrients:[{label:"Sodium",value:"40",unit:"mg",bold:true},{label:"Total Carbohydrate",value:"34",unit:"g",bold:true},{label:"Total Sugars",value:"34",unit:"g",sub:true},{label:"Added Sugars",value:"34",unit:"g",sub:true}] },
 ];
 
+// ── ALLERGEN ICONS (unique SVG per allergen) ──
+const ALLERGEN_ICONS = {
+  'Egg':       `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5C5.5 1.5 3 3.5 3 6.5a2.5 2.5 0 0 0 5 0C8 3.5 5.5 1.5 5.5 1.5z" stroke="currentColor" stroke-width="1.2"/></svg>`,
+  'Fish':      `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M8.5 5.5C8.5 5.5 6.5 3 4.5 3C2.5 3 1.5 4.2 1.5 5.5S2.5 8 4.5 8C6.5 8 8.5 5.5 8.5 5.5Z" stroke="currentColor" stroke-width="1.1"/><path d="M8.5 5.5L10.5 3.5M8.5 5.5L10.5 7.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>`,
+  'Milk':      `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1L8 6.5a2.5 2.5 0 1 1-5 0L5.5 1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`,
+  'Peanuts':   `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><ellipse cx="5.5" cy="3.5" rx="2" ry="2" stroke="currentColor" stroke-width="1.1"/><ellipse cx="5.5" cy="8" rx="2.2" ry="2" stroke="currentColor" stroke-width="1.1"/><path d="M4 5.8h3" stroke="currentColor" stroke-width="1"/></svg>`,
+  'Sesame':    `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><ellipse cx="5.5" cy="5.5" rx="2" ry="3.5" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 2v7" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/></svg>`,
+  'Shellfish': `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 9C5.5 9 1.5 7.5 1.5 5C1.5 3 3.2 2 5.5 2S9.5 3 9.5 5C9.5 7.5 5.5 9 5.5 9z" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 2v7" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/></svg>`,
+  'Soy':       `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1.5C3 1.5 2 3.5 3 5.5C2 7.5 3.5 9.5 5.5 9.5C7.5 9.5 9 7.5 8 5.5C9 3.5 8 1.5 5.5 1.5Z" stroke="currentColor" stroke-width="1.1"/></svg>`,
+  'Tree Nuts': `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 2L9 7H2L5.5 2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><path d="M5.5 7v2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>`,
+  'Wheat':     `<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 9.5V5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M5.5 5C5.5 5 3.5 4 3.5 2.5M5.5 5C5.5 5 7.5 4 7.5 2.5M5.5 7C5.5 7 4 6 3.5 5M5.5 7C5.5 7 7 6 7.5 5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>`,
+};
+
 // ── STATE ──
 let activeAllergens = new Set();
 let searchQuery = '';
 let openItemId = null;
 let openTabByItem = {};
+let sortCalories = null; // null | 'asc' | 'desc'
 
 // ── DV % ──
 function dvPercent(label, value) {
@@ -1045,7 +1136,7 @@ function buildNutritionTab(item) {
     </div>` : '';
   const macroBar = macro ? `
     <div class="macro-bar" aria-label="Macro summary">
-      <div class="macro-cell"><span class="macro-value">${macro.cal}</span><span class="macro-label">Cal</span></div>
+      <div class="macro-cell"><span class="macro-value">${macro.cal}</span><span class="macro-label">Calories</span></div>
       <div class="macro-cell"><span class="macro-value">${macro.fat}</span><span class="macro-label">Fat</span></div>
       <div class="macro-cell"><span class="macro-value">${macro.carb}</span><span class="macro-label">Carb</span></div>
       <div class="macro-cell"><span class="macro-value">${macro.pro}</span><span class="macro-label">Protein</span></div>
@@ -1060,18 +1151,40 @@ function buildNutritionTab(item) {
     <p style="font-size:10px;color:var(--teal-2);margin-top:10px;line-height:1.5">*% Daily Value based on a 2,000 calorie diet.</p>`;
 }
 
-// ── Build allergens tab ──
+// ── Build allergens tab — unique SVG icon per allergen ──
 function buildAllergensTab(item) {
-  const checkSvg = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M2 5.5L4.5 8L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const dashSvg  = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M3 5.5H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
   const cells = ALLERGENS_ALL.map(a => {
     const present = item.allergens.includes(a);
+    const icon = ALLERGEN_ICONS[a] || '';
     return `<div class="allergen-cell ${present ? 'present' : 'absent'}" aria-label="${a}: ${present ? 'present' : 'not listed'}">
-      ${present ? checkSvg : dashSvg}${esc(a)}
+      <span aria-hidden="true">${icon}</span>${esc(a)}
     </div>`;
   }).join('');
   return `<div class="allergen-grid">${cells}</div>
     <p class="allergen-disclaimer">Ingredients may have come into contact with other allergens at facilities. Notify your server of any food allergies before ordering.</p>`;
+}
+
+// ── Calorie pill color class ──
+function calPillClass(cal) {
+  if (cal === null) return 'no-data';
+  if (cal < 400)  return 'cal-low';
+  if (cal < 900)  return 'cal-med';
+  if (cal < 1300) return 'cal-high';
+  return 'cal-max';
+}
+
+// ── Sodium warning ──
+function sodiumWarnHtml(item) {
+  const sod = item.nutrients.find(n => n.label === 'Sodium');
+  if (!sod || Number(sod.value) <= 2300) return '';
+  return `<span class="sodium-warn" aria-label="High sodium">
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden="true">
+      <path d="M4 1L7.5 7H.5L4 1z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+      <path d="M4 3.5v1.5" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/>
+      <circle cx="4" cy="6" r="0.4" fill="currentColor"/>
+    </svg>
+    High sodium
+  </span>`;
 }
 
 // ── RENDER ──
@@ -1081,6 +1194,15 @@ function render() {
   for (const item of MENU_DATA) {
     if (!byCategory[item.category]) byCategory[item.category] = [];
     byCategory[item.category].push(item);
+  }
+  // Apply sort within each category
+  if (sortCalories) {
+    for (const cat in byCategory) {
+      byCategory[cat].sort((a, b) => {
+        const ca = a.calories ?? 0, cb = b.calories ?? 0;
+        return sortCalories === 'asc' ? ca - cb : cb - ca;
+      });
+    }
   }
 
   let totalVisible = 0;
@@ -1112,8 +1234,10 @@ function render() {
       const chips = item.allergens.map(a => `<span class="allergen-chip">${esc(a)}</span>`).join('');
       const chipsHtml = chips ? `<div class="item-allergen-chips" aria-label="Contains: ${item.allergens.join(', ')}">${chips}</div>` : '';
       const calText = item.calories !== null ? `${item.calories} cal` : '— cal';
+      const calClass = calPillClass(item.calories);
       const isOpen = openItemId === item.id;
       const activeTab = openTabByItem[item.id] || 'nutrition';
+      const sodiumHtml = sodiumWarnHtml(item);
 
       const row = document.createElement('div');
       row.className = 'item-row';
@@ -1122,9 +1246,9 @@ function render() {
 
       row.innerHTML = `
         <button class="item-trigger" aria-expanded="${isOpen}" aria-controls="body-${esc(item.id)}">
-          <span class="cal-pill${item.calories === null ? ' no-data' : ''}" aria-label="${calText}">${calText}</span>
+          <span class="cal-pill ${calClass}" aria-label="${calText}">${calText}</span>
           <span class="item-meta">
-            <span class="item-name">${highlight(item.name, searchQuery)}${badgesHtml}</span>
+            <span class="item-name">${highlight(item.name, searchQuery)}${badgesHtml}${sodiumHtml}</span>
             ${chipsHtml}
           </span>
           <svg class="chevron" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -1388,6 +1512,56 @@ window.addEventListener('scroll', () => {
   backToTop.classList.toggle('visible', window.scrollY > 400);
 }, { passive: true });
 backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+// ── SORT BUTTON ──
+document.getElementById('sort-btn').addEventListener('click', () => {
+  if (sortCalories === null)       sortCalories = 'asc';
+  else if (sortCalories === 'asc') sortCalories = 'desc';
+  else                             sortCalories = null;
+  const btn = document.getElementById('sort-btn');
+  btn.classList.toggle('active', sortCalories !== null);
+  const arrow = sortCalories === 'asc' ? ' ↑' : sortCalories === 'desc' ? ' ↓' : '';
+  btn.querySelector('span.sort-label') && (btn.querySelector('span.sort-label').textContent = arrow);
+  render();
+});
+
+// ── SEARCH PLACEHOLDER CYCLING ── (#5)
+(function() {
+  const hints = ['Try "Loco Hash"…','Search "gluten"…','Try "no milk"…','Search "egg"…','Try "Mimosa"…'];
+  const input = document.getElementById('search-input');
+  let i = 0;
+  setInterval(() => {
+    if (document.activeElement !== input && !input.value) {
+      i = (i + 1) % hints.length;
+      input.placeholder = hints[i];
+    }
+  }, 3000);
+})();
+
+// ── TAB SWIPE DETECTION ── (#10)
+document.getElementById('menu-list').addEventListener('touchstart', (e) => {
+  e._touchX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('menu-list').addEventListener('touchend', (e) => {
+  if (e._touchX === undefined) return;
+  const dx = e.changedTouches[0].clientX - e._touchX;
+  if (Math.abs(dx) < 50) return;
+  const body = e.target.closest('.item-body');
+  if (!body) return;
+  const itemId = body.id.replace('body-', '');
+  const tabs = ['nutrition','allergens'];
+  const cur = openTabByItem[itemId] || 'nutrition';
+  const curIdx = tabs.indexOf(cur);
+  const next = tabs[(curIdx + (dx < 0 ? 1 : -1) + tabs.length) % tabs.length];
+  openTabByItem[itemId] = next;
+  const row = document.querySelector(`.item-row[data-id="${itemId}"]`);
+  if (!row) return;
+  row.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === next);
+    b.setAttribute('aria-selected', b.dataset.tab === next);
+  });
+  row.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === next));
+}, { passive: true });
 
 // ── INIT ──
 buildCatNav();
