@@ -267,13 +267,6 @@
       color: #fff;
     }
 
-    /* ── PENDING NOTE ── */
-    .pending-note {
-      margin: 16px 20px 0;
-      font-size: 12px;
-      color: var(--teal-2);
-    }
-
     /* ── MAIN LIST ── */
     .main {
       padding: 0 0 48px;
@@ -326,6 +319,7 @@
       width: 72px;
       text-align: center;
     }
+    .cal-pill.cal-zero { background: rgba(47,92,100,0.10); color: var(--teal-2); } /* 0 cal — muted */
     .cal-pill.cal-low  { background: #3a7d6a; } /* <400 — green-teal */
     .cal-pill.cal-med  { background: var(--teal-1); } /* 400–899 — brand teal */
     .cal-pill.cal-high { background: #7a5c1e; } /* 900–1299 — amber-brown */
@@ -775,7 +769,6 @@
     @media (min-width: 768px) {
       .filter-panel { padding: 16px 32px 12px; }
       .cat-nav { padding: 0 32px; }
-      .pending-note { margin: 16px 32px 0; }
       .category-header { padding: 6px 32px; }
       .item-trigger { padding: 12px 32px 12px 24px; }
       .tab-panel { padding: 18px 32px; }
@@ -865,7 +858,7 @@
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
           <path d="M3 2v6M1.5 6.5L3 8.5L4.5 6.5M7 8V2M5.5 3.5L7 1.5L8.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Calories
+        Calories <span class="sort-label" id="sort-label"></span>
       </button>
     </div>
   </div>
@@ -958,7 +951,7 @@ const DAILY_VALUES = {
 };
 
 const CATEGORY_ORDER = [
-  "Wild Eggs Creations","Breakfast Basics","Omelets",
+  "Wild Eggs Creations","Omelets",
   "Breakfast Sandwiches","French Toast","Pancakes & Waffles","Shareables",
   "Salads","Burgers & Sandwiches","Sides","Mimosas","Wild Spirits",
   "Coffee, Tea & Espresso","Juices & Soft Drinks",
@@ -1167,9 +1160,10 @@ function buildAllergensTab(item) {
 // ── Calorie pill color class ──
 function calPillClass(cal) {
   if (cal === null) return 'no-data';
-  if (cal < 400)  return 'cal-low';
-  if (cal < 900)  return 'cal-med';
-  if (cal < 1300) return 'cal-high';
+  if (cal === 0)   return 'cal-zero';
+  if (cal < 400)   return 'cal-low';
+  if (cal < 900)   return 'cal-med';
+  if (cal < 1300)  return 'cal-high';
   return 'cal-max';
 }
 
@@ -1206,8 +1200,6 @@ function render() {
   }
 
   let totalVisible = 0;
-  document.getElementById('pending-note').style.display =
-    MENU_DATA.some(i => i.calories === null) ? 'block' : 'none';
 
   list.innerHTML = '';
 
@@ -1520,14 +1512,14 @@ document.getElementById('sort-btn').addEventListener('click', () => {
   else                             sortCalories = null;
   const btn = document.getElementById('sort-btn');
   btn.classList.toggle('active', sortCalories !== null);
-  const arrow = sortCalories === 'asc' ? ' ↑' : sortCalories === 'desc' ? ' ↓' : '';
-  btn.querySelector('span.sort-label') && (btn.querySelector('span.sort-label').textContent = arrow);
+  const arrow = sortCalories === 'asc' ? '↑' : sortCalories === 'desc' ? '↓' : '';
+  document.getElementById('sort-label').textContent = arrow ? ' ' + arrow : '';
   render();
 });
 
 // ── SEARCH PLACEHOLDER CYCLING ── (#5)
 (function() {
-  const hints = ['Try "Loco Hash"…','Search "gluten"…','Try "no milk"…','Search "egg"…','Try "Mimosa"…'];
+  const hints = ['Try "Loco Hash"…','Search "wheat"…','Try "Chicken"…','Search "egg"…','Try "Mimosa"…'];
   const input = document.getElementById('search-input');
   let i = 0;
   setInterval(() => {
@@ -1539,12 +1531,14 @@ document.getElementById('sort-btn').addEventListener('click', () => {
 })();
 
 // ── TAB SWIPE DETECTION ── (#10)
+let _swipeStartX = null;
 document.getElementById('menu-list').addEventListener('touchstart', (e) => {
-  e._touchX = e.touches[0].clientX;
+  _swipeStartX = e.touches[0].clientX;
 }, { passive: true });
 document.getElementById('menu-list').addEventListener('touchend', (e) => {
-  if (e._touchX === undefined) return;
-  const dx = e.changedTouches[0].clientX - e._touchX;
+  if (_swipeStartX === null) return;
+  const dx = e.changedTouches[0].clientX - _swipeStartX;
+  _swipeStartX = null;
   if (Math.abs(dx) < 50) return;
   const body = e.target.closest('.item-body');
   if (!body) return;
