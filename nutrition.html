@@ -1017,19 +1017,31 @@
 <script>
 const pageWrap = document.querySelector('.page-wrap');
 
-// Detect the real scroll container at call time.
-// Framer may auto-size the iframe (height = content), making page-wrap's
-// overflow-y:auto a no-op. If page-wrap isn't scrollable, fall back to window.
-function getScroller() {
-  if (pageWrap && pageWrap.scrollHeight > pageWrap.clientHeight + 1) return pageWrap;
-  return window;
+// scrollToSection: use the browser's own scroll-into-view algorithm.
+// This works whether page-wrap, window, or the Framer parent page is scrolling —
+// the browser walks the ancestor chain (piercing iframe boundaries if needed)
+// and scrolls whatever container is actually scrollable.
+function scrollToSection(sec) {
+  const stickyHeader = document.getElementById('sticky-header');
+  // scrollMarginTop offsets the section so it clears the sticky header.
+  sec.style.scrollMarginTop = ((stickyHeader ? stickyHeader.offsetHeight : 0) + 8) + 'px';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// getScroller / getScrollTop: used only for back-to-top visibility and accordion nudge.
+// We attach to BOTH containers so it fires in either Framer embed mode.
 function getScrollTop() {
-  const s = getScroller();
-  return s === window ? window.scrollY : s.scrollTop;
+  // page-wrap scroll takes priority when it's the active container
+  if (pageWrap && pageWrap.scrollTop > 0) return pageWrap.scrollTop;
+  return window.scrollY || 0;
 }
 function scrollPageTo(targetTop) {
-  getScroller().scrollTo({ top: targetTop, behavior: 'smooth' });
+  // For programmatic scroll-to-number (back-to-top = 0, accordion nudge)
+  if (pageWrap && pageWrap.scrollHeight > pageWrap.clientHeight + 1) {
+    pageWrap.scrollTo({ top: targetTop, behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+  }
 }
 
 const ALLERGENS_ALL = ["Egg","Fish","Milk","Peanuts","Sesame","Shellfish","Soy","Tree Nuts","Wheat"];
@@ -1471,8 +1483,9 @@ function render() {
     if (pill) pill.classList.toggle('cat-pill-empty', count === 0);
   }
 
-  // Re-attach IntersectionObserver to the newly rebuilt DOM sections
-  setupCatObserver();
+  // Re-attach IntersectionObserver after the browser has committed layout.
+  // scrollHeight is unreliable mid-paint; rAF ensures we read post-layout values.
+  requestAnimationFrame(setupCatObserver);
 }
 
 // ── CATEGORY NAV ──
@@ -1497,14 +1510,7 @@ function buildCatNav() {
       document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      const stickyHeader = document.getElementById('sticky-header');
-      const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 0;
-
-      const scroller = getScroller();
-      const scrollTop = getScrollTop();
-      const rootTop = scroller === window ? 0 : pageWrap.getBoundingClientRect().top;
-      const secTop = sec.getBoundingClientRect().top - rootTop + scrollTop;
-      scroller.scrollTo({ top: secTop - headerHeight - 8, behavior: 'smooth' });
+      scrollToSection(sec);
     });
     inner.appendChild(btn);
   });
@@ -1610,14 +1616,12 @@ document.getElementById('menu-list').addEventListener('click', (e) => {
     openItemId = itemId;
     setTimeout(() => {
       const rect = row.getBoundingClientRect();
-      // C1: threshold must match actual sticky-header height (150–210px), not hardcoded 80
       const stickyEl = document.getElementById('sticky-header');
       const hh = stickyEl ? stickyEl.offsetHeight : 80;
       if (rect.top < hh + 8) {
-        const scr = getScroller();
-        const rootOff = scr === window ? 0 : pageWrap.getBoundingClientRect().top;
-        const rowAbsTop = rect.top - rootOff + getScrollTop();
-        scrollPageTo(rowAbsTop - hh - 8);
+        // Row is behind sticky header — nudge it into view using scrollIntoView
+        row.style.scrollMarginTop = (hh + 8) + 'px';
+        row.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 50);
   }
@@ -1723,16 +1727,13 @@ searchClear.addEventListener('click', () => {
 // ── BACK TO TOP ──
 const backToTop = document.getElementById('back-to-top');
 
-// Attach scroll listener to whichever container is actually scrolling.
-// getScroller() is called lazily at listener-attach time (after render).
-function attachScrollListeners() {
-  const s = getScroller();
-  s.addEventListener('scroll', () => {
-    backToTop.classList.toggle('visible', getScrollTop() > 400);
-  }, { passive: true });
-  // If window is the scroller, page-wrap scroll events won't fire — no second listener needed.
+// Listen on both scroll containers — we don't know which one Framer will use.
+// getScrollTop() reads page-wrap.scrollTop first, falls back to window.scrollY.
+function onScroll() {
+  backToTop.classList.toggle('visible', getScrollTop() > 400);
 }
-attachScrollListeners();
+pageWrap.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('scroll', onScroll, { passive: true });
 backToTop.addEventListener('click', () => scrollPageTo(0));
 
 // ── SORT BUTTON ──
