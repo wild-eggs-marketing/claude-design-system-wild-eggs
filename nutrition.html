@@ -41,6 +41,8 @@
     .page-wrap {
       display: flex;
       flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
       overflow-x: hidden;
       width: 100%;
       max-width: 100%;
@@ -990,10 +992,11 @@
 <script>
 const pageWrap = document.querySelector('.page-wrap');
 
-// page-wrap has no height constraint; the iframe is auto-sized via postMessage.
-// The window/body is the scroll container. window.scrollTo() works correctly here.
+// page-wrap is the scroll container (height:100vh; overflow-y:auto).
+// The Framer iframe height is fixed at 100vh — postMessage is not used.
+// This guarantees page-wrap always scrolls and pageWrap.scrollTo() always works.
 function scrollPageTo(targetTop) {
-  window.scrollTo({ top: targetTop, behavior: 'smooth' });
+  pageWrap.scrollTo({ top: targetTop, behavior: 'smooth' });
 }
 
 const ALLERGENS_ALL = ["Egg","Fish","Milk","Peanuts","Sesame","Shellfish","Soy","Tree Nuts","Wheat"];
@@ -1452,9 +1455,9 @@ function buildCatNav() {
       const stickyHeader = document.getElementById('sticky-header');
       const headerHeight = stickyHeader ? stickyHeader.offsetHeight : 0;
 
-      const pageScrollTop = window.scrollY !== undefined ? window.scrollY : (window.pageYOffset || 0);
-      const secTop = sec.getBoundingClientRect().top + pageScrollTop;
-      window.scrollTo({ top: secTop - headerHeight - 8, behavior: 'smooth' });
+      const rootTop = pageWrap.getBoundingClientRect().top;
+      const secTop = sec.getBoundingClientRect().top - rootTop + pageWrap.scrollTop;
+      pageWrap.scrollTo({ top: secTop - headerHeight - 8, behavior: 'smooth' });
     });
     inner.appendChild(btn);
   });
@@ -1482,7 +1485,7 @@ let catObserver = null;
 function setupCatObserver() {
   if (catObserver) catObserver.disconnect();
 
-  const obsRoot = null; // window is the scroll container; viewport is the intersection root
+  const obsRoot = pageWrap; // page-wrap is the scroll container
 
   catObserver = new IntersectionObserver((entries) => {
     let topEntry = null;
@@ -1555,8 +1558,8 @@ document.getElementById('menu-list').addEventListener('click', (e) => {
       const stickyEl = document.getElementById('sticky-header');
       const hh = stickyEl ? stickyEl.offsetHeight : 80;
       if (rect.top < hh + 8) {
-        const pageScrollTop = window.scrollY !== undefined ? window.scrollY : (window.pageYOffset || 0);
-        scrollPageTo(rect.top + pageScrollTop - hh - 8);
+        const rowAbsTop = rect.top - pageWrap.getBoundingClientRect().top + pageWrap.scrollTop;
+        scrollPageTo(rowAbsTop - hh - 8);
       }
     }, 50);
   }
@@ -1663,13 +1666,10 @@ searchClear.addEventListener('click', () => {
 const backToTop = document.getElementById('back-to-top');
 
 function getScrollTop() {
-  return window.scrollY || window.pageYOffset || 0;
+  return pageWrap.scrollTop;
 }
 
 pageWrap.addEventListener('scroll', () => {
-  backToTop.classList.toggle('visible', getScrollTop() > 400);
-}, { passive: true });
-window.addEventListener('scroll', () => {
   backToTop.classList.toggle('visible', getScrollTop() > 400);
 }, { passive: true });
 backToTop.addEventListener('click', () => scrollPageTo(0));
@@ -1735,27 +1735,6 @@ document.getElementById('menu-list').addEventListener('touchend', (e) => {
 buildCatNav();
 render(); // render() now calls setupCatObserver() internally
 
-// ── FRAMER IFRAME AUTO-RESIZE ──
-(function () {
-  let _lastReportedHeight = 0;
-
-  function postHeight() {
-    const h = Math.max(document.body.scrollHeight, 400);
-    if (h === _lastReportedHeight) return; // skip no-op sends
-    _lastReportedHeight = h;
-    try {
-      window.parent.postMessage({ type: 'setHeight', value: h }, '*');
-      window.parent.postMessage({ frameHeight: h }, '*'); // legacy Framer format
-    } catch (_) {}
-  }
-
-  postHeight();
-  window.addEventListener('load', postHeight);
-
-  if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(postHeight).observe(document.body);
-  }
-})();
 </script>
 </body>
 </html>
