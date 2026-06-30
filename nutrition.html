@@ -283,6 +283,11 @@
       background: rgba(255,255,255,0.25);
       color: #fff;
     }
+    .cat-pill.cat-pill-empty {
+      opacity: 0.35;
+      cursor: default;
+      pointer-events: none;
+    }
 
     /* ── MAIN LIST ── */
     .main {
@@ -1453,6 +1458,9 @@ function render() {
     if (!sec || !countEl) continue;
     const count = sec.querySelectorAll('.item-row:not([data-hidden="true"])').length;
     countEl.textContent = count;
+    // Dim pills whose sections are empty — they can't be navigated to
+    const pill = document.querySelector(`.cat-pill[data-cat="${cat}"]`);
+    if (pill) pill.classList.toggle('cat-pill-empty', count === 0);
   }
 
   // Re-attach IntersectionObserver to the newly rebuilt DOM sections
@@ -1472,7 +1480,10 @@ function buildCatNav() {
     btn.innerHTML = `${esc(cat)} <span class="cat-count" data-count-cat="${esc(cat)}">–</span>`;
     btn.addEventListener('click', () => {
       const sec = document.getElementById('cat-' + cat.replace(/[^a-z0-9]/gi, '-').toLowerCase());
-      if (!sec) return;
+      // Don't scroll to hidden sections (0 items after filtering) —
+      // getBoundingClientRect() returns all-zeros for display:none, which would
+      // scroll to top and land on the wrong category.
+      if (!sec || sec.dataset.empty === 'true') return;
 
       // Immediate visual feedback — don't wait for IntersectionObserver to confirm
       document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
