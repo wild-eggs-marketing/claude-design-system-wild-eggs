@@ -303,6 +303,26 @@
       background: var(--cream);
     }
     .category-section[data-empty="true"] { display: none; }
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cat-header-count {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--teal-2);
+      opacity: 0.7;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .kids-header-icon {
+      display: inline-flex;
+      align-items: center;
+      color: var(--teal-1);
+      opacity: 0.8;
+    }
 
     /* ── ACCORDION ROWS ── */
     .item-row {
@@ -1321,7 +1341,10 @@ function render() {
 
     const header = document.createElement('div');
     header.className = 'category-header';
-    header.textContent = cat;
+    const kidsIcon = cat === 'Kids Menu'
+      ? `<span class="kids-header-icon" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><ellipse cx="6.5" cy="7.5" rx="3.5" ry="4" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 3C4.5 3 5.2 1.5 6.5 1.5S8.5 3 8.5 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><circle cx="5.2" cy="6.5" r="0.5" fill="currentColor"/><circle cx="7.8" cy="6.5" r="0.5" fill="currentColor"/><path d="M5.5 9c0 0 .4.5 1 .5s1-.5 1-.5" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"/></svg></span>`
+      : '';
+    header.innerHTML = `${kidsIcon}${esc(cat)}<span class="cat-header-count" data-header-count="${esc(cat)}"></span>`;
     section.appendChild(header);
 
     let catVisible = 0;
@@ -1376,6 +1399,9 @@ function render() {
       section.appendChild(row);
     }
     if (catVisible === 0) section.dataset.empty = 'true';
+    // Update header count badge
+    const headerCountEl = section.querySelector('.cat-header-count');
+    if (headerCountEl) headerCountEl.textContent = catVisible;
     list.appendChild(section);
   }
 
@@ -1509,6 +1535,14 @@ function setupCatObserver() {
   });
 
   document.querySelectorAll('.category-section').forEach(sec => catObserver.observe(sec));
+
+  // IntersectionObserver only fires on state changes — the first visible category is
+  // already intersecting when observed and never triggers. Explicitly activate it.
+  const firstVisible = document.querySelector('.category-section:not([style*="display: none"])');
+  if (firstVisible) {
+    const cat = firstVisible.dataset.category;
+    document.querySelectorAll('.cat-pill').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  }
 }
 
 // ── ACCORDION ──
