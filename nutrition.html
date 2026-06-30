@@ -1731,7 +1731,7 @@ document.getElementById('sort-btn').addEventListener('click', () => {
   const input = document.getElementById('search-input');
   let i = 0;
   setInterval(() => {
-    if (document.activeElement !== input && !input.value) {
+    if (document.activeElement !== input && !input.value && !openItemId) {
       i = (i + 1) % hints.length;
       input.placeholder = hints[i];
     }
