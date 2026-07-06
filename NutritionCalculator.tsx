@@ -780,10 +780,15 @@ function NutritionCalculator({
             {/* Nutrition disclaimer — same wording as crazybowlsandwraps.com/nutrition-information */}
             <div style={{ padding: "0 32px 24px", paddingBottom: trayState.items.length > 0 ? 104 : 24 }}>
                 <p style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.6, maxWidth: 720, margin: 0 }}>
-                    Nutrition values are estimated based on our standard serving portions. As food servings may have a
-                    slight variance each time you visit, please expect these values to be within 10% +/- of your actual
-                    meal. Items without values shown are pending nutrition analysis — please ask our staff about
-                    ingredients and allergens.
+                    Please note that these nutrition values are estimated based on our standard serving portions.
+                    As food servings may have a slight variance each time you visit, please expect these values to be
+                    with in 10% +/- of your actual meal. If you have any questions about our nutrition calculator,
+                    please contact{" "}
+                    <a href="https://www.nutritionix.com" target="_blank" rel="noopener noreferrer" style={{ color: C.teal, fontWeight: 600 }}>Nutritionix</a>.
+                </p>
+                <p style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.6, maxWidth: 720, margin: "6px 0 0" }}>
+                    Items without values shown are pending nutrition analysis — please ask our staff about ingredients
+                    and allergens.
                 </p>
             </div>
 
