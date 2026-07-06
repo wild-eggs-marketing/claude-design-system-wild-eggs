@@ -73,6 +73,7 @@ interface GoalDef {
     label:        string
     sub:          string
     accent:       string
+    accentText?:  string   // text color on the accent fill; defaults to white
     minProtein?:  number
     maxCalories?: number
     minCarbs?:    number
@@ -105,13 +106,34 @@ const PORTION_LABELS: { val: number; label: string }[] = [
 ]
 
 const GOALS: GoalDef[] = [
-    { id: "all",   label: "Browse All",    sub: "Full menu",     accent: C.teal },
+    // "all" uses cream (not teal) — a teal fill would vanish into the teal header when active
+    { id: "all",   label: "Browse All",    sub: "Full menu",     accent: C.cream, accentText: C.teal },
     { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, minProtein: 30 },
     { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  maxCalories: 500 },
     { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, minCarbs: 50 },
 ]
 
-const DIETARY: string[] = ["Vegetarian", "Vegan", "Gluten-Free", "High Protein", "Low Carb"]
+// Dietary predicates — ingredient keyword exclusion for diet tags, macro thresholds
+// for the rest. A literal substring match on the tag name never fires (no item's
+// ingredient list contains the word "Vegetarian").
+const MEAT_WORDS   = ["chicken", "beef", "steak", "tuna", "pork", "bacon", "ham", "turkey", "shrimp", "lobster", "sausage", "chorizo", "andouille", "salmon", "fish"]
+const ANIMAL_WORDS = [...MEAT_WORDS, "cheese", "cheddar", "asiago", "feta", "parmesan", "queso", "egg", "milk", "cream", "butter", "ranch", "tzatziki", "caesar", "marshmallow", "honey"]
+const GLUTEN_WORDS = ["tortilla", "wheat", "pita", "crouton", "wonton", "egg roll", "flour", "bread", "toast", "tostada", "chips", "crispy rice", "waffle", "pancake", "muffin"]
+
+const containsAny = (i: MenuItem, words: string[]): boolean => {
+    const hay = `${i.title} ${i.ingredients} ${i.shortIngr}`.toLowerCase()
+    return words.some(w => hay.includes(w))
+}
+
+const DIETARY_TAGS: Record<string, (i: MenuItem) => boolean> = {
+    "Vegetarian":   i => !containsAny(i, MEAT_WORDS),
+    "Vegan":        i => !containsAny(i, ANIMAL_WORDS),
+    "Gluten-Free":  i => !containsAny(i, GLUTEN_WORDS),
+    "High Protein": i => i.protein >= 25,
+    "Low Carb":     i => i.carbs > 0 && i.carbs <= 20,
+}
+
+const DIETARY: string[] = Object.keys(DIETARY_TAGS)
 
 // ── 6. Storage factory ────────────────────────────────────────────────────────
 
@@ -198,7 +220,8 @@ function trayReducer(state: TrayState, action: TrayAction): TrayState {
 function filterByGoal(items: MenuItem[], g: GoalDef): MenuItem[] {
     let list = items
     if (g.minProtein  !== undefined) list = list.filter(i => i.protein  >= g.minProtein!)
-    if (g.maxCalories !== undefined) list = list.filter(i => i.calories <= g.maxCalories!)
+    // calories > 0 guard: items with missing nutrition data (0 cal) must not pass a calorie cap
+    if (g.maxCalories !== undefined) list = list.filter(i => i.calories > 0 && i.calories <= g.maxCalories!)
     if (g.minCarbs    !== undefined) list = list.filter(i => i.carbs    >= g.minCarbs!)
     return list
 }
@@ -209,7 +232,7 @@ function applyFilters(items: MenuItem[], f: FilterState): MenuItem[] {
     if (f.category !== "All") list = list.filter(i => i.category === f.category)
     const q = f.search.trim().toLowerCase()
     if (q) list = list.filter(i => i.title.toLowerCase().includes(q) || i.ingredients.toLowerCase().includes(q))
-    if (f.dietary.length > 0) list = list.filter(i => f.dietary.every(d => i.ingredients.toLowerCase().includes(d.toLowerCase())))
+    if (f.dietary.length > 0) list = list.filter(i => f.dietary.every(d => DIETARY_TAGS[d]?.(i) ?? true))
     if (f.sortBy === "calories-asc")  return [...list].sort((a, b) => a.calories - b.calories)
     if (f.sortBy === "calories-desc") return [...list].sort((a, b) => b.calories - a.calories)
     if (f.sortBy === "protein-desc")  return [...list].sort((a, b) => b.protein  - a.protein)
@@ -348,7 +371,7 @@ const GoalButton = memo(function GoalButton({ g, active, count, total, onClick }
             padding: "11px 18px", borderRadius: 10,
             border: `1.5px solid ${active ? g.accent : isEmpty ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.15)"}`,
             background: active ? g.accent : isEmpty ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.06)",
-            color: active ? C.white : isEmpty ? "rgba(245,238,227,0.35)" : "rgba(245,238,227,0.80)",
+            color: active ? (g.accentText ?? C.white) : isEmpty ? "rgba(245,238,227,0.35)" : "rgba(245,238,227,0.80)",
             cursor: isEmpty ? "default" : "pointer", textAlign: "left", transition: "all 0.15s", minWidth: 110, fontFamily: "inherit"
         }}>
             <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{g.label}</div>
