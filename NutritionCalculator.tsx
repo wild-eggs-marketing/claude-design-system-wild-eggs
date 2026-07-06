@@ -89,7 +89,7 @@ interface FilterState {
 }
 
 interface TrayState { items: string[]; open: boolean }
-type TrayAction = { type: "TOGGLE"; id: string } | { type: "TOGGLE_OPEN" }
+type TrayAction = { type: "TOGGLE"; id: string } | { type: "TOGGLE_OPEN" } | { type: "CLEAR" }
 type FetchState  = "idle" | "loading" | "success" | "error"
 
 interface ScaledMacros {
@@ -211,6 +211,7 @@ function trayReducer(state: TrayState, action: TrayAction): TrayState {
             return { ...state, items: [...state.items, action.id] }
         }
         case "TOGGLE_OPEN": return { ...state, open: !state.open }
+        case "CLEAR":       return { items: [], open: false }
         default: return state
     }
 }
@@ -422,7 +423,11 @@ function NutritionCalculator({
 
     // — State ——————————————————————————————————————————————————————————————————
     const [goal,       setGoal]       = useState<string>(() => ls.get(LS_KEYS.goal) ?? "all")
-    const [sortBy,     setSortBy]     = useState<string>(() => ls.get(LS_KEYS.sort) ?? "goal-fit")
+    // "default" was removed as a sort option — normalize any stale stored value
+    const [sortBy,     setSortBy]     = useState<string>(() => {
+        const s = ls.get(LS_KEYS.sort)
+        return !s || s === "default" ? "goal-fit" : s
+    })
     const [category,   setCategory]   = useState<string>("All")
     const [dietary,    setDietary]    = useState<string[]>([])
     const [search,     setSearch]     = useState<string>("")
@@ -433,6 +438,7 @@ function NutritionCalculator({
     const [cmsItems,   setCmsItems]   = useState<MenuItem[]>([])
     const [fetchState, setFetchState] = useState<FetchState>("idle")
     const [retryKey,   setRetryKey]   = useState<number>(0)
+    const [copied,     setCopied]     = useState<boolean>(false)
 
     const [trayState, trayDispatch] = useReducer(trayReducer, undefined, () => {
         try { const s = ss.get(SS_KEY_TRAY); if (s) return { items: JSON.parse(s) as string[], open: false } } catch { /* noop */ }
@@ -450,16 +456,13 @@ function NutritionCalculator({
     const handleClose      = useCallback(() => setSelected(null), [])
     const handleDeepLink   = useCallback((id: string) => setSelected(id), [])
     const handleToggleTray = useCallback((id: string) => trayDispatch({ type: "TOGGLE", id }), [])
-    const handleGoalClick  = useCallback((id: string) => {
-        setGoal(id)
-        setSortBy(prev => id === "all" ? "default" : prev === "default" ? "goal-fit" : prev)
-    }, [])
+    const handleGoalClick  = useCallback((id: string) => setGoal(id), [])
 
     const urlMountCb = useCallback(({ goal: g, category: cat, sortBy: s, item }: { goal?: string; category?: string; sortBy?: string; item?: string }) => {
         const validGoal = GOALS.find(x => x.id === g)
         if (validGoal) setGoal(validGoal.id)
         if (cat)  setCategory(cat)
-        if (s)    setSortBy(s)
+        if (s && s !== "default") setSortBy(s)
         if (item) handleDeepLink(item)
     }, [handleDeepLink])
 
@@ -470,7 +473,14 @@ function NutritionCalculator({
     useEffect(() => { ls.set(LS_KEYS.goal, goal) },    [goal])
     useEffect(() => { ls.set(LS_KEYS.sort, sortBy) },  [sortBy])
     useEffect(() => { selected ? ls.set(LS_KEYS.item, selected) : ls.del(LS_KEYS.item) }, [selected])
-    useEffect(() => { setPortion(1) }, [selected])
+    useEffect(() => { setPortion(1); setCopied(false) }, [selected])
+
+    // Auto-reset the "Copied!" confirmation after 2s
+    useEffect(() => {
+        if (!copied) return
+        const t = setTimeout(() => setCopied(false), 2000)
+        return () => clearTimeout(t)
+    }, [copied])
     useEffect(() => { ss.set(SS_KEY_TRAY, JSON.stringify(trayState.items)) }, [trayState.items])
 
     // Clears a stale `selected` (from localStorage) when items load and the ID no longer exists.
@@ -619,7 +629,6 @@ function NutritionCalculator({
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "10px 32px", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or ingredient" aria-label="Search menu items" style={{ flex: 1, minWidth: 160, padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${search ? C.orange : C.border}`, fontSize: 13, color: C.ink, background: C.inkGhost, outline: "none", fontFamily: "inherit", boxSizing: "border-box", opacity: isSearchPending ? 0.65 : 1, transition: "border-color 0.15s, opacity 0.1s" }} />
                 <select value={sortBy} onChange={e => setSortBy(e.target.value)} aria-label="Sort order" style={{ padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.ink, background: C.white, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
-                    <option value="default">Sort: Default</option>
                     <option value="goal-fit">Best Goal Fit</option>
                     <option value="protein-desc">Most Protein</option>
                     <option value="calories-asc">Fewest Calories</option>
@@ -662,7 +671,7 @@ function NutritionCalculator({
                             </div>
                             {!noItems && (
                                 <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                                    {goal !== "all"    && <button onClick={() => { setGoal("all"); setSortBy("default") }} style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,   background: C.tealLight,   color: C.teal,   fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Browse all goals</button>}
+                                    {goal !== "all"    && <button onClick={() => setGoal("all")} style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,   background: C.tealLight,   color: C.teal,   fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Browse all goals</button>}
                                     {category !== "All"  && <button onClick={() => setCategory("All")}  style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,   background: C.tealLight,   color: C.teal,   fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>All categories</button>}
                                     {dietary.length > 0  && <button onClick={() => setDietary([])}      style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.green}`,  background: C.greenLight,  color: C.green,  fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Clear dietary</button>}
                                     {search              && <button onClick={() => setSearch("")}        style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.orange}`, background: C.orangeLight, color: C.orange, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>}
@@ -693,14 +702,16 @@ function NutritionCalculator({
                                     <div style={{ padding: "11px 13px 13px" }}>
                                         <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}><Highlight text={item.title} query={deferredSearch} /></div>
                                         {item.shortIngr && <div style={{ fontSize: 11, color: C.inkSoft, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
-                                        {showMacros && (
+                                        {showMacros && (item.protein > 0 || item.carbs > 0) && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orange, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.protein}g</span><MacroBar value={item.protein} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>pro</span></div>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.amber, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.carbs}g</span><MacroBar value={item.carbs} max={maxCarbs} color={C.yellow} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>carb</span></div>
                                             </div>
                                         )}
                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                            <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{item.calories}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkSoft }}> cal</span></span>
+                                            {item.calories > 0
+                                                ? <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{item.calories}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkSoft }}> cal</span></span>
+                                                : <span style={{ fontSize: 11, fontWeight: 600, color: C.inkSoft, fontStyle: "italic" }}>nutrition coming soon</span>}
                                             {item.price > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                     </div>
@@ -760,7 +771,7 @@ function NutritionCalculator({
                         )}
                         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
                             <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orange, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
-                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()) } } catch { /* noop */ } }} style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${C.border}`, background: "none", color: C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Copy shareable link</button>
+                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()); setCopied(true) } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.green : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.green : C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
                         </div>
                     </div>
                 </div>
@@ -786,7 +797,7 @@ function NutritionCalculator({
                                         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                                             <span style={{ fontSize: 11, color: C.orange, fontWeight: 700 }}>{item.protein}g pro</span>
                                             <span style={{ fontSize: 11, color: C.yellow, fontWeight: 700 }}>{item.carbs}g carb</span>
-                                            <span style={{ fontSize: 11, color: "rgba(245,238,227,0.75)", fontWeight: 600 }}>{item.calories} cal</span>
+                                            <span style={{ fontSize: 11, color: "rgba(245,238,227,0.75)", fontWeight: 600 }}>{item.calories > 0 ? `${item.calories} cal` : "— cal"}</span>
                                             {item.price > 0 && <span style={{ fontSize: 11, color: C.cream, fontWeight: 600 }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                         <button onClick={() => handleToggleTray(item.id)} aria-label={`Remove ${item.title} from compare`} style={{ marginTop: 8, padding: "4px 10px", borderRadius: 6, border: `1px solid rgba(255,255,255,0.15)`, background: "none", color: "rgba(245,238,227,0.60)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Remove</button>
@@ -800,6 +811,7 @@ function NutritionCalculator({
                                 <div style={{ fontSize: 12, color: C.yellow, fontWeight: 600 }}>{trayTotals.carbs}g carbs</div>
                                 {trayTotals.price > 0 && <div style={{ fontSize: 13, color: C.cream, fontWeight: 700, marginTop: 6 }}>${trayTotals.price.toFixed(2)} total</div>}
                                 {budget > 0 && <div style={{ marginTop: 10, fontSize: 11, color: trayTotals.calories <= budget ? C.green : C.orange, fontWeight: 700 }}>{trayTotals.calories <= budget ? `${budget - trayTotals.calories} cal under budget` : `${trayTotals.calories - budget} cal over budget`}</div>}
+                                <button onClick={() => trayDispatch({ type: "CLEAR" })} style={{ marginTop: 12, padding: "6px 12px", borderRadius: 8, border: `1px solid rgba(245,238,227,0.30)`, background: "none", color: "rgba(245,238,227,0.85)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", alignSelf: "flex-start" }}>Clear all</button>
                             </div>
                         </div>
                     )}
