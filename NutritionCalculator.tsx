@@ -153,6 +153,9 @@ const ss = createStorage("session")
 
 // ── 7. Utilities ──────────────────────────────────────────────────────────────
 
+// Matches "Thai Wrap" / "Thai Bowl" style titles for wrap-or-bowl pairing.
+const FORMAT_RE = /^(.*)\s+(Wrap|Bowl)$/
+
 function fitScore(item: MenuItem, goalId: string): number {
     if (goalId === "power") return item.protein
     if (goalId === "light") return item.calories > 0 ? 1000 / item.calories : 0
@@ -439,6 +442,8 @@ function NutritionCalculator({
     const [fetchState, setFetchState] = useState<FetchState>("idle")
     const [retryKey,   setRetryKey]   = useState<number>(0)
     const [copied,     setCopied]     = useState<boolean>(false)
+    // Per-flavor format choice for merged wrap/bowl cards (flavor key -> chosen item id)
+    const [fmtSel,     setFmtSel]     = useState<Record<string, string>>({})
 
     const [trayState, trayDispatch] = useReducer(trayReducer, undefined, () => {
         try { const s = ss.get(SS_KEY_TRAY); if (s) return { items: JSON.parse(s) as string[], open: false } } catch { /* noop */ }
@@ -566,6 +571,56 @@ function NutritionCalculator({
 
     const sel = useMemo(() => selected ? effectiveItems.find(i => i.id === selected || i.title === selected) : undefined, [selected, effectiveItems])
 
+    // — Wrap-or-bowl pairing —————————————————————————————————————————————————
+    // Flavors sold as both wrap and bowl (e.g. "Thai Wrap"/"Thai Bowl") merge into
+    // one card with a format toggle. Items stay separate in the data so each format
+    // keeps its own verified nutrition, and goal filters stay per-format.
+    const pairMap = useMemo(() => {
+        const m = new Map<string, { wrap?: MenuItem; bowl?: MenuItem }>()
+        effectiveItems.forEach(i => {
+            const match = FORMAT_RE.exec(i.title)
+            if (!match) return
+            const key = match[1].toLowerCase()
+            const e = m.get(key) ?? {}
+            if (match[2] === "Wrap") e.wrap = i; else e.bowl = i
+            m.set(key, e)
+        })
+        for (const [k, v] of Array.from(m)) if (!v.wrap || !v.bowl) m.delete(k)
+        return m as Map<string, { wrap: MenuItem; bowl: MenuItem }>
+    }, [effectiveItems])
+
+    interface CardEntry { item: MenuItem; partner?: MenuItem; key: string }
+    const cards = useMemo((): CardEntry[] => {
+        const seen = new Set<string>()
+        const out: CardEntry[] = []
+        const inFiltered = new Set(filtered.map(i => i.id))
+        for (const item of filtered) {
+            const match = FORMAT_RE.exec(item.title)
+            const key = match ? match[1].toLowerCase() : ""
+            const pair = key ? pairMap.get(key) : undefined
+            if (pair) {
+                if (seen.has(key)) continue
+                seen.add(key)
+                const partner = item.id === pair.wrap.id ? pair.bowl : pair.wrap
+                // Merge only when the partner also passes the active filters
+                out.push({ item, partner: inFiltered.has(partner.id) ? partner : undefined, key })
+            } else {
+                out.push({ item, key: item.id })
+            }
+        }
+        return out
+    }, [filtered, pairMap])
+
+    // The paired counterpart of the currently selected item, for the detail-panel toggle
+    const selAlt = useMemo((): MenuItem | undefined => {
+        if (!sel) return undefined
+        const match = FORMAT_RE.exec(sel.title)
+        if (!match) return undefined
+        const pair = pairMap.get(match[1].toLowerCase())
+        if (!pair) return undefined
+        return sel.id === pair.wrap.id ? pair.bowl : pair.wrap
+    }, [sel, pairMap])
+
     const scaled = useMemo((): ScaledMacros => {
         if (!sel) return { protein: 0, carbs: 0, fat: 0, calories: 0, proteinDensity: 0 }
         const protein  = Math.round(sel.protein  * portion)
@@ -654,7 +709,7 @@ function NutritionCalculator({
             )}
 
             {/* Results count */}
-            {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>{filtered.length} of {effectiveItems.length} items{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
+            {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>{cards.length} result{cards.length === 1 ? "" : "s"}{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
 
             {/* Main layout */}
             <div style={{ paddingRight: sel && !isMobile ? 340 : 0, paddingBottom: trayState.items.length > 0 ? 88 : 0, transition: "padding-right 0.2s ease" }}>
@@ -680,13 +735,17 @@ function NutritionCalculator({
                         </div>
                     )}
 
-                    {!isLoading && filtered.map((item, idx) => {
+                    {!isLoading && cards.map((card, idx) => {
+                        const item = card.partner && fmtSel[card.key]
+                            ? ([card.item, card.partner].find(x => x.id === fmtSel[card.key]) ?? card.item)
+                            : card.item
+                        const alt        = card.partner
                         const isSelected = sel?.id === item.id
                         const inTray     = trayState.items.includes(item.id) || trayState.items.includes(item.title)
                         const score      = goal !== "all" ? fitScore(item, goal) : 0
-                        const isTopMatch = goal !== "all" && score === maxScore && filtered.length > 1
+                        const isTopMatch = goal !== "all" && score === maxScore && cards.length > 1
                         const trayFull   = !inTray && trayState.items.length >= MAX_TRAY
-                        const cardKey    = item.id !== String(idx) ? item.id : `${item.title}-${idx}`
+                        const cardKey    = alt ? card.key : (item.id !== String(idx) ? item.id : `${item.title}-${idx}`)
                         return (
                             <div key={cardKey} style={{ background: C.white, borderRadius: 12, overflow: "hidden", border: `2px solid ${isSelected ? C.orange : inTray ? C.teal : isTopMatch ? "rgba(123,144,21,0.35)" : "transparent"}`, boxShadow: isSelected ? `0 0 0 3px ${C.orangeLight}, 0 4px 20px rgba(0,0,0,0.09)` : "0 1px 4px rgba(0,0,0,0.06)", transition: "box-shadow 0.15s, border-color 0.15s", position: "relative", animation: "cbwFadeUp 0.25s ease both", animationDelay: `${Math.min(idx * 0.03, 0.3)}s` }}>
                                 {isTopMatch && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: C.green, color: C.white, fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Best match</div>}
@@ -700,6 +759,24 @@ function NutritionCalculator({
                                         {item.thumbnail ? <img src={item.thumbnail} alt="" role="presentation" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.tealLight}, ${C.inkGhost})` }} />}
                                     </div>
                                     <div style={{ padding: "11px 13px 13px" }}>
+                                        {alt && (() => {
+                                            const wrapV = item.title.endsWith("Wrap") ? item : alt
+                                            const bowlV = wrapV.id === item.id ? alt : item
+                                            return (
+                                                <div style={{ display: "flex", gap: 4, marginBottom: 7 }} role="group" aria-label="Format">
+                                                    {[wrapV, bowlV].map(v => {
+                                                        const active = v.id === item.id
+                                                        const label  = v.title.endsWith("Wrap") ? "Wrap" : "Bowl"
+                                                        return (
+                                                            <button key={v.id} onClick={e => { e.stopPropagation(); setFmtSel(p => ({ ...p, [card.key]: v.id })) }} aria-pressed={active}
+                                                                style={{ padding: "3px 10px", borderRadius: 100, fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.teal : C.border}`, background: active ? C.teal : "transparent", color: active ? C.white : C.inkSoft, transition: "all 0.12s" }}>
+                                                                {label}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )
+                                        })()}
                                         <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}><Highlight text={item.title} query={deferredSearch} /></div>
                                         {item.shortIngr && <div style={{ fontSize: 11, color: C.inkSoft, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
                                         {showMacros && (item.protein > 0 || item.carbs > 0) && (
@@ -735,6 +812,22 @@ function NutritionCalculator({
                             <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel.title}</h3>
                             {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
                         </div>
+                        {selAlt && (
+                            <div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Format</div>
+                                <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Wrap or bowl">
+                                    {[sel, selAlt].sort((a, b) => (a.title.endsWith("Wrap") ? 0 : 1) - (b.title.endsWith("Wrap") ? 0 : 1)).map(v => {
+                                        const active = v.id === sel.id
+                                        return (
+                                            <button key={v.id} onClick={() => setSelected(v.id)} aria-pressed={active}
+                                                style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${active ? C.teal : C.border}`, background: active ? C.tealLight : "transparent", color: active ? C.teal : C.inkSoft }}>
+                                                {v.title.endsWith("Wrap") ? "Wrap" : "Bowl"}{v.price > 0 ? ` · $${v.price.toFixed(2)}` : ""}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
                         <div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
                             <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
