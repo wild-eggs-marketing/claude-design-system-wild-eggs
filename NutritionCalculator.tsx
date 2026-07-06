@@ -48,7 +48,7 @@ function injectStyles() {
     _stylesInjected = true
     const s = document.createElement("style")
     s.dataset.cbw = "1"
-    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}`
+    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
     document.head.appendChild(s)
 }
 
@@ -312,7 +312,7 @@ function useKeyboard(key: string, handler: () => void): void {
     const handlerRef   = useRef(handler)
     handlerRef.current = handler
     useEffect(() => {
-        function onKey(e: KeyboardEvent) { if (e.key === key) handlerRef.current() }
+        function onKey(e: KeyboardEvent) { if (e.key.toLowerCase() === key.toLowerCase()) handlerRef.current() }
         if (typeof window === "undefined") return
         window.addEventListener("keydown", onKey)
         return () => window.removeEventListener("keydown", onKey)
@@ -604,7 +604,7 @@ function NutritionCalculator({
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div style={{ fontFamily, background: C.cream, minHeight: "100vh" }}>
+        <div data-cbw-root="" style={{ fontFamily, background: C.cream, minHeight: "100vh" }}>
 
             {/* Goal header */}
             <div style={{ background: C.teal, padding: "28px 32px 20px" }}>
@@ -776,6 +776,16 @@ function NutritionCalculator({
                     </div>
                 </div>
             )}
+
+            {/* Nutrition disclaimer — same wording as crazybowlsandwraps.com/nutrition-information */}
+            <div style={{ padding: "0 32px 24px", paddingBottom: trayState.items.length > 0 ? 104 : 24 }}>
+                <p style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.6, maxWidth: 720, margin: 0 }}>
+                    Nutrition values are estimated based on our standard serving portions. As food servings may have a
+                    slight variance each time you visit, please expect these values to be within 10% +/- of your actual
+                    meal. Items without values shown are pending nutrition analysis — please ask our staff about
+                    ingredients and allergens.
+                </p>
+            </div>
 
             {/* Comparison tray */}
             {trayState.items.length > 0 && (
