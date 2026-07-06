@@ -790,6 +790,11 @@ function NutritionCalculator({
                     Items without values shown are pending nutrition analysis — please ask our staff about ingredients
                     and allergens.
                 </p>
+                <p style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.6, maxWidth: 720, margin: "6px 0 0" }}>
+                    Consuming raw or undercooked meats, poultry, seafood, shellfish, or eggs may increase your risk of
+                    foodborne illness. Menu items may contain or come into contact with common allergens such as
+                    peanuts and gluten.
+                </p>
             </div>
 
             {/* Comparison tray */}
