@@ -27,6 +27,7 @@ const C = {
     orange:      "rgb(252, 97, 45)",
     orangeLight: "rgba(252, 97, 45, 0.10)",
     yellow:      "rgb(246, 192, 52)",
+    amber:       "rgb(158, 121, 0)",   // AA-compliant stand-in for yellow when used as text on white
     green:       "rgb(123, 144, 21)",
     greenLight:  "rgba(123, 144, 21, 0.12)",
     teal:        "rgb(13, 79, 79)",
@@ -34,7 +35,7 @@ const C = {
     cream:       "rgb(245, 238, 227)",
     white:       "rgb(255, 255, 255)",
     ink:         "rgb(28, 43, 28)",
-    inkFaint:    "rgba(28, 43, 28, 0.45)",
+    inkSoft:     "rgba(28, 43, 28, 0.65)",  // AA-compliant secondary text on white
     inkGhost:    "rgba(28, 43, 28, 0.07)",
     border:      "rgba(28, 43, 28, 0.09)",
 }
@@ -346,7 +347,7 @@ const MacroRing = memo(function MacroRing({ protein, carbs, fat, calories, size 
             </svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontSize: 24, fontWeight: 800, color: C.ink, lineHeight: 1 }}>{calories}</span>
-                <span style={{ fontSize: 10, color: C.inkFaint, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>cal</span>
+                <span style={{ fontSize: 10, color: C.inkSoft, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>cal</span>
             </div>
         </div>
     )
@@ -358,7 +359,7 @@ const MacroStat = memo(function MacroStat({ label, value, unit, color }: { label
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
             <div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: C.ink, lineHeight: 1 }}>{value}<span style={{ fontSize: 12, fontWeight: 600 }}>{unit}</span></div>
-                <div style={{ fontSize: 10, color: C.inkFaint, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+                <div style={{ fontSize: 10, color: C.inkSoft, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
             </div>
         </div>
     )
@@ -375,7 +376,7 @@ const GoalButton = memo(function GoalButton({ g, active, count, total, onClick }
             cursor: isEmpty ? "default" : "pointer", textAlign: "left", transition: "all 0.15s", minWidth: 110, fontFamily: "inherit"
         }}>
             <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{g.label}</div>
-            <div style={{ fontSize: 10, opacity: 0.70, marginTop: 3 }}>{active ? `${count} items` : isEmpty ? "none available" : g.sub}</div>
+            <div style={{ fontSize: 10, opacity: 0.85, marginTop: 3 }}>{active ? `${count} items` : isEmpty ? "none available" : g.sub}</div>
         </button>
     )
 })
@@ -599,13 +600,13 @@ function NutritionCalculator({
             <div style={{ background: C.teal, padding: "28px 32px 20px" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
                     <div>
-                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,238,227,0.50)", marginBottom: 12 }}>What&apos;s your goal?</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)", marginBottom: 12 }}>What&apos;s your goal?</div>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             {GOALS.map(g => <GoalButton key={g.id} g={g} active={goal === g.id} count={goalCounts[g.id] ?? 0} total={effectiveItems.length} onClick={() => handleGoalClick(g.id)} />)}
                         </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 160 }}>
-                        <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,238,227,0.50)" }}>Daily cal budget</label>
+                        <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)" }}>Daily cal budget</label>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <input type="number" value={budget || ""} onChange={e => setBudget(Math.max(0, Number(e.target.value)))} placeholder="e.g. 1800" aria-label="Daily calorie budget" style={{ width: 100, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${budget > 0 ? C.orange : "rgba(255,255,255,0.20)"}`, background: "rgba(255,255,255,0.10)", color: C.cream, fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none" }} />
                             {budgetRemaining !== null && <div style={{ fontSize: 12, color: budgetRemaining >= 0 ? C.cream : C.orange, fontWeight: 700 }} aria-live="polite">{budgetRemaining >= 0 ? `${budgetRemaining} left` : `${Math.abs(budgetRemaining)} over`}</div>}
@@ -624,15 +625,15 @@ function NutritionCalculator({
                     <option value="calories-asc">Fewest Calories</option>
                     <option value="calories-desc">Most Calories</option>
                 </select>
-                <button onClick={() => setShowMacros(p => !p)} aria-pressed={showMacros} style={{ padding: "8px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${showMacros ? C.teal : C.border}`, background: showMacros ? C.tealLight : "transparent", color: showMacros ? C.teal : C.inkFaint, fontFamily: "inherit" }}>{showMacros ? "Hide macros" : "Show macros"}</button>
+                <button onClick={() => setShowMacros(p => !p)} aria-pressed={showMacros} style={{ padding: "8px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${showMacros ? C.teal : C.border}`, background: showMacros ? C.tealLight : "transparent", color: showMacros ? C.teal : C.inkSoft, fontFamily: "inherit" }}>{showMacros ? "Hide macros" : "Show macros"}</button>
                 {activeFilters > 0 && <button onClick={() => { setSearch(""); setCategory("All"); setDietary([]) }} style={{ padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${C.orange}`, background: C.orangeLight, color: C.orange, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Clear {activeFilters} filter{activeFilters > 1 ? "s" : ""}</button>}
             </div>
 
             {/* Dietary + category pills */}
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "8px 32px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {DIETARY.map(d => { const active = dietary.includes(d); return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.green : C.border}`, background: active ? C.green : "transparent", color: active ? C.white : C.inkFaint, transition: "all 0.12s" }}>{d}</button> })}
+                {DIETARY.map(d => { const active = dietary.includes(d); return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.green : C.border}`, background: active ? C.green : "transparent", color: active ? C.white : C.inkSoft, transition: "all 0.12s" }}>{d}</button> })}
                 <div style={{ width: 1, height: 16, background: C.border, margin: "0 2px" }} aria-hidden="true" />
-                {categories.map(cat => <button key={cat} onClick={() => setCategory(cat)} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkFaint, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
+                {categories.map(cat => <button key={cat} onClick={() => setCategory(cat)} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
             </div>
 
             {/* Fetch error banner */}
@@ -644,7 +645,7 @@ function NutritionCalculator({
             )}
 
             {/* Results count */}
-            {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 500 }}>{filtered.length} of {effectiveItems.length} items{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
+            {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>{filtered.length} of {effectiveItems.length} items{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
 
             {/* Main layout */}
             <div style={{ paddingRight: sel && !isMobile ? 340 : 0, paddingBottom: trayState.items.length > 0 ? 88 : 0, transition: "padding-right 0.2s ease" }}>
@@ -656,7 +657,7 @@ function NutritionCalculator({
                         <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "80px 0" }}>
                             <div style={{ fontSize: 32, fontWeight: 800, color: C.ink, opacity: 0.08, marginBottom: 14 }}>—</div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 6 }}>{noItems ? "No items yet" : "Nothing matches"}</div>
-                            <div style={{ fontSize: 13, color: C.inkFaint, marginBottom: 16 }}>
+                            <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 16 }}>
                                 {noItems && !cmsEndpoint ? "Add items via the Items panel, or paste a CMS Endpoint URL." : noItems && cmsEndpoint ? "Waiting for data from endpoint…" : "Try relaxing one of these filters:"}
                             </div>
                             {!noItems && (
@@ -683,7 +684,7 @@ function NutritionCalculator({
                                 <button
                                     onClick={e => { e.stopPropagation(); if (!trayFull) handleToggleTray(item.id) }}
                                     aria-label={inTray ? `Remove ${item.title} from compare` : trayFull ? "Compare tray full" : `Add ${item.title} to compare`}
-                                    style={{ position: "absolute", top: isTopMatch && !isSelected ? 26 : 8, right: 8, zIndex: 3, width: 24, height: 24, borderRadius: "50%", background: inTray ? C.teal : trayFull ? C.inkGhost : "rgba(255,255,255,0.88)", border: `1.5px solid ${inTray ? C.teal : trayFull ? "transparent" : C.border}`, color: inTray ? C.white : C.inkFaint, fontSize: 12, fontWeight: 800, cursor: trayFull ? "not-allowed" : "pointer", opacity: trayFull ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0 }}
+                                    style={{ position: "absolute", top: isTopMatch && !isSelected ? 26 : 8, right: 8, zIndex: 3, width: 24, height: 24, borderRadius: "50%", background: inTray ? C.teal : trayFull ? C.inkGhost : "rgba(255,255,255,0.88)", border: `1.5px solid ${inTray ? C.teal : trayFull ? "transparent" : C.border}`, color: inTray ? C.white : C.inkSoft, fontSize: 12, fontWeight: 800, cursor: trayFull ? "not-allowed" : "pointer", opacity: trayFull ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0 }}
                                 >{inTray ? "−" : "+"}</button>
                                 <div onClick={() => setSelected(isSelected ? null : item.id)} style={{ cursor: "pointer" }}>
                                     <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: isTopMatch && !isSelected ? 20 : 0 }}>
@@ -691,15 +692,15 @@ function NutritionCalculator({
                                     </div>
                                     <div style={{ padding: "11px 13px 13px" }}>
                                         <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}><Highlight text={item.title} query={deferredSearch} /></div>
-                                        {item.shortIngr && <div style={{ fontSize: 11, color: C.inkFaint, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
+                                        {item.shortIngr && <div style={{ fontSize: 11, color: C.inkSoft, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
                                         {showMacros && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orange, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.protein}g</span><MacroBar value={item.protein} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkFaint, minWidth: 18, flexShrink: 0 }}>pro</span></div>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.yellow, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.carbs}g</span><MacroBar value={item.carbs} max={maxCarbs} color={C.yellow} /><span style={{ fontSize: 9, color: C.inkFaint, minWidth: 18, flexShrink: 0 }}>carb</span></div>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orange, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.protein}g</span><MacroBar value={item.protein} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>pro</span></div>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.amber, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.carbs}g</span><MacroBar value={item.carbs} max={maxCarbs} color={C.yellow} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>carb</span></div>
                                             </div>
                                         )}
                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                            <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{item.calories}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkFaint }}> cal</span></span>
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{item.calories}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkSoft }}> cal</span></span>
                                             {item.price > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                     </div>
@@ -724,9 +725,9 @@ function NutritionCalculator({
                             {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
                         </div>
                         <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
                             <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
-                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orange : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orange : C.inkFaint }}>{p.label}</button>)}
+                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orange : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orange : C.inkSoft }}>{p.label}</button>)}
                             </div>
                         </div>
                         <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
@@ -750,10 +751,10 @@ function NutritionCalculator({
                                 <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
                             </div>
                         )}
-                        {sel.description && <p style={{ fontSize: 13, color: C.inkFaint, margin: 0, lineHeight: 1.7 }}>{sel.description}</p>}
+                        {sel.description && <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.7 }}>{sel.description}</p>}
                         {sel.ingredients && (
                             <div>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 5 }}>Ingredients</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 5 }}>Ingredients</div>
                                 <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.75, opacity: 0.75 }}>{sel.ingredients}</div>
                             </div>
                         )}
@@ -769,9 +770,9 @@ function NutritionCalculator({
             {trayState.items.length > 0 && (
                 <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: C.ink, borderTop: `1px solid rgba(255,255,255,0.08)` }}>
                     <button onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })} aria-expanded={trayState.open} style={{ width: "100%", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>Compare {trayState.items.length} bowl{trayState.items.length > 1 ? "s" : ""}<span style={{ fontWeight: 400, opacity: 0.45, marginLeft: 8, textTransform: "none", letterSpacing: 0 }}>press C</span></span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>Compare {trayState.items.length} bowl{trayState.items.length > 1 ? "s" : ""}<span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 8, textTransform: "none", letterSpacing: 0 }}>press C</span></span>
                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                            <span style={{ fontSize: 12, color: C.inkFaint }}>{trayTotals.calories} cal · {trayTotals.protein}g protein · {trayTotals.carbs}g carbs combined</span>
+                            <span style={{ fontSize: 12, color: "rgba(245,238,227,0.75)" }}>{trayTotals.calories} cal · {trayTotals.protein}g protein · {trayTotals.carbs}g carbs combined</span>
                             <span style={{ fontSize: 14, color: "rgba(245,238,227,0.50)" }} aria-hidden="true">{trayState.open ? "▼" : "▲"}</span>
                         </div>
                     </button>
@@ -785,7 +786,7 @@ function NutritionCalculator({
                                         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                                             <span style={{ fontSize: 11, color: C.orange, fontWeight: 700 }}>{item.protein}g pro</span>
                                             <span style={{ fontSize: 11, color: C.yellow, fontWeight: 700 }}>{item.carbs}g carb</span>
-                                            <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 600 }}>{item.calories} cal</span>
+                                            <span style={{ fontSize: 11, color: "rgba(245,238,227,0.75)", fontWeight: 600 }}>{item.calories} cal</span>
                                             {item.price > 0 && <span style={{ fontSize: 11, color: C.cream, fontWeight: 600 }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                         <button onClick={() => handleToggleTray(item.id)} aria-label={`Remove ${item.title} from compare`} style={{ marginTop: 8, padding: "4px 10px", borderRadius: 6, border: `1px solid rgba(255,255,255,0.15)`, background: "none", color: "rgba(245,238,227,0.60)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Remove</button>
@@ -794,7 +795,7 @@ function NutritionCalculator({
                             ))}
                             <div style={{ flexShrink: 0, width: 200, background: "rgba(252,97,45,0.12)", borderRadius: 10, padding: "14px 16px", border: `1px solid rgba(252,97,45,0.25)`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: C.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Combined total</div>
-                                <div style={{ fontSize: 22, fontWeight: 800, color: C.cream, marginBottom: 2 }}>{trayTotals.calories}<span style={{ fontSize: 12, color: C.inkFaint }}> cal</span></div>
+                                <div style={{ fontSize: 22, fontWeight: 800, color: C.cream, marginBottom: 2 }}>{trayTotals.calories}<span style={{ fontSize: 12, color: "rgba(245,238,227,0.75)" }}> cal</span></div>
                                 <div style={{ fontSize: 13, color: C.orange, fontWeight: 700 }}>{trayTotals.protein}g protein</div>
                                 <div style={{ fontSize: 12, color: C.yellow, fontWeight: 600 }}>{trayTotals.carbs}g carbs</div>
                                 {trayTotals.price > 0 && <div style={{ fontSize: 13, color: C.cream, fontWeight: 700, marginTop: 6 }}>${trayTotals.price.toFixed(2)} total</div>}
