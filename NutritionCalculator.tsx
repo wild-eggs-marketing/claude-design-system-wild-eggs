@@ -6,6 +6,7 @@ import { useState, useMemo, useEffect, useRef, useDeferredValue, useReducer, use
 const MOBILE_BP = 680
 const MAX_TRAY  = 3
 const LS_KEYS   = { goal: "cbw_goal", sort: "cbw_sort", item: "cbw_last_item" } as const
+const SS_KEY_TRAY = "cbw_tray"
 
 // ── 2. Design tokens ──────────────────────────────────────────────────────────
 
@@ -61,6 +62,7 @@ interface FilterState {
 
 interface TrayState { items: string[]; open: boolean }
 type TrayAction = { type: "TOGGLE"; title: string } | { type: "TOGGLE_OPEN" }
+type FetchState  = "idle" | "loading" | "success" | "error"
 
 interface ScaledMacros {
     protein:        number
@@ -100,12 +102,41 @@ function lsSet(key: string, val: string): void {
 function lsClear(key: string): void {
     try { if (typeof localStorage !== "undefined") localStorage.removeItem(key) } catch { /* noop */ }
 }
+function ssGet(key: string): string | null {
+    try { return typeof sessionStorage !== "undefined" ? sessionStorage.getItem(key) : null } catch { return null }
+}
+function ssSet(key: string, val: string): void {
+    try { if (typeof sessionStorage !== "undefined") sessionStorage.setItem(key, val) } catch { /* noop */ }
+}
 
 function fitScore(item: MenuItem, goalId: string): number {
     if (goalId === "power") return n(item.protein)
     if (goalId === "light") return n(item.calories) > 0 ? 1000 / n(item.calories) : 0
     if (goalId === "fuel")  return n(item.carbs)
     return 0
+}
+
+// Maps a loosely-typed CMS response object to a MenuItem.
+// Supports Framer CMS (fieldData wrapper), flat objects, and snake_case keys.
+function mapCmsItem(raw: Record<string, unknown>): MenuItem {
+    const fd = (raw.fieldData ?? raw) as Record<string, unknown>
+    const pick = (...keys: string[]): unknown => {
+        for (const k of keys) if (fd[k] !== undefined) return fd[k]
+        return undefined
+    }
+    return {
+        title:       String(pick("title", "name", "Title", "Name") ?? ""),
+        calories:    pick("calories", "Calories", "cal"),
+        protein:     pick("protein", "Protein"),
+        carbs:       pick("carbs", "Carbs", "carbohydrates"),
+        fat:         pick("fat", "Fat"),
+        category:    String(pick("category", "Category", "type", "Type") ?? ""),
+        price:       pick("price", "Price"),
+        ingredients: String(pick("ingredients", "Ingredients") ?? ""),
+        shortIngr:   String(pick("shortIngr", "shortIngredients", "short_ingredients", "short-ingredients") ?? ""),
+        description: String(pick("description", "Description") ?? ""),
+        thumbnail:   String(pick("thumbnail", "Thumbnail", "image", "Image", "photo", "Photo") ?? ""),
+    }
 }
 
 // ── 6. Reducer ────────────────────────────────────────────────────────────────
@@ -186,21 +217,43 @@ function useViewport(): boolean {
     return width < MOBILE_BP
 }
 
-function useDeepLink(items: MenuItem[], onMatch: (title: string) => void): void {
-    const fired      = useRef(false)
-    const onMatchRef = useRef(onMatch)
-    onMatchRef.current = onMatch
+// Reads URL params on mount; writes them back whenever filter state changes.
+// Safe in iframes / Framer editor — wrapped in try/catch.
+function useUrlSync(
+    state: { goal: string; category: string; sortBy: string; selected: string | null },
+    onMount: (params: { goal?: string; category?: string; sortBy?: string; item?: string }) => void
+): void {
+    const mounted = useRef(false)
+    const onMountRef = useRef(onMount)
+    onMountRef.current = onMount
+
     useEffect(() => {
-        if (fired.current || items.length === 0) return
+        if (mounted.current) return
+        mounted.current = true
         try {
             if (typeof window === "undefined") return
-            const itemName = new URLSearchParams(window.location.search).get("item")
-            if (itemName && items.find(i => i.title === itemName)) {
-                onMatchRef.current(itemName)
-                fired.current = true
-            }
+            const p = new URLSearchParams(window.location.search)
+            onMountRef.current({
+                goal:     p.get("goal")     ?? undefined,
+                category: p.get("category") ?? undefined,
+                sortBy:   p.get("sort")     ?? undefined,
+                item:     p.get("item")     ?? undefined,
+            })
         } catch { /* noop */ }
-    }, [items])
+    }, [])
+
+    useEffect(() => {
+        try {
+            if (typeof window === "undefined") return
+            const p = new URLSearchParams(window.location.search)
+            if (state.goal && state.goal !== "all") { p.set("goal", state.goal) } else { p.delete("goal") }
+            if (state.category && state.category !== "All") { p.set("category", state.category) } else { p.delete("category") }
+            if (state.sortBy && state.sortBy !== "goal-fit") { p.set("sort", state.sortBy) } else { p.delete("sort") }
+            if (state.selected) { p.set("item", state.selected) } else { p.delete("item") }
+            const qs = p.toString()
+            history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname)
+        } catch { /* noop */ }
+    }, [state.goal, state.category, state.sortBy, state.selected])
 }
 
 function useKeyboard(key: string, handler: () => void): void {
@@ -232,16 +285,17 @@ const MacroRing = memo(function MacroRing({ protein, carbs, fat, calories, size 
     const proLen = total > 0 ? (protein * 4 / total) * circ : 0
     const carLen = total > 0 ? (carbs   * 4 / total) * circ : 0
     const fatLen = total > 0 ? (fat     * 9 / total) * circ : 0
+    const arcStyle = { transition: "stroke-dasharray 0.45s ease, stroke-dashoffset 0.45s ease" }
     return (
         <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
             <svg width={size} height={size} viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)", display: "block" }}>
                 <circle cx="50" cy="50" r={r} fill="none" stroke={C.inkGhost} strokeWidth={sw} />
-                {proLen > 0 && <circle cx="50" cy="50" r={r} fill="none" stroke={C.orange} strokeWidth={sw}
-                    strokeDasharray={`${proLen} ${circ}`} strokeDashoffset={0} strokeLinecap="round" />}
-                {carLen > 0 && <circle cx="50" cy="50" r={r} fill="none" stroke={C.yellow} strokeWidth={sw}
-                    strokeDasharray={`${carLen} ${circ}`} strokeDashoffset={-proLen} strokeLinecap="round" />}
-                {fatLen > 0 && <circle cx="50" cy="50" r={r} fill="none" stroke={C.green} strokeWidth={sw}
-                    strokeDasharray={`${fatLen} ${circ}`} strokeDashoffset={-(proLen + carLen)} strokeLinecap="round" />}
+                <circle cx="50" cy="50" r={r} fill="none" stroke={C.orange} strokeWidth={sw}
+                    strokeDasharray={`${proLen} ${circ}`} strokeDashoffset={0} strokeLinecap="round" style={arcStyle} />
+                <circle cx="50" cy="50" r={r} fill="none" stroke={C.yellow} strokeWidth={sw}
+                    strokeDasharray={`${carLen} ${circ}`} strokeDashoffset={-proLen} strokeLinecap="round" style={arcStyle} />
+                <circle cx="50" cy="50" r={r} fill="none" stroke={C.green} strokeWidth={sw}
+                    strokeDasharray={`${fatLen} ${circ}`} strokeDashoffset={-(proLen + carLen)} strokeLinecap="round" style={arcStyle} />
             </svg>
             <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontSize: 24, fontWeight: 800, color: C.ink, lineHeight: 1 }}>{calories}</span>
@@ -286,15 +340,48 @@ const GoalButton = memo(function GoalButton(props: { g: GoalDef; active: boolean
     )
 })
 
+const SkeletonCard = memo(function SkeletonCard() {
+    return (
+        <div style={{ background: C.white, borderRadius: 12, overflow: "hidden", border: "2px solid transparent" }}>
+            <div style={{ height: 140, background: C.inkGhost, animation: "cbwPulse 1.6s ease-in-out infinite" }} />
+            <div style={{ padding: "11px 13px 13px", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ height: 13, borderRadius: 4, background: C.inkGhost, width: "72%", animation: "cbwPulse 1.6s ease-in-out infinite 0.1s" }} />
+                <div style={{ height: 10, borderRadius: 4, background: C.inkGhost, width: "90%", animation: "cbwPulse 1.6s ease-in-out infinite 0.2s" }} />
+                <div style={{ height: 10, borderRadius: 4, background: C.inkGhost, width: "55%", animation: "cbwPulse 1.6s ease-in-out infinite 0.3s" }} />
+            </div>
+        </div>
+    )
+})
+
+function Highlight({ text, query }: { text: string; query: string }) {
+    const q = query.trim().toLowerCase()
+    if (!q) return <>{text}</>
+    const idx = text.toLowerCase().indexOf(q)
+    if (idx === -1) return <>{text}</>
+    return <>
+        {text.slice(0, idx)}
+        <mark style={{ background: C.yellow, color: C.ink, borderRadius: 2, padding: "0 1px", fontWeight: 800 }}>
+            {text.slice(idx, idx + q.length)}
+        </mark>
+        {text.slice(idx + q.length)}
+    </>
+}
+
 // ── 10. Main component ────────────────────────────────────────────────────────
 
 interface NutritionCalculatorProps {
-    items?:      MenuItem[]
-    orderUrl?:   string
-    fontFamily?: string
+    items?:       MenuItem[]
+    cmsEndpoint?: string
+    orderUrl?:    string
+    fontFamily?:  string
 }
 
-function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricolage Grotesque, sans-serif" }: NutritionCalculatorProps) {
+function NutritionCalculator({
+    items = [],
+    cmsEndpoint = "",
+    orderUrl    = "#",
+    fontFamily  = "Bricolage Grotesque, sans-serif",
+}: NutritionCalculatorProps) {
 
     // — State ——————————————————————————————————————————————————————————————————
     const [goal,       setGoal]       = useState<string>(() => lsGet(LS_KEYS.goal) ?? "all")
@@ -306,11 +393,25 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
     const [portion,    setPortion]    = useState<number>(1)
     const [budget,     setBudget]     = useState<number>(0)
     const [showMacros, setShowMacros] = useState<boolean>(true)
-    const [trayState,  trayDispatch]  = useReducer(trayReducer, { items: [], open: false })
+    const [cmsItems,   setCmsItems]   = useState<MenuItem[]>([])
+    const [fetchState, setFetchState] = useState<FetchState>("idle")
+
+    // Tray initialised from sessionStorage so comparison survives page reload
+    const [trayState, trayDispatch] = useReducer(trayReducer, undefined, () => {
+        try {
+            const saved = ssGet(SS_KEY_TRAY)
+            if (saved) return { items: JSON.parse(saved) as string[], open: false }
+        } catch { /* noop */ }
+        return { items: [] as string[], open: false }
+    })
 
     const deferredSearch  = useDeferredValue(search)
     const isSearchPending = search !== deferredSearch
     const isMobile        = useViewport()
+
+    // Items from prop take priority; fall back to CMS-fetched data
+    const hasRealPropItems = items.some(i => i.title.trim() !== "")
+    const effectiveItems   = hasRealPropItems ? items : cmsItems
 
     // — Stable callbacks ———————————————————————————————————————————————————————
     const handleClose      = useCallback(() => setSelected(null), [])
@@ -321,34 +422,72 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
         setSortBy(prev => id === "all" ? "default" : prev === "default" ? "goal-fit" : prev)
     }, [])
 
+    // — URL sync ———————————————————————————————————————————————————————————————
+    useUrlSync(
+        { goal, category, sortBy, selected },
+        useCallback(({ goal: g, category: cat, sortBy: s, item }) => {
+            const validGoal = GOALS.find(x => x.id === g)
+            if (validGoal) setGoal(validGoal.id)
+            if (cat)  setCategory(cat)
+            if (s)    setSortBy(s)
+            if (item) handleDeepLink(item)
+        }, [handleDeepLink])
+    )
+
     // — Effects ————————————————————————————————————————————————————————————————
     useEffect(() => { lsSet(LS_KEYS.goal, goal) },   [goal])
     useEffect(() => { lsSet(LS_KEYS.sort, sortBy) }, [sortBy])
     useEffect(() => { selected ? lsSet(LS_KEYS.item, selected) : lsClear(LS_KEYS.item) }, [selected])
     useEffect(() => { setPortion(1) }, [selected])
-    useDeepLink(items, handleDeepLink)
+    useEffect(() => { ssSet(SS_KEY_TRAY, JSON.stringify(trayState.items)) }, [trayState.items])
+
+    // Fetch CMS data from endpoint when no real prop items exist
+    useEffect(() => {
+        if (!cmsEndpoint || hasRealPropItems) return
+        let cancelled = false
+        setFetchState("loading")
+        fetch(cmsEndpoint)
+            .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json() })
+            .then((data: unknown) => {
+                if (cancelled) return
+                const raw: Record<string, unknown>[] = Array.isArray(data) ? data
+                    : Array.isArray((data as Record<string, unknown>)?.items) ? (data as Record<string, unknown[]>).items as Record<string, unknown>[]
+                    : Array.isArray((data as Record<string, unknown>)?.data)  ? (data as Record<string, unknown[]>).data  as Record<string, unknown>[]
+                    : []
+                setCmsItems(raw.map(mapCmsItem).filter(i => i.title.trim() !== ""))
+                setFetchState("success")
+            })
+            .catch(() => { if (!cancelled) setFetchState("error") })
+        return () => { cancelled = true }
+    }, [cmsEndpoint, hasRealPropItems])
+
     useKeyboard("Escape", handleClose)
+    useKeyboard("c", useCallback(() => {
+        const tag = typeof document !== "undefined" ? (document.activeElement?.tagName ?? "") : ""
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return
+        if (trayState.items.length > 0) trayDispatch({ type: "TOGGLE_OPEN" })
+    }, [trayState.items.length]))
 
     // — Derived data ———————————————————————————————————————————————————————————
-    const goalCounts     = useMemo(() => buildGoalCounts(items),     [items])
-    const categoryCounts = useMemo(() => buildCategoryCounts(items), [items])
+    const goalCounts     = useMemo(() => buildGoalCounts(effectiveItems),     [effectiveItems])
+    const categoryCounts = useMemo(() => buildCategoryCounts(effectiveItems), [effectiveItems])
     const categories     = useMemo(() =>
-        ["All", ...Array.from(new Set(items.map(i => i.category).filter(Boolean)))], [items])
+        ["All", ...Array.from(new Set(effectiveItems.map(i => i.category).filter(Boolean)))], [effectiveItems])
 
     const { maxProtein, maxCarbs } = useMemo(() => ({
-        maxProtein: Math.max(...items.map(i => n(i.protein)), 1),
-        maxCarbs:   Math.max(...items.map(i => n(i.carbs)),   1),
-    }), [items])
+        maxProtein: Math.max(...effectiveItems.map(i => n(i.protein)), 1),
+        maxCarbs:   Math.max(...effectiveItems.map(i => n(i.carbs)),   1),
+    }), [effectiveItems])
 
     const { filtered, maxScore } = useMemo(() => {
-        const f = applyFilters(items, { goal, category, dietary, search: deferredSearch, sortBy })
+        const f = applyFilters(effectiveItems, { goal, category, dietary, search: deferredSearch, sortBy })
         const ms = goal !== "all" && f.length > 0 ? Math.max(...f.map(i => fitScore(i, goal)), 1) : 1
         return { filtered: f, maxScore: ms }
-    }, [items, goal, category, dietary, deferredSearch, sortBy])
+    }, [effectiveItems, goal, category, dietary, deferredSearch, sortBy])
 
     const { trayItems, trayTotals } = useMemo(() => {
         const ti = trayState.items
-            .map(t => items.find(i => i.title === t))
+            .map(t => effectiveItems.find(i => i.title === t))
             .filter((x): x is MenuItem => !!x)
         return {
             trayItems: ti,
@@ -359,11 +498,11 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                 price:    ti.reduce((s, i) => s + n(i.price),    0),
             },
         }
-    }, [trayState.items, items])
+    }, [trayState.items, effectiveItems])
 
     const sel = useMemo(
-        () => selected ? items.find(i => i.title === selected) : undefined,
-        [selected, items]
+        () => selected ? effectiveItems.find(i => i.title === selected) : undefined,
+        [selected, effectiveItems]
     )
 
     const scaled = useMemo((): ScaledMacros => {
@@ -386,7 +525,9 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
     // — Convenience ————————————————————————————————————————————————————————————
     const budgetRemaining = budget > 0 ? budget - trayTotals.calories : null
     const activeFilters   = dietary.length + (category !== "All" ? 1 : 0) + (search ? 1 : 0)
-    const noItems         = items.length === 0
+    const noItems         = effectiveItems.length === 0
+    const isLoading       = fetchState === "loading"
+    const isError         = fetchState === "error"
     const detailPanelStyle = isMobile
         ? { position: "fixed" as const, top: 0, right: 0, bottom: 0, left: 0, zIndex: 200, background: C.white, overflowY: "auto" as const, display: "flex", flexDirection: "column" as const }
         : { width: 340, flexShrink: 0, background: C.white, borderLeft: `1px solid ${C.border}`, position: "sticky" as const, top: 0, height: "100vh", overflowY: "auto" as const, display: "flex", flexDirection: "column" as const }
@@ -394,6 +535,11 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div style={{ fontFamily, background: C.cream, minHeight: "100vh" }}>
+
+            <style>{`
+                @keyframes cbwPulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+                @keyframes cbwFadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+            `}</style>
 
             {/* Goal header */}
             <div style={{ background: C.teal, padding: "28px 32px 20px" }}>
@@ -406,7 +552,7 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                             {GOALS.map(g => (
                                 <GoalButton key={g.id} g={g} active={goal === g.id}
                                     count={goalCounts[g.id] ?? 0}
-                                    total={items.length}
+                                    total={effectiveItems.length}
                                     onClick={() => handleGoalClick(g.id)} />
                             ))}
                         </div>
@@ -519,11 +665,22 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                 ))}
             </div>
 
+            {/* Fetch error banner */}
+            {isError && (
+                <div style={{ padding: "10px 32px", background: C.orangeLight, borderBottom: `1px solid ${C.orange}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <span style={{ fontSize: 12, color: C.orange, fontWeight: 600 }}>Could not load menu data from endpoint.</span>
+                    <button onClick={() => setFetchState("idle")} style={{
+                        padding: "4px 12px", borderRadius: 6, border: `1.5px solid ${C.orange}`,
+                        background: "none", color: C.orange, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                    }}>Retry</button>
+                </div>
+            )}
+
             {/* Results count */}
-            {!noItems && (
+            {!noItems && !isLoading && (
                 <div style={{ padding: "8px 32px" }}>
                     <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 500 }}>
-                        {filtered.length} of {items.length} items
+                        {filtered.length} of {effectiveItems.length} items
                         {sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}
                     </span>
                 </div>
@@ -535,19 +692,54 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                 {/* Card grid */}
                 <div style={{ flex: 1, padding: "4px 32px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, alignContent: "start" }}>
 
-                    {filtered.length === 0 && (
+                    {/* Skeleton loading */}
+                    {isLoading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+
+                    {/* Empty state */}
+                    {!isLoading && filtered.length === 0 && (
                         <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "80px 0" }}>
                             <div style={{ fontSize: 32, fontWeight: 800, color: C.ink, opacity: 0.08, marginBottom: 14 }}>—</div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, marginBottom: 6 }}>
                                 {noItems ? "No items yet" : "Nothing matches"}
                             </div>
-                            <div style={{ fontSize: 13, color: C.inkFaint }}>
-                                {noItems ? "Menu items will appear here once connected." : "Try a different goal or clear your filters."}
+                            <div style={{ fontSize: 13, color: C.inkFaint, marginBottom: 16 }}>
+                                {noItems && !cmsEndpoint ? "Add items via the Items property panel, or set a CMS Endpoint URL." :
+                                 noItems && cmsEndpoint  ? "Waiting for data from endpoint…" :
+                                 "Try relaxing one of these filters:"}
                             </div>
+                            {!noItems && (
+                                <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                                    {goal !== "all" && (
+                                        <button onClick={() => { setGoal("all"); setSortBy("default") }} style={{
+                                            padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,
+                                            background: C.tealLight, color: C.teal, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                                        }}>Browse all goals</button>
+                                    )}
+                                    {category !== "All" && (
+                                        <button onClick={() => setCategory("All")} style={{
+                                            padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,
+                                            background: C.tealLight, color: C.teal, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                                        }}>All categories</button>
+                                    )}
+                                    {dietary.length > 0 && (
+                                        <button onClick={() => setDietary([])} style={{
+                                            padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.green}`,
+                                            background: C.greenLight, color: C.green, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                                        }}>Clear dietary</button>
+                                    )}
+                                    {search && (
+                                        <button onClick={() => setSearch("")} style={{
+                                            padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.orange}`,
+                                            background: C.orangeLight, color: C.orange, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
+                                        }}>Clear search</button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {filtered.map(item => {
+                    {/* Item cards */}
+                    {!isLoading && filtered.map((item, idx) => {
                         const isSelected = sel !== undefined && sel.title === item.title
                         const inTray     = trayState.items.includes(item.title)
                         const score      = goal !== "all" ? fitScore(item, goal) : 0
@@ -562,7 +754,9 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                                 border: `2px solid ${isSelected ? C.orange : inTray ? C.teal : isTopMatch ? "rgba(123,144,21,0.35)" : "transparent"}`,
                                 boxShadow: isSelected ? `0 0 0 3px ${C.orangeLight}, 0 4px 20px rgba(0,0,0,0.09)` : "0 1px 4px rgba(0,0,0,0.06)",
                                 transition: "box-shadow 0.15s, border-color 0.15s",
-                                position: "relative"
+                                position: "relative",
+                                animation: "cbwFadeUp 0.25s ease both",
+                                animationDelay: `${Math.min(idx * 0.03, 0.3)}s`,
                             }}>
                                 {isTopMatch && !isSelected && (
                                     <div style={{
@@ -592,10 +786,7 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                                 >
                                     {inTray ? "−" : "+"}
                                 </button>
-                                <div
-                                    onClick={() => setSelected(isSelected ? null : item.title)}
-                                    style={{ cursor: "pointer" }}
-                                >
+                                <div onClick={() => setSelected(isSelected ? null : item.title)} style={{ cursor: "pointer" }}>
                                     <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: isTopMatch && !isSelected ? 20 : 0 }}>
                                         {item.thumbnail
                                             ? <img src={item.thumbnail} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -603,8 +794,14 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                                         }
                                     </div>
                                     <div style={{ padding: "11px 13px 13px" }}>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}>{item.title}</div>
-                                        {item.shortIngr && <div style={{ fontSize: 11, color: C.inkFaint, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}>{item.shortIngr}</div>}
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}>
+                                            <Highlight text={item.title} query={deferredSearch} />
+                                        </div>
+                                        {item.shortIngr && (
+                                            <div style={{ fontSize: 11, color: C.inkFaint, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}>
+                                                <Highlight text={item.shortIngr} query={deferredSearch} />
+                                            </div>
+                                        )}
                                         {showMacros && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -630,7 +827,7 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                     })}
                 </div>
 
-                {/* Detail panel — fixed overlay on mobile, sticky rail on desktop */}
+                {/* Detail panel */}
                 {sel !== undefined && (
                     <div style={detailPanelStyle}>
                         <div style={{ height: 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
@@ -774,6 +971,7 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
                     >
                         <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                             Compare {trayState.items.length} bowl{trayState.items.length > 1 ? "s" : ""}
+                            <span style={{ fontWeight: 400, opacity: 0.45, marginLeft: 8, textTransform: "none", letterSpacing: 0 }}>press C</span>
                         </span>
                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                             <span style={{ fontSize: 12, color: C.inkFaint }}>
@@ -840,9 +1038,15 @@ function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricola
 export default NutritionCalculator
 
 addPropertyControls(NutritionCalculator, {
+    cmsEndpoint: {
+        type: ControlType.String,
+        title: "CMS Endpoint",
+        placeholder: "https://… JSON URL",
+        description: "URL returning a JSON array of menu items. Supports Framer CMS API, flat arrays, and {items:[…]} wrappers. Overridden by the Items prop if items are present.",
+    },
     items: {
         type: ControlType.Array,
-        title: "Items",
+        title: "Items (manual)",
         control: {
             type: ControlType.Object,
             controls: {
