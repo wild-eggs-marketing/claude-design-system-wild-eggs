@@ -3,12 +3,11 @@ import { useState, useMemo, useEffect, useRef, useDeferredValue, useReducer, use
 
 // ── 1. Constants ──────────────────────────────────────────────────────────────
 
-const MOBILE_BP = 680
-const MAX_TRAY  = 3
-const LS_KEYS   = { goal: "cbw_goal", sort: "cbw_sort", item: "cbw_last_item" } as const
+const MOBILE_BP   = 680
+const MAX_TRAY    = 3
+const LS_KEYS     = { goal: "cbw_goal", sort: "cbw_sort", item: "cbw_last_item" } as const
 const SS_KEY_TRAY = "cbw_tray"
 
-// Framer CMS field IDs for the Menu collection
 const FIELD = {
     title:       "fIwxSF70L",
     calories:    "Du4yxFxRV",
@@ -40,7 +39,7 @@ const C = {
     border:      "rgba(28, 43, 28, 0.09)",
 }
 
-// ── 3. Styles — injected once per page load, never on re-render ───────────────
+// ── 3. Styles — injected once per page load ───────────────────────────────────
 
 let _stylesInjected = false
 function injectStyles() {
@@ -57,12 +56,12 @@ function injectStyles() {
 interface MenuItem {
     id:          string
     title:       string
-    calories:    unknown
-    protein:     unknown
-    carbs:       unknown
-    fat?:        unknown
+    calories:    number
+    protein:     number
+    carbs:       number
+    fat:         number
     category:    string
-    price:       unknown
+    price:       number
     ingredients: string
     shortIngr:   string
     description: string
@@ -114,47 +113,42 @@ const GOALS: GoalDef[] = [
 
 const DIETARY: string[] = ["Vegetarian", "Vegan", "Gluten-Free", "High Protein", "Low Carb"]
 
-// ── 6. Utilities ──────────────────────────────────────────────────────────────
+// ── 6. Storage factory ────────────────────────────────────────────────────────
 
-function n(v: unknown): number { return Number(v) || 0 }
+function createStorage(type: "local" | "session") {
+    const store = () => type === "local" ? localStorage : sessionStorage
+    const ok    = () => typeof window !== "undefined"
+    return {
+        get: (key: string): string | null   => { try { return ok() ? store().getItem(key) : null } catch { return null } },
+        set: (key: string, val: string): void => { try { if (ok()) store().setItem(key, val) }  catch { /* noop */ } },
+        del: (key: string): void              => { try { if (ok()) store().removeItem(key) }    catch { /* noop */ } },
+    }
+}
 
-function lsGet(key: string): string | null {
-    try { return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null } catch { return null }
-}
-function lsSet(key: string, val: string): void {
-    try { if (typeof localStorage !== "undefined") localStorage.setItem(key, val) } catch { /* noop */ }
-}
-function lsClear(key: string): void {
-    try { if (typeof localStorage !== "undefined") localStorage.removeItem(key) } catch { /* noop */ }
-}
-function ssGet(key: string): string | null {
-    try { return typeof sessionStorage !== "undefined" ? sessionStorage.getItem(key) : null } catch { return null }
-}
-function ssSet(key: string, val: string): void {
-    try { if (typeof sessionStorage !== "undefined") sessionStorage.setItem(key, val) } catch { /* noop */ }
-}
+const ls = createStorage("local")
+const ss = createStorage("session")
+
+// ── 7. Utilities ──────────────────────────────────────────────────────────────
 
 function fitScore(item: MenuItem, goalId: string): number {
-    if (goalId === "power") return n(item.protein)
-    if (goalId === "light") return n(item.calories) > 0 ? 1000 / n(item.calories) : 0
-    if (goalId === "fuel")  return n(item.carbs)
+    if (goalId === "power") return item.protein
+    if (goalId === "light") return item.calories > 0 ? 1000 / item.calories : 0
+    if (goalId === "fuel")  return item.carbs
     return 0
 }
 
-// Unwraps Framer CMS { type, value } envelope — returns raw value unchanged otherwise.
+// Unwraps Framer CMS { type, value } envelope; returns value unchanged otherwise.
 function unwrapFramer(v: unknown): unknown {
-    if (v && typeof v === "object" && !Array.isArray(v) && "value" in (v as Record<string, unknown>)) {
+    if (v && typeof v === "object" && !Array.isArray(v) && "value" in (v as Record<string, unknown>))
         return (v as Record<string, unknown>).value
-    }
     return v
 }
 
 // Maps any CMS response shape to a MenuItem.
-// Priority 1: Framer CMS field IDs with { type, value } wrappers.
+// Priority 1: Framer CMS field IDs (with optional { type, value } wrappers).
 // Priority 2: Human-readable keys from flat JSON APIs.
 function mapCmsItem(raw: Record<string, unknown>, index: number): MenuItem {
-    const fd = (raw.fieldData ?? raw) as Record<string, unknown>
-
+    const fd  = (raw.fieldData ?? raw) as Record<string, unknown>
     const pick = (...keys: string[]): unknown => {
         for (const k of keys) {
             const v = unwrapFramer(fd[k])
@@ -162,24 +156,26 @@ function mapCmsItem(raw: Record<string, unknown>, index: number): MenuItem {
         }
         return undefined
     }
+    const str = (...keys: string[]): string => String(pick(...keys) ?? "")
+    const num = (...keys: string[]): number => Number(pick(...keys)) || 0
 
     return {
         id:          String(raw.id ?? raw.slug ?? index),
-        title:       String(pick(FIELD.title, "title", "name", "Title", "Name") ?? ""),
-        calories:    pick(FIELD.calories, "calories", "Calories", "cal"),
-        protein:     pick(FIELD.protein,  "protein",  "Protein"),
-        carbs:       pick(FIELD.carbs,    "carbs",    "Carbs", "carbohydrates"),
-        fat:         pick("fat", "Fat"),
-        category:    String(pick(FIELD.category, "category", "Category", "type", "Type") ?? ""),
-        price:       pick(FIELD.price, "price", "Price"),
-        ingredients: String(pick(FIELD.ingredients, "ingredients", "Ingredients") ?? ""),
-        shortIngr:   String(pick(FIELD.shortIngr, "shortIngr", "shortIngredients", "short_ingredients") ?? ""),
-        description: String(pick(FIELD.description, "description", "Description") ?? ""),
-        thumbnail:   String(pick(FIELD.thumbnail, "thumbnail", "Thumbnail", "image", "Image", "photo") ?? ""),
+        title:       str(FIELD.title, "title", "name", "Title", "Name"),
+        calories:    num(FIELD.calories, "calories", "Calories", "cal"),
+        protein:     num(FIELD.protein,  "protein",  "Protein"),
+        carbs:       num(FIELD.carbs,    "carbs",    "Carbs", "carbohydrates"),
+        fat:         num("fat", "Fat"),
+        category:    str(FIELD.category, "category", "Category", "type", "Type"),
+        price:       num(FIELD.price, "price", "Price"),
+        ingredients: str(FIELD.ingredients, "ingredients", "Ingredients"),
+        shortIngr:   str(FIELD.shortIngr, "shortIngr", "shortIngredients", "short_ingredients"),
+        description: str(FIELD.description, "description", "Description"),
+        thumbnail:   str(FIELD.thumbnail, "thumbnail", "Thumbnail", "image", "Image", "photo"),
     }
 }
 
-// ── 7. Reducer ────────────────────────────────────────────────────────────────
+// ── 8. Reducer ────────────────────────────────────────────────────────────────
 
 function trayReducer(state: TrayState, action: TrayAction): TrayState {
     switch (action.type) {
@@ -196,36 +192,34 @@ function trayReducer(state: TrayState, action: TrayAction): TrayState {
     }
 }
 
-// ── 8. Pure filter logic ──────────────────────────────────────────────────────
+// ── 9. Pure filter logic ──────────────────────────────────────────────────────
+
+// Single source of truth for goal-matching — used by both applyFilters and buildGoalCounts.
+function filterByGoal(items: MenuItem[], g: GoalDef): MenuItem[] {
+    let list = items
+    if (g.minProtein  !== undefined) list = list.filter(i => i.protein  >= g.minProtein!)
+    if (g.maxCalories !== undefined) list = list.filter(i => i.calories <= g.maxCalories!)
+    if (g.minCarbs    !== undefined) list = list.filter(i => i.carbs    >= g.minCarbs!)
+    return list
+}
 
 function applyFilters(items: MenuItem[], f: FilterState): MenuItem[] {
-    let list = items
-    const g = GOALS.find(g => g.id === f.goal)
-    if (g) {
-        if (g.minProtein  !== undefined) list = list.filter(i => n(i.protein)  >= g.minProtein!)
-        if (g.maxCalories !== undefined) list = list.filter(i => n(i.calories) <= g.maxCalories!)
-        if (g.minCarbs    !== undefined) list = list.filter(i => n(i.carbs)    >= g.minCarbs!)
-    }
+    const g    = GOALS.find(g => g.id === f.goal)
+    let   list = g ? filterByGoal(items, g) : items
     if (f.category !== "All") list = list.filter(i => i.category === f.category)
     const q = f.search.trim().toLowerCase()
     if (q) list = list.filter(i => i.title.toLowerCase().includes(q) || i.ingredients.toLowerCase().includes(q))
     if (f.dietary.length > 0) list = list.filter(i => f.dietary.every(d => i.ingredients.toLowerCase().includes(d.toLowerCase())))
-    if (f.sortBy === "calories-asc")  return [...list].sort((a, b) => n(a.calories) - n(b.calories))
-    if (f.sortBy === "calories-desc") return [...list].sort((a, b) => n(b.calories) - n(a.calories))
-    if (f.sortBy === "protein-desc")  return [...list].sort((a, b) => n(b.protein)  - n(a.protein))
+    if (f.sortBy === "calories-asc")  return [...list].sort((a, b) => a.calories - b.calories)
+    if (f.sortBy === "calories-desc") return [...list].sort((a, b) => b.calories - a.calories)
+    if (f.sortBy === "protein-desc")  return [...list].sort((a, b) => b.protein  - a.protein)
     if (f.sortBy === "goal-fit")      return [...list].sort((a, b) => fitScore(b, f.goal) - fitScore(a, f.goal))
     return list
 }
 
 function buildGoalCounts(items: MenuItem[]): Record<string, number> {
     const counts: Record<string, number> = {}
-    GOALS.forEach(g => {
-        let list = items
-        if (g.minProtein  !== undefined) list = list.filter(i => n(i.protein)  >= g.minProtein!)
-        if (g.maxCalories !== undefined) list = list.filter(i => n(i.calories) <= g.maxCalories!)
-        if (g.minCarbs    !== undefined) list = list.filter(i => n(i.carbs)    >= g.minCarbs!)
-        counts[g.id] = list.length
-    })
+    GOALS.forEach(g => { counts[g.id] = filterByGoal(items, g).length })
     return counts
 }
 
@@ -235,22 +229,28 @@ function buildCategoryCounts(items: MenuItem[]): Record<string, number> {
     return counts
 }
 
-// ── 9. Custom hooks ───────────────────────────────────────────────────────────
+// ── 10. Custom hooks ──────────────────────────────────────────────────────────
 
+// Stores a boolean (not raw pixel width) so React's bail-out suppresses renders
+// when the breakpoint hasn't changed. Debounced at 100ms to cap resize frequency.
 function useViewport(): boolean {
-    const [width, setWidth] = useState<number>(() => {
-        try { return typeof window !== "undefined" ? window.innerWidth : 1200 } catch { return 1200 }
+    const [isMobile, setIsMobile] = useState<boolean>(() => {
+        try { return typeof window !== "undefined" ? window.innerWidth < MOBILE_BP : false } catch { return false }
     })
     useEffect(() => {
-        function onResize() { try { setWidth(window.innerWidth) } catch { /* noop */ } }
         if (typeof window === "undefined") return
+        let timer: ReturnType<typeof setTimeout>
+        function onResize() {
+            clearTimeout(timer)
+            timer = setTimeout(() => { try { setIsMobile(window.innerWidth < MOBILE_BP) } catch { /* noop */ } }, 100)
+        }
         window.addEventListener("resize", onResize)
-        return () => window.removeEventListener("resize", onResize)
+        return () => { clearTimeout(timer); window.removeEventListener("resize", onResize) }
     }, [])
-    return width < MOBILE_BP
+    return isMobile
 }
 
-// Reads URL params once on mount via callback ref; writes back on state changes.
+// Reads URL params once on mount; writes back on state changes.
 function useUrlSync(
     state: { goal: string; category: string; sortBy: string; selected: string | null },
     onMountCb: (p: { goal?: string; category?: string; sortBy?: string; item?: string }) => void
@@ -294,7 +294,7 @@ function useKeyboard(key: string, handler: () => void): void {
     }, [key])
 }
 
-// ── 10. Primitive components ──────────────────────────────────────────────────
+// ── 11. Primitive components ──────────────────────────────────────────────────
 
 const MacroBar = memo(function MacroBar({ value, max, color }: { value: number; max: number; color: string }) {
     const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0
@@ -378,7 +378,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
     return <>{text.slice(0, idx)}<mark style={{ background: C.yellow, color: C.ink, borderRadius: 2, padding: "0 1px", fontWeight: 800 }}>{text.slice(idx, idx + q.length)}</mark>{text.slice(idx + q.length)}</>
 }
 
-// ── 11. Main component ────────────────────────────────────────────────────────
+// ── 12. Main component ────────────────────────────────────────────────────────
 
 interface NutritionCalculatorProps {
     items?:       MenuItem[]
@@ -397,12 +397,12 @@ function NutritionCalculator({
 }: NutritionCalculatorProps) {
 
     // — State ——————————————————————————————————————————————————————————————————
-    const [goal,       setGoal]       = useState<string>(() => lsGet(LS_KEYS.goal) ?? "all")
-    const [sortBy,     setSortBy]     = useState<string>(() => lsGet(LS_KEYS.sort) ?? "goal-fit")
+    const [goal,       setGoal]       = useState<string>(() => ls.get(LS_KEYS.goal) ?? "all")
+    const [sortBy,     setSortBy]     = useState<string>(() => ls.get(LS_KEYS.sort) ?? "goal-fit")
     const [category,   setCategory]   = useState<string>("All")
     const [dietary,    setDietary]    = useState<string[]>([])
     const [search,     setSearch]     = useState<string>("")
-    const [selected,   setSelected]   = useState<string | null>(() => lsGet(LS_KEYS.item))
+    const [selected,   setSelected]   = useState<string | null>(() => ls.get(LS_KEYS.item))
     const [portion,    setPortion]    = useState<number>(1)
     const [budget,     setBudget]     = useState<number>(0)
     const [showMacros, setShowMacros] = useState<boolean>(true)
@@ -411,7 +411,7 @@ function NutritionCalculator({
     const [retryKey,   setRetryKey]   = useState<number>(0)
 
     const [trayState, trayDispatch] = useReducer(trayReducer, undefined, () => {
-        try { const s = ssGet(SS_KEY_TRAY); if (s) return { items: JSON.parse(s) as string[], open: false } } catch { /* noop */ }
+        try { const s = ss.get(SS_KEY_TRAY); if (s) return { items: JSON.parse(s) as string[], open: false } } catch { /* noop */ }
         return { items: [] as string[], open: false }
     })
 
@@ -431,7 +431,6 @@ function NutritionCalculator({
         setSortBy(prev => id === "all" ? "default" : prev === "default" ? "goal-fit" : prev)
     }, [])
 
-    // Hoisted so it's stable — avoids passing useCallback() directly as an argument
     const urlMountCb = useCallback(({ goal: g, category: cat, sortBy: s, item }: { goal?: string; category?: string; sortBy?: string; item?: string }) => {
         const validGoal = GOALS.find(x => x.id === g)
         if (validGoal) setGoal(validGoal.id)
@@ -444,35 +443,49 @@ function NutritionCalculator({
 
     // — Effects ————————————————————————————————————————————————————————————————
     useEffect(() => { injectStyles() }, [])
-    useEffect(() => { lsSet(LS_KEYS.goal, goal) },    [goal])
-    useEffect(() => { lsSet(LS_KEYS.sort, sortBy) },  [sortBy])
-    useEffect(() => { selected ? lsSet(LS_KEYS.item, selected) : lsClear(LS_KEYS.item) }, [selected])
+    useEffect(() => { ls.set(LS_KEYS.goal, goal) },    [goal])
+    useEffect(() => { ls.set(LS_KEYS.sort, sortBy) },  [sortBy])
+    useEffect(() => { selected ? ls.set(LS_KEYS.item, selected) : ls.del(LS_KEYS.item) }, [selected])
     useEffect(() => { setPortion(1) }, [selected])
-    useEffect(() => { ssSet(SS_KEY_TRAY, JSON.stringify(trayState.items)) }, [trayState.items])
+    useEffect(() => { ss.set(SS_KEY_TRAY, JSON.stringify(trayState.items)) }, [trayState.items])
 
-    // Clear a stale `selected` (from localStorage) when items load and the title no longer exists
+    // Clears a stale `selected` (from localStorage) when items load and the ID no longer exists.
     useEffect(() => {
         if (effectiveItems.length > 0 && selected && !effectiveItems.find(i => i.id === selected || i.title === selected)) {
             setSelected(null)
         }
-    }, [effectiveItems]) // intentionally omits `selected` — only needs to run when items change
+    }, [effectiveItems]) // intentionally omits `selected` — only runs when items change
 
-    // CMS fetch — retryKey in deps makes the Retry button actually re-trigger the request
+    // CMS fetch — supports pagination via nextCursor; retryKey triggers re-fetch on Retry click.
     useEffect(() => {
         if (!cmsEndpoint || hasRealPropItems) return
         let cancelled = false
         setFetchState("loading")
-        const headers: Record<string, string> = { Accept: "application/json" }
-        if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`
-        fetch(cmsEndpoint, { headers })
-            .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json() })
-            .then((data: unknown) => {
+
+        async function fetchAll(): Promise<Record<string, unknown>[]> {
+            const headers: Record<string, string> = { Accept: "application/json" }
+            if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`
+            const all: Record<string, unknown>[] = []
+            let url: string | null = cmsEndpoint
+            while (url) {
+                const r = await fetch(url, { headers })
+                if (!r.ok) throw new Error(String(r.status))
+                const data = await r.json() as Record<string, unknown>
+                const page: Record<string, unknown>[] =
+                    Array.isArray(data)       ? data as Record<string, unknown>[] :
+                    Array.isArray(data.items) ? data.items as Record<string, unknown>[] :
+                    Array.isArray(data.data)  ? data.data  as Record<string, unknown>[] : []
+                all.push(...page)
+                url = typeof data.nextCursor === "string"
+                    ? `${cmsEndpoint}${cmsEndpoint.includes("?") ? "&" : "?"}cursor=${data.nextCursor}`
+                    : null
+            }
+            return all
+        }
+
+        fetchAll()
+            .then(raw => {
                 if (cancelled) return
-                const d = data as Record<string, unknown>
-                const raw: Record<string, unknown>[] =
-                    Array.isArray(data)    ? (data as Record<string, unknown>[]) :
-                    Array.isArray(d.items) ? (d.items as Record<string, unknown>[]) :
-                    Array.isArray(d.data)  ? (d.data  as Record<string, unknown>[]) : []
                 setCmsItems(raw.map((r, i) => mapCmsItem(r, i)).filter(i => i.title.trim() !== ""))
                 setFetchState("success")
             })
@@ -480,22 +493,22 @@ function NutritionCalculator({
         return () => { cancelled = true }
     }, [cmsEndpoint, hasRealPropItems, apiKey, retryKey])
 
+    // useKeyboard stabilises the handler internally via a ref — no useCallback needed here.
     useKeyboard("Escape", handleClose)
-    useKeyboard("c", useCallback(() => {
+    useKeyboard("c", () => {
         const tag = typeof document !== "undefined" ? (document.activeElement?.tagName ?? "") : ""
         if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return
         if (trayState.items.length > 0) trayDispatch({ type: "TOGGLE_OPEN" })
-    }, [trayState.items.length]))
+    })
 
     // — Derived data ———————————————————————————————————————————————————————————
     const goalCounts     = useMemo(() => buildGoalCounts(effectiveItems),     [effectiveItems])
     const categoryCounts = useMemo(() => buildCategoryCounts(effectiveItems), [effectiveItems])
     const categories     = useMemo(() => ["All", ...Array.from(new Set(effectiveItems.map(i => i.category).filter(Boolean)))], [effectiveItems])
 
-    // Use reduce instead of spread to avoid stack overflow on large menus
     const { maxProtein, maxCarbs } = useMemo(() => ({
-        maxProtein: effectiveItems.reduce((m, i) => Math.max(m, n(i.protein)),  1),
-        maxCarbs:   effectiveItems.reduce((m, i) => Math.max(m, n(i.carbs)),    1),
+        maxProtein: effectiveItems.reduce((m, i) => Math.max(m, i.protein),  1),
+        maxCarbs:   effectiveItems.reduce((m, i) => Math.max(m, i.carbs),    1),
     }), [effectiveItems])
 
     const { filtered, maxScore } = useMemo(() => {
@@ -506,17 +519,25 @@ function NutritionCalculator({
 
     const { trayItems, trayTotals } = useMemo(() => {
         const ti = trayState.items.map(id => effectiveItems.find(i => i.id === id || i.title === id)).filter((x): x is MenuItem => !!x)
-        return { trayItems: ti, trayTotals: { calories: ti.reduce((s, i) => s + n(i.calories), 0), protein: ti.reduce((s, i) => s + n(i.protein), 0), carbs: ti.reduce((s, i) => s + n(i.carbs), 0), price: ti.reduce((s, i) => s + n(i.price), 0) } }
+        return {
+            trayItems: ti,
+            trayTotals: {
+                calories: ti.reduce((s, i) => s + i.calories, 0),
+                protein:  ti.reduce((s, i) => s + i.protein,  0),
+                carbs:    ti.reduce((s, i) => s + i.carbs,    0),
+                price:    ti.reduce((s, i) => s + i.price,    0),
+            },
+        }
     }, [trayState.items, effectiveItems])
 
     const sel = useMemo(() => selected ? effectiveItems.find(i => i.id === selected || i.title === selected) : undefined, [selected, effectiveItems])
 
     const scaled = useMemo((): ScaledMacros => {
         if (!sel) return { protein: 0, carbs: 0, fat: 0, calories: 0, proteinDensity: 0 }
-        const protein  = Math.round(n(sel.protein)  * portion)
-        const carbs    = Math.round(n(sel.carbs)    * portion)
-        const fat      = Math.round(n(sel.fat)      * portion)
-        const calories = Math.round(n(sel.calories) * portion)
+        const protein  = Math.round(sel.protein  * portion)
+        const carbs    = Math.round(sel.carbs    * portion)
+        const fat      = Math.round(sel.fat      * portion)
+        const calories = Math.round(sel.calories * portion)
         return { protein, carbs, fat, calories, proteinDensity: calories > 0 ? Math.round((protein / calories) * 100) : 0 }
     }, [sel, portion])
 
@@ -529,13 +550,11 @@ function NutritionCalculator({
     }, [sel, goal, scaled])
 
     // — Convenience ————————————————————————————————————————————————————————————
-    const budgetRemaining  = budget > 0 ? budget - trayTotals.calories : null
-    const activeFilters    = dietary.length + (category !== "All" ? 1 : 0) + (search ? 1 : 0)
-    const noItems          = effectiveItems.length === 0
-    const isLoading        = fetchState === "loading"
-    const isError          = fetchState === "error"
-    const panelOpen        = sel !== undefined
-    // Detail panel: fixed on both mobile and desktop for predictable sticky behavior
+    const budgetRemaining = budget > 0 ? budget - trayTotals.calories : null
+    const activeFilters   = dietary.length + (category !== "All" ? 1 : 0) + (search ? 1 : 0)
+    const noItems         = effectiveItems.length === 0
+    const isLoading       = fetchState === "loading"
+    const isError         = fetchState === "error"
     const detailPanelStyle = {
         position: "fixed" as const,
         top: 0, right: 0, bottom: 0,
@@ -604,8 +623,8 @@ function NutritionCalculator({
             {/* Results count */}
             {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 500 }}>{filtered.length} of {effectiveItems.length} items{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
 
-            {/* Main layout — card grid shifts left when detail panel is open */}
-            <div style={{ paddingRight: panelOpen && !isMobile ? 340 : 0, paddingBottom: trayState.items.length > 0 ? 88 : 0, transition: "padding-right 0.2s ease" }}>
+            {/* Main layout */}
+            <div style={{ paddingRight: sel && !isMobile ? 340 : 0, paddingBottom: trayState.items.length > 0 ? 88 : 0, transition: "padding-right 0.2s ease" }}>
                 <div style={{ padding: "4px 32px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, alignContent: "start" }}>
 
                     {isLoading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -633,10 +652,8 @@ function NutritionCalculator({
                         const inTray     = trayState.items.includes(item.id) || trayState.items.includes(item.title)
                         const score      = goal !== "all" ? fitScore(item, goal) : 0
                         const isTopMatch = goal !== "all" && score === maxScore && filtered.length > 1
-                        const cal = n(item.calories), prot = n(item.protein), carb = n(item.carbs)
-                        const trayFull = !inTray && trayState.items.length >= MAX_TRAY
-                        // Stable key: CMS id if available, else title+idx to avoid collisions on duplicate titles
-                        const cardKey = item.id !== String(idx) ? item.id : `${item.title}-${idx}`
+                        const trayFull   = !inTray && trayState.items.length >= MAX_TRAY
+                        const cardKey    = item.id !== String(idx) ? item.id : `${item.title}-${idx}`
                         return (
                             <div key={cardKey} style={{ background: C.white, borderRadius: 12, overflow: "hidden", border: `2px solid ${isSelected ? C.orange : inTray ? C.teal : isTopMatch ? "rgba(123,144,21,0.35)" : "transparent"}`, boxShadow: isSelected ? `0 0 0 3px ${C.orangeLight}, 0 4px 20px rgba(0,0,0,0.09)` : "0 1px 4px rgba(0,0,0,0.06)", transition: "box-shadow 0.15s, border-color 0.15s", position: "relative", animation: "cbwFadeUp 0.25s ease both", animationDelay: `${Math.min(idx * 0.03, 0.3)}s` }}>
                                 {isTopMatch && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: C.green, color: C.white, fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Best match</div>}
@@ -654,13 +671,13 @@ function NutritionCalculator({
                                         {item.shortIngr && <div style={{ fontSize: 11, color: C.inkFaint, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
                                         {showMacros && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orange, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{prot}g</span><MacroBar value={prot} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkFaint, minWidth: 18, flexShrink: 0 }}>pro</span></div>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.yellow, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{carb}g</span><MacroBar value={carb} max={maxCarbs} color={C.yellow} /><span style={{ fontSize: 9, color: C.inkFaint, minWidth: 18, flexShrink: 0 }}>carb</span></div>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orange, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.protein}g</span><MacroBar value={item.protein} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkFaint, minWidth: 18, flexShrink: 0 }}>pro</span></div>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.yellow, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.carbs}g</span><MacroBar value={item.carbs} max={maxCarbs} color={C.yellow} /><span style={{ fontSize: 9, color: C.inkFaint, minWidth: 18, flexShrink: 0 }}>carb</span></div>
                                             </div>
                                         )}
                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                            <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{cal}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkFaint }}> cal</span></span>
-                                            {n(item.price) > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>${n(item.price).toFixed(2)}</span>}
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{item.calories}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkFaint }}> cal</span></span>
+                                            {item.price > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -670,18 +687,18 @@ function NutritionCalculator({
                 </div>
             </div>
 
-            {/* Detail panel — fixed, slides in from the right */}
-            {panelOpen && (
-                <div style={detailPanelStyle} role="dialog" aria-label={`${sel!.title} details`}>
+            {/* Detail panel */}
+            {sel && (
+                <div style={detailPanelStyle} role="dialog" aria-label={`${sel.title} details`}>
                     <div style={{ height: 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
-                        {sel!.thumbnail ? <img src={sel!.thumbnail} alt={sel!.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
+                        {sel.thumbnail ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
                         <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
                         {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.green : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
                     </div>
                     <div style={{ padding: "18px 20px 36px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
                         <div>
-                            <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel!.title}</h3>
-                            {sel!.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel!.category}</div>}
+                            <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel.title}</h3>
+                            {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
                         </div>
                         <div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
@@ -710,16 +727,16 @@ function NutritionCalculator({
                                 <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
                             </div>
                         )}
-                        {sel!.description && <p style={{ fontSize: 13, color: C.inkFaint, margin: 0, lineHeight: 1.7 }}>{sel!.description}</p>}
-                        {sel!.ingredients && (
+                        {sel.description && <p style={{ fontSize: 13, color: C.inkFaint, margin: 0, lineHeight: 1.7 }}>{sel.description}</p>}
+                        {sel.ingredients && (
                             <div>
                                 <div style={{ fontSize: 10, fontWeight: 700, color: C.inkFaint, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 5 }}>Ingredients</div>
-                                <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.75, opacity: 0.75 }}>{sel!.ingredients}</div>
+                                <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.75, opacity: 0.75 }}>{sel.ingredients}</div>
                             </div>
                         )}
                         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
-                            <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orange, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{n(sel!.price) > 0 ? `Order Now — $${n(sel!.price).toFixed(2)}` : "Order Now"}</a>
-                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel!.id); navigator.clipboard?.writeText(url.toString()) } } catch { /* noop */ } }} style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${C.border}`, background: "none", color: C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Copy shareable link</button>
+                            <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orange, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
+                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()) } } catch { /* noop */ } }} style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${C.border}`, background: "none", color: C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Copy shareable link</button>
                         </div>
                     </div>
                 </div>
@@ -743,10 +760,10 @@ function NutritionCalculator({
                                     <div style={{ padding: "10px 12px" }}>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: C.cream, marginBottom: 6 }}>{item.title}</div>
                                         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                                            <span style={{ fontSize: 11, color: C.orange, fontWeight: 700 }}>{n(item.protein)}g pro</span>
-                                            <span style={{ fontSize: 11, color: C.yellow, fontWeight: 700 }}>{n(item.carbs)}g carb</span>
-                                            <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 600 }}>{n(item.calories)} cal</span>
-                                            {n(item.price) > 0 && <span style={{ fontSize: 11, color: C.cream, fontWeight: 600 }}>${n(item.price).toFixed(2)}</span>}
+                                            <span style={{ fontSize: 11, color: C.orange, fontWeight: 700 }}>{item.protein}g pro</span>
+                                            <span style={{ fontSize: 11, color: C.yellow, fontWeight: 700 }}>{item.carbs}g carb</span>
+                                            <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 600 }}>{item.calories} cal</span>
+                                            {item.price > 0 && <span style={{ fontSize: 11, color: C.cream, fontWeight: 600 }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                         <button onClick={() => handleToggleTray(item.id)} aria-label={`Remove ${item.title} from compare`} style={{ marginTop: 8, padding: "4px 10px", borderRadius: 6, border: `1px solid rgba(255,255,255,0.15)`, background: "none", color: "rgba(245,238,227,0.60)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Remove</button>
                                     </div>
@@ -768,7 +785,7 @@ function NutritionCalculator({
     )
 }
 
-// ── 12. Export + property controls ───────────────────────────────────────────
+// ── 13. Export + property controls ───────────────────────────────────────────
 
 export default NutritionCalculator
 
