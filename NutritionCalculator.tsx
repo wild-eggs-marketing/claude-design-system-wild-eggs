@@ -25,10 +25,12 @@ const FIELD = {
 
 const C = {
     orange:      "rgb(252, 97, 45)",
+    orangeDark:  "rgb(200, 66, 18)",   // AA-compliant orange for text on white / white text on it
     orangeLight: "rgba(252, 97, 45, 0.10)",
     yellow:      "rgb(246, 192, 52)",
     amber:       "rgb(158, 121, 0)",   // AA-compliant stand-in for yellow when used as text on white
     green:       "rgb(123, 144, 21)",
+    greenDark:   "rgb(90, 106, 15)",   // AA-compliant green for text on white / white text on it
     greenLight:  "rgba(123, 144, 21, 0.12)",
     teal:        "rgb(13, 79, 79)",
     tealLight:   "rgba(13, 79, 79, 0.08)",
@@ -109,9 +111,11 @@ const PORTION_LABELS: { val: number; label: string }[] = [
 const GOALS: GoalDef[] = [
     // "all" uses cream (not teal) — a teal fill would vanish into the teal header when active
     { id: "all",   label: "Browse All",    sub: "Full menu",     accent: C.cream, accentText: C.teal },
-    { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, minProtein: 30 },
-    { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  maxCalories: 500 },
-    { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, minCarbs: 50 },
+    // accentText is dark ink on every colored fill — white fails WCAG AA on orange (3.0:1),
+    // green (3.6:1), and yellow (1.6:1); ink passes 4.5:1+ on all three.
+    { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, accentText: C.ink, minProtein: 30 },
+    { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  accentText: C.ink, maxCalories: 500 },
+    { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, accentText: C.ink, minCarbs: 50 },
 ]
 
 // Dietary predicates — ingredient keyword exclusion for diet tags, macro thresholds
@@ -243,18 +247,6 @@ function applyFilters(items: MenuItem[], f: FilterState): MenuItem[] {
     if (f.sortBy === "protein-desc")  return [...list].sort((a, b) => b.protein  - a.protein)
     if (f.sortBy === "goal-fit")      return [...list].sort((a, b) => fitScore(b, f.goal) - fitScore(a, f.goal))
     return list
-}
-
-function buildGoalCounts(items: MenuItem[]): Record<string, number> {
-    const counts: Record<string, number> = {}
-    GOALS.forEach(g => { counts[g.id] = filterByGoal(items, g).length })
-    return counts
-}
-
-function buildCategoryCounts(items: MenuItem[]): Record<string, number> {
-    const counts: Record<string, number> = { All: items.length }
-    items.forEach(i => { if (i.category) counts[i.category] = (counts[i.category] ?? 0) + 1 })
-    return counts
 }
 
 // ── 10. Custom hooks ──────────────────────────────────────────────────────────
@@ -541,8 +533,44 @@ function NutritionCalculator({
     })
 
     // — Derived data ———————————————————————————————————————————————————————————
-    const goalCounts     = useMemo(() => buildGoalCounts(effectiveItems),     [effectiveItems])
-    const categoryCounts = useMemo(() => buildCategoryCounts(effectiveItems), [effectiveItems])
+    // Wrap-or-bowl pairing: flavors sold as both (e.g. "Thai Wrap"/"Thai Bowl") merge
+    // into one card with a format toggle. Items stay separate in the data so each
+    // format keeps its own verified nutrition and goal filters stay per-format.
+    const pairMap = useMemo(() => {
+        const m = new Map<string, { wrap?: MenuItem; bowl?: MenuItem }>()
+        effectiveItems.forEach(i => {
+            const match = FORMAT_RE.exec(i.title)
+            if (!match) return
+            const key = match[1].toLowerCase()
+            const e = m.get(key) ?? {}
+            if (match[2] === "Wrap") e.wrap = i; else e.bowl = i
+            m.set(key, e)
+        })
+        for (const [k, v] of Array.from(m)) if (!v.wrap || !v.bowl) m.delete(k)
+        return m as Map<string, { wrap: MenuItem; bowl: MenuItem }>
+    }, [effectiveItems])
+
+    // Count merged cards, not raw items, so pill/goal counts match what the grid shows
+    const countCards = useCallback((list: MenuItem[]): number => {
+        let n = list.length
+        const ids = new Set(list.map(i => i.id))
+        pairMap.forEach(p => { if (ids.has(p.wrap.id) && ids.has(p.bowl.id)) n-- })
+        return n
+    }, [pairMap])
+
+    const goalCounts = useMemo(() => {
+        const counts: Record<string, number> = {}
+        GOALS.forEach(g => { counts[g.id] = countCards(filterByGoal(effectiveItems, g)) })
+        return counts
+    }, [effectiveItems, countCards])
+
+    const categoryCounts = useMemo(() => {
+        const counts: Record<string, number> = { All: countCards(effectiveItems) }
+        const byCat = new Map<string, MenuItem[]>()
+        effectiveItems.forEach(i => { if (i.category) byCat.set(i.category, [...(byCat.get(i.category) ?? []), i]) })
+        byCat.forEach((list, cat) => { counts[cat] = countCards(list) })
+        return counts
+    }, [effectiveItems, countCards])
     const categories     = useMemo(() => ["All", ...Array.from(new Set(effectiveItems.map(i => i.category).filter(Boolean)))], [effectiveItems])
 
     const { maxProtein, maxCarbs } = useMemo(() => ({
@@ -570,24 +598,6 @@ function NutritionCalculator({
     }, [trayState.items, effectiveItems])
 
     const sel = useMemo(() => selected ? effectiveItems.find(i => i.id === selected || i.title === selected) : undefined, [selected, effectiveItems])
-
-    // — Wrap-or-bowl pairing —————————————————————————————————————————————————
-    // Flavors sold as both wrap and bowl (e.g. "Thai Wrap"/"Thai Bowl") merge into
-    // one card with a format toggle. Items stay separate in the data so each format
-    // keeps its own verified nutrition, and goal filters stay per-format.
-    const pairMap = useMemo(() => {
-        const m = new Map<string, { wrap?: MenuItem; bowl?: MenuItem }>()
-        effectiveItems.forEach(i => {
-            const match = FORMAT_RE.exec(i.title)
-            if (!match) return
-            const key = match[1].toLowerCase()
-            const e = m.get(key) ?? {}
-            if (match[2] === "Wrap") e.wrap = i; else e.bowl = i
-            m.set(key, e)
-        })
-        for (const [k, v] of Array.from(m)) if (!v.wrap || !v.bowl) m.delete(k)
-        return m as Map<string, { wrap: MenuItem; bowl: MenuItem }>
-    }, [effectiveItems])
 
     interface CardEntry { item: MenuItem; partner?: MenuItem; key: string }
     const cards = useMemo((): CardEntry[] => {
@@ -674,7 +684,7 @@ function NutritionCalculator({
                         <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)" }}>Daily cal budget</label>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <input type="number" value={budget || ""} onChange={e => setBudget(Math.max(0, Number(e.target.value)))} placeholder="e.g. 1800" aria-label="Daily calorie budget" style={{ width: 100, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${budget > 0 ? C.orange : "rgba(255,255,255,0.20)"}`, background: "rgba(255,255,255,0.10)", color: C.cream, fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none" }} />
-                            {budgetRemaining !== null && <div style={{ fontSize: 12, color: budgetRemaining >= 0 ? C.cream : C.orange, fontWeight: 700 }} aria-live="polite">{budgetRemaining >= 0 ? `${budgetRemaining} left` : `${Math.abs(budgetRemaining)} over`}</div>}
+                            {budgetRemaining !== null && <div style={{ fontSize: 12, color: budgetRemaining >= 0 ? C.cream : C.yellow, fontWeight: 700 }} aria-live="polite">{budgetRemaining >= 0 ? `${budgetRemaining} left` : `${Math.abs(budgetRemaining)} over`}</div>}
                         </div>
                     </div>
                 </div>
@@ -690,12 +700,12 @@ function NutritionCalculator({
                     <option value="calories-desc">Most Calories</option>
                 </select>
                 <button onClick={() => setShowMacros(p => !p)} aria-pressed={showMacros} style={{ padding: "8px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${showMacros ? C.teal : C.border}`, background: showMacros ? C.tealLight : "transparent", color: showMacros ? C.teal : C.inkSoft, fontFamily: "inherit" }}>{showMacros ? "Hide macros" : "Show macros"}</button>
-                {activeFilters > 0 && <button onClick={() => { setSearch(""); setCategory("All"); setDietary([]) }} style={{ padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${C.orange}`, background: C.orangeLight, color: C.orange, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Clear {activeFilters} filter{activeFilters > 1 ? "s" : ""}</button>}
+                {activeFilters > 0 && <button onClick={() => { setSearch(""); setCategory("All"); setDietary([]) }} style={{ padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${C.orangeDark}`, background: C.orangeLight, color: C.orangeDark, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Clear {activeFilters} filter{activeFilters > 1 ? "s" : ""}</button>}
             </div>
 
             {/* Dietary + category pills */}
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "8px 32px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {DIETARY.map(d => { const active = dietary.includes(d); return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.green : C.border}`, background: active ? C.green : "transparent", color: active ? C.white : C.inkSoft, transition: "all 0.12s" }}>{d}</button> })}
+                {DIETARY.map(d => { const active = dietary.includes(d); return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, transition: "all 0.12s" }}>{d}</button> })}
                 <div style={{ width: 1, height: 16, background: C.border, margin: "0 2px" }} aria-hidden="true" />
                 {categories.map(cat => <button key={cat} onClick={() => setCategory(cat)} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
             </div>
@@ -703,8 +713,8 @@ function NutritionCalculator({
             {/* Fetch error banner */}
             {isError && (
                 <div role="alert" style={{ padding: "10px 32px", background: C.orangeLight, borderBottom: `1px solid ${C.orange}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <span style={{ fontSize: 12, color: C.orange, fontWeight: 600 }}>Could not load menu data from endpoint.</span>
-                    <button onClick={() => { setFetchState("idle"); setRetryKey(k => k + 1) }} style={{ padding: "4px 12px", borderRadius: 6, border: `1.5px solid ${C.orange}`, background: "none", color: C.orange, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Retry</button>
+                    <span style={{ fontSize: 12, color: C.orangeDark, fontWeight: 600 }}>Could not load menu data from endpoint.</span>
+                    <button onClick={() => { setFetchState("idle"); setRetryKey(k => k + 1) }} style={{ padding: "4px 12px", borderRadius: 6, border: `1.5px solid ${C.orangeDark}`, background: "none", color: C.orangeDark, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Retry</button>
                 </div>
             )}
 
@@ -728,8 +738,8 @@ function NutritionCalculator({
                                 <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
                                     {goal !== "all"    && <button onClick={() => setGoal("all")} style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,   background: C.tealLight,   color: C.teal,   fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Browse all goals</button>}
                                     {category !== "All"  && <button onClick={() => setCategory("All")}  style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.teal}`,   background: C.tealLight,   color: C.teal,   fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>All categories</button>}
-                                    {dietary.length > 0  && <button onClick={() => setDietary([])}      style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.green}`,  background: C.greenLight,  color: C.green,  fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Clear dietary</button>}
-                                    {search              && <button onClick={() => setSearch("")}        style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.orange}`, background: C.orangeLight, color: C.orange, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>}
+                                    {dietary.length > 0  && <button onClick={() => setDietary([])}      style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.greenDark}`,  background: C.greenLight,  color: C.greenDark,  fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Clear dietary</button>}
+                                    {search              && <button onClick={() => setSearch("")}        style={{ padding: "7px 14px", borderRadius: 8, border: `1.5px solid ${C.orangeDark}`, background: C.orangeLight, color: C.orangeDark, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>}
                                 </div>
                             )}
                         </div>
@@ -748,7 +758,7 @@ function NutritionCalculator({
                         const cardKey    = alt ? card.key : (item.id !== String(idx) ? item.id : `${item.title}-${idx}`)
                         return (
                             <div key={cardKey} style={{ background: C.white, borderRadius: 12, overflow: "hidden", border: `2px solid ${isSelected ? C.orange : inTray ? C.teal : isTopMatch ? "rgba(123,144,21,0.35)" : "transparent"}`, boxShadow: isSelected ? `0 0 0 3px ${C.orangeLight}, 0 4px 20px rgba(0,0,0,0.09)` : "0 1px 4px rgba(0,0,0,0.06)", transition: "box-shadow 0.15s, border-color 0.15s", position: "relative", animation: "cbwFadeUp 0.25s ease both", animationDelay: `${Math.min(idx * 0.03, 0.3)}s` }}>
-                                {isTopMatch && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: C.green, color: C.white, fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Best match</div>}
+                                {isTopMatch && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: C.greenDark, color: C.white, fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Best match</div>}
                                 <button
                                     onClick={e => { e.stopPropagation(); if (!trayFull) handleToggleTray(item.id) }}
                                     aria-label={inTray ? `Remove ${item.title} from compare` : trayFull ? "Compare tray full" : `Add ${item.title} to compare`}
@@ -781,7 +791,7 @@ function NutritionCalculator({
                                         {item.shortIngr && <div style={{ fontSize: 11, color: C.inkSoft, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
                                         {showMacros && (item.protein > 0 || item.carbs > 0) && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orange, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.protein}g</span><MacroBar value={item.protein} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>pro</span></div>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.orangeDark, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.protein}g</span><MacroBar value={item.protein} max={maxProtein} color={C.orange} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>pro</span></div>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 10, color: C.amber, fontWeight: 700, minWidth: 30, flexShrink: 0 }}>{item.carbs}g</span><MacroBar value={item.carbs} max={maxCarbs} color={C.yellow} /><span style={{ fontSize: 9, color: C.inkSoft, minWidth: 18, flexShrink: 0 }}>carb</span></div>
                                             </div>
                                         )}
@@ -805,7 +815,7 @@ function NutritionCalculator({
                     <div style={{ height: 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
                         {sel.thumbnail ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
                         <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
-                        {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.green : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
+                        {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.greenDark : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
                     </div>
                     <div style={{ padding: "18px 20px 36px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
                         <div>
@@ -831,7 +841,7 @@ function NutritionCalculator({
                         <div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
                             <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
-                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orange : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orange : C.inkSoft }}>{p.label}</button>)}
+                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orangeDark : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orangeDark : C.inkSoft }}>{p.label}</button>)}
                             </div>
                         </div>
                         <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
@@ -851,7 +861,7 @@ function NutritionCalculator({
                         )}
                         {goal !== "all" && (
                             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 13px", borderRadius: 10, background: swapTip ? C.orangeLight : C.greenLight, borderLeft: `3px solid ${swapTip ? C.orange : C.green}` }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: swapTip ? C.orange : C.green, textTransform: "uppercase", letterSpacing: "0.08em", minWidth: 58 }}>{swapTip ? "Tweak it" : "Great fit"}</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: swapTip ? C.orangeDark : C.greenDark, textTransform: "uppercase", letterSpacing: "0.08em", minWidth: 58 }}>{swapTip ? "Tweak it" : "Great fit"}</div>
                                 <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
                             </div>
                         )}
@@ -863,8 +873,8 @@ function NutritionCalculator({
                             </div>
                         )}
                         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
-                            <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orange, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
-                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()); setCopied(true) } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.green : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.green : C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
+                            <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orangeDark, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
+                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()); setCopied(true) } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.greenDark : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.greenDark : C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
                         </div>
                     </div>
                 </div>
