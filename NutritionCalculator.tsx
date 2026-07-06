@@ -1,10 +1,17 @@
 import { addPropertyControls, ControlType } from "framer"
-import { useState, useMemo, useEffect, useRef, useDeferredValue } from "react"
+import { useState, useMemo, useEffect, useRef, useDeferredValue, useReducer, useCallback, memo } from "react"
+
+// ── 1. Constants ──────────────────────────────────────────────────────────────
+
+const MOBILE_BP = 680
+const MAX_TRAY  = 3
+const LS_KEYS   = { goal: "cbw_goal", sort: "cbw_sort", item: "cbw_last_item" } as const
+
+// ── 2. Design tokens ──────────────────────────────────────────────────────────
 
 const C = {
     orange:      "rgb(252, 97, 45)",
     orangeLight: "rgba(252, 97, 45, 0.10)",
-    orangeDark:  "rgb(210, 75, 28)",
     yellow:      "rgb(246, 192, 52)",
     green:       "rgb(123, 144, 21)",
     greenLight:  "rgba(123, 144, 21, 0.12)",
@@ -18,32 +25,16 @@ const C = {
     border:      "rgba(28, 43, 28, 0.09)",
 }
 
-const PORTION_LABELS: { val: number; label: string }[] = [
-    { val: 0.5, label: "Half" },
-    { val: 1,   label: "Regular" },
-    { val: 1.5, label: "Large" },
-]
-
-function n(v: any): number { return Number(v) || 0 }
-
-function lsGet(key: string): string | null {
-    try { return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null } catch { return null }
-}
-function lsSet(key: string, val: string): void {
-    try { if (typeof localStorage !== "undefined") localStorage.setItem(key, val) } catch { /* noop */ }
-}
-function lsClear(key: string): void {
-    try { if (typeof localStorage !== "undefined") localStorage.removeItem(key) } catch { /* noop */ }
-}
+// ── 3. Types ──────────────────────────────────────────────────────────────────
 
 interface MenuItem {
     title:       string
-    calories:    any
-    protein:     any
-    carbs:       any
-    fat?:        any
+    calories:    unknown
+    protein:     unknown
+    carbs:       unknown
+    fat?:        unknown
     category:    string
-    price:       any
+    price:       unknown
     ingredients: string
     shortIngr:   string
     description: string
@@ -60,6 +51,33 @@ interface GoalDef {
     minCarbs?:    number
 }
 
+interface FilterState {
+    goal:     string
+    category: string
+    dietary:  string[]
+    search:   string
+    sortBy:   string
+}
+
+interface TrayState { items: string[]; open: boolean }
+type TrayAction = { type: "TOGGLE"; title: string } | { type: "TOGGLE_OPEN" }
+
+interface ScaledMacros {
+    protein:        number
+    carbs:          number
+    fat:            number
+    calories:       number
+    proteinDensity: number
+}
+
+// ── 4. Domain constants ───────────────────────────────────────────────────────
+
+const PORTION_LABELS: { val: number; label: string }[] = [
+    { val: 0.5, label: "Half" },
+    { val: 1,   label: "Regular" },
+    { val: 1.5, label: "Large" },
+]
+
 const GOALS: GoalDef[] = [
     { id: "all",   label: "Browse All",    sub: "Full menu",     accent: C.teal },
     { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, minProtein: 30 },
@@ -69,6 +87,20 @@ const GOALS: GoalDef[] = [
 
 const DIETARY: string[] = ["Vegetarian", "Vegan", "Gluten-Free", "High Protein", "Low Carb"]
 
+// ── 5. Utilities ──────────────────────────────────────────────────────────────
+
+function n(v: unknown): number { return Number(v) || 0 }
+
+function lsGet(key: string): string | null {
+    try { return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null } catch { return null }
+}
+function lsSet(key: string, val: string): void {
+    try { if (typeof localStorage !== "undefined") localStorage.setItem(key, val) } catch { /* noop */ }
+}
+function lsClear(key: string): void {
+    try { if (typeof localStorage !== "undefined") localStorage.removeItem(key) } catch { /* noop */ }
+}
+
 function fitScore(item: MenuItem, goalId: string): number {
     if (goalId === "power") return n(item.protein)
     if (goalId === "light") return n(item.calories) > 0 ? 1000 / n(item.calories) : 0
@@ -76,20 +108,125 @@ function fitScore(item: MenuItem, goalId: string): number {
     return 0
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── 6. Reducer ────────────────────────────────────────────────────────────────
 
-function MacroBar(props: { value: number; max: number; color: string }) {
+function trayReducer(state: TrayState, action: TrayAction): TrayState {
+    switch (action.type) {
+        case "TOGGLE": {
+            if (state.items.includes(action.title)) {
+                const next = state.items.filter(t => t !== action.title)
+                return { items: next, open: next.length > 0 ? state.open : false }
+            }
+            if (state.items.length >= MAX_TRAY) return state
+            return { ...state, items: [...state.items, action.title] }
+        }
+        case "TOGGLE_OPEN":
+            return { ...state, open: !state.open }
+        default:
+            return state
+    }
+}
+
+// ── 7. Pure filter logic ──────────────────────────────────────────────────────
+
+function applyFilters(items: MenuItem[], f: FilterState): MenuItem[] {
+    let list = items
+    const g = GOALS.find(g => g.id === f.goal)
+    if (g) {
+        if (g.minProtein  !== undefined) list = list.filter(i => n(i.protein)  >= g.minProtein!)
+        if (g.maxCalories !== undefined) list = list.filter(i => n(i.calories) <= g.maxCalories!)
+        if (g.minCarbs    !== undefined) list = list.filter(i => n(i.carbs)    >= g.minCarbs!)
+    }
+    if (f.category !== "All") list = list.filter(i => i.category === f.category)
+    const q = f.search.trim().toLowerCase()
+    if (q) list = list.filter(i =>
+        (i.title || "").toLowerCase().includes(q) ||
+        (i.ingredients || "").toLowerCase().includes(q)
+    )
+    if (f.dietary.length > 0) list = list.filter(i =>
+        f.dietary.every(d => (i.ingredients || "").toLowerCase().includes(d.toLowerCase()))
+    )
+    if (f.sortBy === "calories-asc")  return [...list].sort((a, b) => n(a.calories) - n(b.calories))
+    if (f.sortBy === "calories-desc") return [...list].sort((a, b) => n(b.calories) - n(a.calories))
+    if (f.sortBy === "protein-desc")  return [...list].sort((a, b) => n(b.protein)  - n(a.protein))
+    if (f.sortBy === "goal-fit")      return [...list].sort((a, b) => fitScore(b, f.goal) - fitScore(a, f.goal))
+    return list
+}
+
+function buildGoalCounts(items: MenuItem[]): Record<string, number> {
+    const counts: Record<string, number> = {}
+    GOALS.forEach(g => {
+        let list = items
+        if (g.minProtein  !== undefined) list = list.filter(i => n(i.protein)  >= g.minProtein!)
+        if (g.maxCalories !== undefined) list = list.filter(i => n(i.calories) <= g.maxCalories!)
+        if (g.minCarbs    !== undefined) list = list.filter(i => n(i.carbs)    >= g.minCarbs!)
+        counts[g.id] = list.length
+    })
+    return counts
+}
+
+function buildCategoryCounts(items: MenuItem[]): Record<string, number> {
+    const counts: Record<string, number> = { All: items.length }
+    items.forEach(i => { if (i.category) counts[i.category] = (counts[i.category] ?? 0) + 1 })
+    return counts
+}
+
+// ── 8. Custom hooks ───────────────────────────────────────────────────────────
+
+function useViewport(): boolean {
+    const [width, setWidth] = useState<number>(() => {
+        try { return typeof window !== "undefined" ? window.innerWidth : 1200 } catch { return 1200 }
+    })
+    useEffect(() => {
+        function onResize() { try { setWidth(window.innerWidth) } catch { /* noop */ } }
+        if (typeof window === "undefined") return
+        window.addEventListener("resize", onResize)
+        return () => window.removeEventListener("resize", onResize)
+    }, [])
+    return width < MOBILE_BP
+}
+
+function useDeepLink(items: MenuItem[], onMatch: (title: string) => void): void {
+    const fired      = useRef(false)
+    const onMatchRef = useRef(onMatch)
+    onMatchRef.current = onMatch
+    useEffect(() => {
+        if (fired.current || items.length === 0) return
+        try {
+            if (typeof window === "undefined") return
+            const itemName = new URLSearchParams(window.location.search).get("item")
+            if (itemName && items.find(i => i.title === itemName)) {
+                onMatchRef.current(itemName)
+                fired.current = true
+            }
+        } catch { /* noop */ }
+    }, [items])
+}
+
+function useKeyboard(key: string, handler: () => void): void {
+    const handlerRef = useRef(handler)
+    handlerRef.current = handler
+    useEffect(() => {
+        function onKey(e: KeyboardEvent) { if (e.key === key) handlerRef.current() }
+        if (typeof window === "undefined") return
+        window.addEventListener("keydown", onKey)
+        return () => window.removeEventListener("keydown", onKey)
+    }, [key])
+}
+
+// ── 9. Primitive components ───────────────────────────────────────────────────
+
+const MacroBar = memo(function MacroBar(props: { value: number; max: number; color: string }) {
     const pct = props.max > 0 ? Math.min(100, (props.value / props.max) * 100) : 0
     return (
         <div style={{ height: 3, background: C.inkGhost, borderRadius: 2, overflow: "hidden", flex: 1 }}>
             <div style={{ height: "100%", width: `${pct}%`, background: props.color, borderRadius: 2, transition: "width 0.3s ease" }} />
         </div>
     )
-}
+})
 
 interface MacroRingProps { protein: number; carbs: number; fat: number; calories: number; size?: number }
-function MacroRing(props: MacroRingProps) {
-    const { protein, carbs, fat, calories, size = 140 } = props
+const MacroRing = memo(function MacroRing({ protein, carbs, fat, calories, size = 140 }: MacroRingProps) {
     const total  = protein * 4 + carbs * 4 + fat * 9
     const r = 40, sw = 9, circ = 2 * Math.PI * r
     const proLen = total > 0 ? (protein * 4 / total) * circ : 0
@@ -112,9 +249,9 @@ function MacroRing(props: MacroRingProps) {
             </div>
         </div>
     )
-}
+})
 
-function MacroStat(props: { label: string; value: number; unit: string; color: string }) {
+const MacroStat = memo(function MacroStat(props: { label: string; value: number; unit: string; color: string }) {
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: props.color, flexShrink: 0 }} />
@@ -126,10 +263,9 @@ function MacroStat(props: { label: string; value: number; unit: string; color: s
             </div>
         </div>
     )
-}
+})
 
-// OPT-8: goal button fades + shows "none available" when 0 items would match
-function GoalButton(props: { g: GoalDef; active: boolean; count: number; total: number; onClick: () => void }) {
+const GoalButton = memo(function GoalButton(props: { g: GoalDef; active: boolean; count: number; total: number; onClick: () => void }) {
     const { g, active, count, total, onClick } = props
     const isEmpty = total > 0 && count === 0
     return (
@@ -148,9 +284,9 @@ function GoalButton(props: { g: GoalDef; active: boolean; count: number; total: 
             </div>
         </button>
     )
-}
+})
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── 10. Main component ────────────────────────────────────────────────────────
 
 interface NutritionCalculatorProps {
     items?:      MenuItem[]
@@ -158,197 +294,108 @@ interface NutritionCalculatorProps {
     fontFamily?: string
 }
 
-function NutritionCalculator(props: NutritionCalculatorProps) {
-    const { items = [], orderUrl = "#", fontFamily = "Bricolage Grotesque, sans-serif" } = props
+function NutritionCalculator({ items = [], orderUrl = "#", fontFamily = "Bricolage Grotesque, sans-serif" }: NutritionCalculatorProps) {
 
-    const [goal,       setGoal]       = useState<string>(() => lsGet("cbw_goal") ?? "all")
+    // — State ——————————————————————————————————————————————————————————————————
+    const [goal,       setGoal]       = useState<string>(() => lsGet(LS_KEYS.goal) ?? "all")
+    const [sortBy,     setSortBy]     = useState<string>(() => lsGet(LS_KEYS.sort) ?? "goal-fit")
     const [category,   setCategory]   = useState<string>("All")
     const [dietary,    setDietary]    = useState<string[]>([])
     const [search,     setSearch]     = useState<string>("")
-    const [selected,   setSelected]   = useState<string | null>(() => lsGet("cbw_last_item"))
-    // OPT-4: persist sort preference — was resetting to goal-fit on every page load
-    const [sortBy,     setSortBy]     = useState<string>(() => lsGet("cbw_sort") ?? "goal-fit")
+    const [selected,   setSelected]   = useState<string | null>(() => lsGet(LS_KEYS.item))
     const [portion,    setPortion]    = useState<number>(1)
-    const [tray,       setTray]       = useState<string[]>([])
-    const [trayOpen,   setTrayOpen]   = useState<boolean>(false)
     const [budget,     setBudget]     = useState<number>(0)
     const [showMacros, setShowMacros] = useState<boolean>(true)
+    const [trayState,  trayDispatch]  = useReducer(trayReducer, { items: [], open: false })
 
-    // OPT-7: viewport width drives mobile vs desktop detail panel layout
-    const [windowWidth, setWindowWidth] = useState<number>(() => {
-        try { return typeof window !== "undefined" ? window.innerWidth : 1200 } catch { return 1200 }
-    })
-
-    // OPT-3: defer search to keep input responsive while filtering large menus
-    const deferredSearch = useDeferredValue(search)
+    const deferredSearch  = useDeferredValue(search)
     const isSearchPending = search !== deferredSearch
+    const isMobile        = useViewport()
 
-    // OPT-1: one-shot URL deep-link — ref prevents re-fire when items prop updates
-    const linkedFromUrl = useRef<boolean>(false)
+    // — Stable callbacks ———————————————————————————————————————————————————————
+    const handleClose      = useCallback(() => setSelected(null), [])
+    const handleDeepLink   = useCallback((title: string) => setSelected(title), [])
+    const handleToggleTray = useCallback((title: string) => trayDispatch({ type: "TOGGLE", title }), [])
+    const handleGoalClick  = useCallback((id: string) => {
+        setGoal(id)
+        setSortBy(prev => id === "all" ? "default" : prev === "default" ? "goal-fit" : prev)
+    }, [])
 
-    useEffect(() => { lsSet("cbw_goal", goal) }, [goal])
-    useEffect(() => { lsSet("cbw_sort", sortBy) }, [sortBy])  // OPT-4
-
-    useEffect(() => {
-        if (selected) lsSet("cbw_last_item", selected)
-        else lsClear("cbw_last_item")
-    }, [selected])
-
+    // — Effects ————————————————————————————————————————————————————————————————
+    useEffect(() => { lsSet(LS_KEYS.goal, goal) },   [goal])
+    useEffect(() => { lsSet(LS_KEYS.sort, sortBy) }, [sortBy])
+    useEffect(() => { selected ? lsSet(LS_KEYS.item, selected) : lsClear(LS_KEYS.item) }, [selected])
     useEffect(() => { setPortion(1) }, [selected])
-    useEffect(() => { if (tray.length === 0) setTrayOpen(false) }, [tray])
+    useDeepLink(items, handleDeepLink)
+    useKeyboard("Escape", handleClose)
 
-    // OPT-1: read ?item= from URL and auto-open the matching detail panel
-    useEffect(() => {
-        if (linkedFromUrl.current || items.length === 0) return
-        try {
-            if (typeof window === "undefined") return
-            const itemName = new URLSearchParams(window.location.search).get("item")
-            if (itemName && items.find(i => i.title === itemName)) {
-                setSelected(itemName)
-                linkedFromUrl.current = true
-            }
-        } catch { /* noop */ }
-    }, [items])
+    // — Derived data ———————————————————————————————————————————————————————————
+    const goalCounts     = useMemo(() => buildGoalCounts(items),     [items])
+    const categoryCounts = useMemo(() => buildCategoryCounts(items), [items])
+    const categories     = useMemo(() =>
+        ["All", ...Array.from(new Set(items.map(i => i.category).filter(Boolean)))], [items])
 
-    // OPT-2: Escape key closes the detail panel — standard UX expectation
-    useEffect(() => {
-        function onKey(e: KeyboardEvent) { if (e.key === "Escape") setSelected(null) }
-        if (typeof window !== "undefined") {
-            window.addEventListener("keydown", onKey)
-            return () => window.removeEventListener("keydown", onKey)
-        }
-    }, [])
+    const { maxProtein, maxCarbs } = useMemo(() => ({
+        maxProtein: Math.max(...items.map(i => n(i.protein)), 1),
+        maxCarbs:   Math.max(...items.map(i => n(i.carbs)),   1),
+    }), [items])
 
-    // OPT-7: resize listener — switches panel from side rail to full overlay on narrow screens
-    useEffect(() => {
-        function onResize() {
-            try { setWindowWidth(window.innerWidth) } catch { /* noop */ }
-        }
-        if (typeof window !== "undefined") {
-            window.addEventListener("resize", onResize)
-            return () => window.removeEventListener("resize", onResize)
-        }
-    }, [])
-
-    const isMobile = windowWidth < 680
-
-    const maxProtein = useMemo(() => Math.max(...items.map(i => n(i.protein)), 1), [items])
-    const maxCarbs   = useMemo(() => Math.max(...items.map(i => n(i.carbs)),   1), [items])
-
-    const categories = useMemo((): string[] =>
-        ["All", ...Array.from(new Set(items.map(i => i.category).filter(Boolean)))],
-        [items]
-    )
-
-    // OPT-6: precompute item count per category so pills show what's behind them
-    const categoryCounts = useMemo((): Record<string, number> => {
-        const counts: Record<string, number> = { All: items.length }
-        items.forEach(i => { if (i.category) counts[i.category] = (counts[i.category] ?? 0) + 1 })
-        return counts
-    }, [items])
-
-    const goalCounts = useMemo(() => {
-        const counts: { [k: string]: number } = {}
-        GOALS.forEach(g => {
-            let list = [...items]
-            if (g.minProtein  !== undefined) list = list.filter(i => n(i.protein)  >= (g.minProtein  as number))
-            if (g.maxCalories !== undefined) list = list.filter(i => n(i.calories) <= (g.maxCalories as number))
-            if (g.minCarbs    !== undefined) list = list.filter(i => n(i.carbs)    >= (g.minCarbs    as number))
-            counts[g.id] = list.length
-        })
-        return counts
-    }, [items])
-
-    const filtered = useMemo((): MenuItem[] => {
-        let list: MenuItem[] = [...items]
-        const g: GoalDef | undefined = GOALS.find(g => g.id === goal)
-        if (g !== undefined) {
-            if (g.minProtein  !== undefined) list = list.filter(i => n(i.protein)  >= (g.minProtein  as number))
-            if (g.maxCalories !== undefined) list = list.filter(i => n(i.calories) <= (g.maxCalories as number))
-            if (g.minCarbs    !== undefined) list = list.filter(i => n(i.carbs)    >= (g.minCarbs    as number))
-        }
-        if (category !== "All") list = list.filter(i => i.category === category)
-        // OPT-3: deferredSearch — input stays crisp while React defers the O(n) filter pass
-        const q = deferredSearch.trim().toLowerCase()
-        if (q) list = list.filter(i =>
-            (i.title || "").toLowerCase().includes(q) ||
-            (i.ingredients || "").toLowerCase().includes(q)
-        )
-        if (dietary.length > 0) list = list.filter(i =>
-            dietary.every((d: string) => (i.ingredients || "").toLowerCase().includes(d.toLowerCase()))
-        )
-        if (sortBy === "calories-asc")  list = [...list].sort((a, b) => n(a.calories) - n(b.calories))
-        if (sortBy === "calories-desc") list = [...list].sort((a, b) => n(b.calories) - n(a.calories))
-        if (sortBy === "protein-desc")  list = [...list].sort((a, b) => n(b.protein)  - n(a.protein))
-        if (sortBy === "goal-fit")      list = [...list].sort((a, b) => fitScore(b, goal) - fitScore(a, goal))
-        return list
+    const { filtered, maxScore } = useMemo(() => {
+        const f = applyFilters(items, { goal, category, dietary, search: deferredSearch, sortBy })
+        const ms = goal !== "all" && f.length > 0 ? Math.max(...f.map(i => fitScore(i, goal)), 1) : 1
+        return { filtered: f, maxScore: ms }
     }, [items, goal, category, dietary, deferredSearch, sortBy])
 
-    const maxScore = useMemo(
-        () => goal !== "all" && filtered.length > 0 ? Math.max(...filtered.map(i => fitScore(i, goal)), 1) : 1,
-        [filtered, goal]
-    )
+    const { trayItems, trayTotals } = useMemo(() => {
+        const ti = trayState.items
+            .map(t => items.find(i => i.title === t))
+            .filter((x): x is MenuItem => !!x)
+        return {
+            trayItems: ti,
+            trayTotals: {
+                calories: ti.reduce((s, i) => s + n(i.calories), 0),
+                protein:  ti.reduce((s, i) => s + n(i.protein),  0),
+                carbs:    ti.reduce((s, i) => s + n(i.carbs),    0),
+                price:    ti.reduce((s, i) => s + n(i.price),    0),
+            },
+        }
+    }, [trayState.items, items])
 
-    const sel: MenuItem | undefined = useMemo(
-        () => selected !== null ? items.find(i => i.title === selected) : undefined,
+    const sel = useMemo(
+        () => selected ? items.find(i => i.title === selected) : undefined,
         [selected, items]
     )
 
-    const scaledProtein  = sel ? Math.round(n(sel.protein)  * portion) : 0
-    const scaledCarbs    = sel ? Math.round(n(sel.carbs)    * portion) : 0
-    const scaledFat      = sel ? Math.round(n(sel.fat)      * portion) : 0
-    const scaledCalories = sel ? Math.round(n(sel.calories) * portion) : 0
-    const proteinDensity = scaledCalories > 0 ? Math.round((scaledProtein / scaledCalories) * 100) : 0
+    const scaled = useMemo((): ScaledMacros => {
+        if (!sel) return { protein: 0, carbs: 0, fat: 0, calories: 0, proteinDensity: 0 }
+        const protein  = Math.round(n(sel.protein)  * portion)
+        const carbs    = Math.round(n(sel.carbs)    * portion)
+        const fat      = Math.round(n(sel.fat)      * portion)
+        const calories = Math.round(n(sel.calories) * portion)
+        return { protein, carbs, fat, calories, proteinDensity: calories > 0 ? Math.round((protein / calories) * 100) : 0 }
+    }, [sel, portion])
 
-    const swapTip: string | null = useMemo(() => {
+    const swapTip = useMemo((): string | null => {
         if (!sel) return null
-        if (goal === "power" && scaledProtein  < 30)  return "Add grilled chicken or tofu to push protein past 30g."
-        if (goal === "light" && scaledCalories > 500)  return "Skip the sauce or choose the half portion to stay under 500 cal."
-        if (goal === "fuel"  && scaledCarbs    < 50)  return "Swap in brown rice or quinoa to hit your carb target."
+        if (goal === "power" && scaled.protein  < 30)  return "Add grilled chicken or tofu to push protein past 30g."
+        if (goal === "light" && scaled.calories > 500) return "Skip the sauce or choose the half portion to stay under 500 cal."
+        if (goal === "fuel"  && scaled.carbs    < 50)  return "Swap in brown rice or quinoa to hit your carb target."
         return null
-    }, [sel, goal, scaledProtein, scaledCalories, scaledCarbs])
+    }, [sel, goal, scaled])
 
-    const activeFilters = dietary.length + (category !== "All" ? 1 : 0) + (search ? 1 : 0)
-    const noItems = items.length === 0
-
-    const trayItems = useMemo(() =>
-        tray.map(t => items.find(i => i.title === t)).filter((x): x is MenuItem => !!x),
-        [tray, items]
-    )
-
-    // OPT-5: tray totals now include price so comparison shows purchase cost
-    const trayTotals = useMemo(() => ({
-        calories: trayItems.reduce((s, i) => s + n(i.calories), 0),
-        protein:  trayItems.reduce((s, i) => s + n(i.protein),  0),
-        carbs:    trayItems.reduce((s, i) => s + n(i.carbs),    0),
-        price:    trayItems.reduce((s, i) => s + n(i.price),    0),
-    }), [trayItems])
-
+    // — Convenience ————————————————————————————————————————————————————————————
     const budgetRemaining = budget > 0 ? budget - trayTotals.calories : null
-
-    function toggleTray(title: string) {
-        setTray(prev =>
-            prev.includes(title)
-                ? prev.filter(t => t !== title)
-                : prev.length < 3 ? [...prev, title] : prev
-        )
-    }
-
-    function handleGoalClick(id: string) {
-        setGoal(id)
-        if (id === "all") setSortBy("default")
-        else if (sortBy === "default") setSortBy("goal-fit")
-    }
-
-    // OPT-7: on narrow screens the detail panel becomes a fixed full-screen overlay
+    const activeFilters   = dietary.length + (category !== "All" ? 1 : 0) + (search ? 1 : 0)
+    const noItems         = items.length === 0
     const detailPanelStyle = isMobile
         ? { position: "fixed" as const, top: 0, right: 0, bottom: 0, left: 0, zIndex: 200, background: C.white, overflowY: "auto" as const, display: "flex", flexDirection: "column" as const }
         : { width: 340, flexShrink: 0, background: C.white, borderLeft: `1px solid ${C.border}`, position: "sticky" as const, top: 0, height: "100vh", overflowY: "auto" as const, display: "flex", flexDirection: "column" as const }
 
+    // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div style={{ fontFamily, background: C.cream, minHeight: "100vh" }}>
 
-            {/* ── Goal header ──────────────────────────────────────────── */}
+            {/* Goal header */}
             <div style={{ background: C.teal, padding: "28px 32px 20px" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
                     <div>
@@ -356,7 +403,7 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                             What&apos;s your goal?
                         </div>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                            {GOALS.map((g: GoalDef) => (
+                            {GOALS.map(g => (
                                 <GoalButton key={g.id} g={g} active={goal === g.id}
                                     count={goalCounts[g.id] ?? 0}
                                     total={items.length}
@@ -391,9 +438,8 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                 </div>
             </div>
 
-            {/* ── Toolbar ──────────────────────────────────────────────── */}
+            {/* Toolbar */}
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "10px 32px", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                {/* OPT-3: opacity dims while deferred filter is in flight */}
                 <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
@@ -402,7 +448,7 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                         flex: 1, minWidth: 160, padding: "8px 13px", borderRadius: 8,
                         border: `1.5px solid ${search ? C.orange : C.border}`,
                         fontSize: 13, color: C.ink, background: C.inkGhost,
-                        outline: "none", fontFamily: "inherit", boxSizing: "border-box" as any,
+                        outline: "none", fontFamily: "inherit", boxSizing: "border-box",
                         opacity: isSearchPending ? 0.65 : 1,
                         transition: "border-color 0.15s, opacity 0.1s"
                     }}
@@ -441,12 +487,12 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                 )}
             </div>
 
-            {/* ── Dietary + category ───────────────────────────────────── */}
+            {/* Dietary + category pills */}
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "8px 32px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {DIETARY.map((d: string) => {
+                {DIETARY.map(d => {
                     const active = dietary.includes(d)
                     return (
-                        <button key={d} onClick={() => setDietary(active ? dietary.filter((x: string) => x !== d) : [...dietary, d])} style={{
+                        <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} style={{
                             padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600,
                             cursor: "pointer", fontFamily: "inherit",
                             border: `1.5px solid ${active ? C.green : C.border}`,
@@ -459,8 +505,7 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                     )
                 })}
                 <div style={{ width: 1, height: 16, background: C.border, margin: "0 2px" }} />
-                {/* OPT-6: category count in parentheses — users see what they'll find before tapping */}
-                {categories.map((cat: string) => (
+                {categories.map(cat => (
                     <button key={cat} onClick={() => setCategory(cat)} style={{
                         padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600,
                         cursor: "pointer", fontFamily: "inherit",
@@ -474,7 +519,7 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                 ))}
             </div>
 
-            {/* ── Results bar ──────────────────────────────────────────── */}
+            {/* Results count */}
             {!noItems && (
                 <div style={{ padding: "8px 32px" }}>
                     <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 500 }}>
@@ -484,8 +529,8 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                 </div>
             )}
 
-            {/* ── Main layout ───────────────────────────────────────────── */}
-            <div style={{ display: "flex", paddingBottom: tray.length > 0 ? 88 : 0 }}>
+            {/* Main layout */}
+            <div style={{ display: "flex", paddingBottom: trayState.items.length > 0 ? 88 : 0 }}>
 
                 {/* Card grid */}
                 <div style={{ flex: 1, padding: "4px 32px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, alignContent: "start" }}>
@@ -502,15 +547,15 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                         </div>
                     )}
 
-                    {filtered.map((item: MenuItem) => {
+                    {filtered.map(item => {
                         const isSelected = sel !== undefined && sel.title === item.title
-                        const inTray     = tray.includes(item.title)
+                        const inTray     = trayState.items.includes(item.title)
                         const score      = goal !== "all" ? fitScore(item, goal) : 0
                         const isTopMatch = goal !== "all" && score === maxScore && filtered.length > 1
                         const cal  = n(item.calories)
                         const prot = n(item.protein)
                         const carb = n(item.carbs)
-                        const trayFull = !inTray && tray.length >= 3
+                        const trayFull = !inTray && trayState.items.length >= MAX_TRAY
                         return (
                             <div key={item.title} style={{
                                 background: C.white, borderRadius: 12, overflow: "hidden",
@@ -530,7 +575,7 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                     </div>
                                 )}
                                 <button
-                                    onClick={e => { e.stopPropagation(); if (!trayFull) toggleTray(item.title) }}
+                                    onClick={e => { e.stopPropagation(); if (!trayFull) handleToggleTray(item.title) }}
                                     title={inTray ? "Remove from compare" : trayFull ? "Tray is full — remove an item first" : "Add to compare"}
                                     style={{
                                         position: "absolute", top: isTopMatch && !isSelected ? 26 : 8, right: 8, zIndex: 3,
@@ -560,7 +605,6 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                     <div style={{ padding: "11px 13px 13px" }}>
                                         <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}>{item.title}</div>
                                         {item.shortIngr && <div style={{ fontSize: 11, color: C.inkFaint, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}>{item.shortIngr}</div>}
-
                                         {showMacros && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -575,7 +619,6 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                                 </div>
                                             </div>
                                         )}
-
                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                             <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{cal}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkFaint }}> cal</span></span>
                                             {n(item.price) > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>${n(item.price).toFixed(2)}</span>}
@@ -587,7 +630,7 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                     })}
                 </div>
 
-                {/* Detail panel — OPT-7: fixed overlay on mobile, sticky rail on desktop */}
+                {/* Detail panel — fixed overlay on mobile, sticky rail on desktop */}
                 {sel !== undefined && (
                     <div style={detailPanelStyle}>
                         <div style={{ height: 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
@@ -595,22 +638,21 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                 ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                                 : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />
                             }
-                            {/* OPT-2: tooltip reinforces Escape shortcut */}
-                            <button onClick={() => setSelected(null)} title="Close (Esc)" style={{
+                            <button onClick={handleClose} title="Close (Esc)" style={{
                                 position: "absolute", top: 12, right: 12, width: 30, height: 30,
                                 borderRadius: "50%", background: "rgba(255,255,255,0.92)",
                                 border: "none", cursor: "pointer", fontSize: 16, color: C.ink,
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 fontFamily: "inherit"
                             }}>{"×"}</button>
-                            {proteinDensity > 0 && (
+                            {scaled.proteinDensity > 0 && (
                                 <div style={{
                                     position: "absolute", bottom: 12, left: 12,
-                                    background: proteinDensity >= 8 ? C.green : C.teal,
+                                    background: scaled.proteinDensity >= 8 ? C.green : C.teal,
                                     color: C.white, fontSize: 10, fontWeight: 700,
                                     padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em"
                                 }}>
-                                    {proteinDensity}g protein / 100 cal
+                                    {scaled.proteinDensity}g protein / 100 cal
                                 </div>
                             )}
                         </div>
@@ -639,23 +681,23 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                             </div>
 
                             <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
-                                <MacroRing protein={scaledProtein} carbs={scaledCarbs} fat={scaledFat} calories={scaledCalories} />
+                                <MacroRing protein={scaled.protein} carbs={scaled.carbs} fat={scaled.fat} calories={scaled.calories} />
                                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <MacroStat label="Protein" value={scaledProtein} unit="g" color={C.orange} />
-                                    <MacroStat label="Carbs"   value={scaledCarbs}   unit="g" color={C.yellow} />
-                                    {scaledFat > 0 && <MacroStat label="Fat" value={scaledFat} unit="g" color={C.green} />}
+                                    <MacroStat label="Protein" value={scaled.protein} unit="g" color={C.orange} />
+                                    <MacroStat label="Carbs"   value={scaled.carbs}   unit="g" color={C.yellow} />
+                                    {scaled.fat > 0 && <MacroStat label="Fat" value={scaled.fat} unit="g" color={C.green} />}
                                 </div>
                             </div>
 
-                            {budget > 0 && scaledCalories > 0 && (
+                            {budget > 0 && scaled.calories > 0 && (
                                 <div style={{
                                     display: "flex", alignItems: "center", justifyContent: "space-between",
                                     padding: "9px 13px", borderRadius: 10,
                                     background: C.tealLight, border: `1px solid ${C.teal}`
                                 }}>
                                     <span style={{ fontSize: 12, fontWeight: 600, color: C.ink }}>This bowl</span>
-                                    <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{scaledCalories} cal</span>
-                                    <span style={{ fontSize: 11, color: C.teal, fontWeight: 600 }}>{Math.round((scaledCalories / budget) * 100)}% of daily goal</span>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{scaled.calories} cal</span>
+                                    <span style={{ fontSize: 11, color: C.teal, fontWeight: 600 }}>{Math.round((scaled.calories / budget) * 100)}% of daily goal</span>
                                 </div>
                             )}
 
@@ -695,7 +737,6 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                 }}>
                                     {n(sel.price) > 0 ? `Order Now — $${n(sel.price).toFixed(2)}` : "Order Now"}
                                 </a>
-                                {/* OPT-1: this button's URL is now readable on mount — deep-link is fully round-trip */}
                                 <button onClick={() => {
                                     try {
                                         if (typeof window !== "undefined") {
@@ -717,14 +758,14 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                 )}
             </div>
 
-            {/* ── Comparison tray ───────────────────────────────────────── */}
-            {tray.length > 0 && (
+            {/* Comparison tray */}
+            {trayState.items.length > 0 && (
                 <div style={{
                     position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
                     background: C.ink, borderTop: `1px solid rgba(255,255,255,0.08)`
                 }}>
                     <button
-                        onClick={() => setTrayOpen(p => !p)}
+                        onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })}
                         style={{
                             width: "100%", padding: "10px 32px", display: "flex", alignItems: "center",
                             justifyContent: "space-between", background: "none", border: "none",
@@ -732,19 +773,19 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                         }}
                     >
                         <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                            Compare {tray.length} bowl{tray.length > 1 ? "s" : ""}
+                            Compare {trayState.items.length} bowl{trayState.items.length > 1 ? "s" : ""}
                         </span>
                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                             <span style={{ fontSize: 12, color: C.inkFaint }}>
                                 {trayTotals.calories} cal · {trayTotals.protein}g protein · {trayTotals.carbs}g carbs combined
                             </span>
-                            <span style={{ fontSize: 14, color: "rgba(245,238,227,0.50)" }}>{trayOpen ? "▼" : "▲"}</span>
+                            <span style={{ fontSize: 14, color: "rgba(245,238,227,0.50)" }}>{trayState.open ? "▼" : "▲"}</span>
                         </div>
                     </button>
 
-                    {trayOpen && (
+                    {trayState.open && (
                         <div style={{ padding: "0 32px 20px", display: "flex", gap: 16, overflowX: "auto" }}>
-                            {trayItems.map((item: MenuItem) => (
+                            {trayItems.map(item => (
                                 <div key={item.title} style={{
                                     flexShrink: 0, width: 200, background: "rgba(255,255,255,0.05)",
                                     borderRadius: 10, overflow: "hidden", border: `1px solid rgba(255,255,255,0.08)`
@@ -758,10 +799,9 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                             <span style={{ fontSize: 11, color: C.orange, fontWeight: 700 }}>{n(item.protein)}g pro</span>
                                             <span style={{ fontSize: 11, color: C.yellow, fontWeight: 700 }}>{n(item.carbs)}g carb</span>
                                             <span style={{ fontSize: 11, color: C.inkFaint, fontWeight: 600 }}>{n(item.calories)} cal</span>
-                                            {/* OPT-5: per-item price in tray */}
                                             {n(item.price) > 0 && <span style={{ fontSize: 11, color: C.cream, fontWeight: 600 }}>${n(item.price).toFixed(2)}</span>}
                                         </div>
-                                        <button onClick={() => toggleTray(item.title)} style={{
+                                        <button onClick={() => handleToggleTray(item.title)} style={{
                                             marginTop: 8, padding: "4px 10px", borderRadius: 6,
                                             border: `1px solid rgba(255,255,255,0.15)`, background: "none",
                                             color: "rgba(245,238,227,0.60)", fontSize: 11, cursor: "pointer", fontFamily: "inherit"
@@ -771,7 +811,6 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
                                     </div>
                                 </div>
                             ))}
-                            {/* OPT-5: combined total card now shows price total */}
                             <div style={{ flexShrink: 0, width: 200, background: "rgba(252,97,45,0.12)", borderRadius: 10, padding: "14px 16px", border: `1px solid rgba(252,97,45,0.25)`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                                 <div style={{ fontSize: 11, fontWeight: 700, color: C.orange, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Combined total</div>
                                 <div style={{ fontSize: 22, fontWeight: 800, color: C.cream, marginBottom: 2 }}>{trayTotals.calories}<span style={{ fontSize: 12, color: C.inkFaint }}> cal</span></div>
@@ -795,6 +834,8 @@ function NutritionCalculator(props: NutritionCalculatorProps) {
         </div>
     )
 }
+
+// ── 11. Export + property controls ───────────────────────────────────────────
 
 export default NutritionCalculator
 
