@@ -50,7 +50,7 @@ function injectStyles() {
     _stylesInjected = true
     const s = document.createElement("style")
     s.dataset.cbw = "1"
-    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
+    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes cbwSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
     document.head.appendChild(s)
 }
 
@@ -654,18 +654,96 @@ function NutritionCalculator({
     const noItems         = effectiveItems.length === 0
     const isLoading       = fetchState === "loading"
     const isError         = fetchState === "error"
-    const detailPanelStyle = {
-        position: "fixed" as const,
-        top: 0, right: 0, bottom: 0,
-        width: isMobile ? "100%" : 340,
-        zIndex: 200,
-        background: C.white,
-        borderLeft: isMobile ? "none" : `1px solid ${C.border}`,
-        overflowY: "auto" as const,
-        display: "flex",
-        flexDirection: "column" as const,
-        boxShadow: isMobile ? "none" : "-4px 0 24px rgba(0,0,0,0.07)",
+    // Desktop: detail is an in-flow sticky column beside the grid (stays inside the
+    // component, never covers the site header, keeps the catalog visible — the
+    // research-backed split-view pattern). Mobile: a bottom sheet.
+    const detailColStyle = {
+        width: 380, flexShrink: 0, alignSelf: "stretch" as const,
+        position: "sticky" as const, top: 0, maxHeight: "100vh",
+        overflowY: "auto" as const, background: C.white,
+        borderLeft: `1px solid ${C.border}`, boxShadow: "-4px 0 24px rgba(0,0,0,0.06)",
+        display: "flex", flexDirection: "column" as const,
+        animation: "cbwFadeUp 0.2s ease",
     }
+    const sheetStyle = {
+        position: "fixed" as const, left: 0, right: 0, bottom: 0, zIndex: 200,
+        maxHeight: "92vh", background: C.white,
+        borderRadius: "18px 18px 0 0", overflowY: "auto" as const,
+        display: "flex", flexDirection: "column" as const,
+        boxShadow: "0 -8px 32px rgba(0,0,0,0.18)", animation: "cbwSheetUp 0.28s ease",
+    }
+
+    // Shared detail content — rendered in the desktop column and the mobile sheet.
+    const detailInner = sel ? (
+        <>
+            <div style={{ height: isMobile ? 170 : 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
+                {isMobile && <div aria-hidden="true" style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.7)", zIndex: 2 }} />}
+                {sel.thumbnail ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
+                <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
+                {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.greenDark : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
+            </div>
+            <div style={{ padding: "18px 20px 36px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
+                <div>
+                    <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel.title}</h3>
+                    {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
+                </div>
+                {selAlt && (
+                    <div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Format</div>
+                        <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Wrap or bowl">
+                            {[sel, selAlt].sort((a, b) => (a.title.endsWith("Wrap") ? 0 : 1) - (b.title.endsWith("Wrap") ? 0 : 1)).map(v => {
+                                const active = v.id === sel.id
+                                return (
+                                    <button key={v.id} onClick={() => setSelected(v.id)} aria-pressed={active}
+                                        style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${active ? C.teal : C.border}`, background: active ? C.tealLight : "transparent", color: active ? C.teal : C.inkSoft }}>
+                                        {v.title.endsWith("Wrap") ? "Wrap" : "Bowl"}{v.price > 0 ? ` · $${v.price.toFixed(2)}` : ""}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+                <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
+                    <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
+                        {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orangeDark : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orangeDark : C.inkSoft }}>{p.label}</button>)}
+                    </div>
+                </div>
+                <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
+                    <MacroRing protein={scaled.protein} carbs={scaled.carbs} fat={scaled.fat} calories={scaled.calories} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <MacroStat label="Protein" value={scaled.protein} unit="g" color={C.orange} />
+                        <MacroStat label="Carbs"   value={scaled.carbs}   unit="g" color={C.yellow} />
+                        {scaled.fat > 0 && <MacroStat label="Fat" value={scaled.fat} unit="g" color={C.green} />}
+                    </div>
+                </div>
+                {budget > 0 && scaled.calories > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 13px", borderRadius: 10, background: C.tealLight, border: `1px solid ${C.teal}` }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.ink }}>This bowl</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{scaled.calories} cal</span>
+                        <span style={{ fontSize: 11, color: C.teal, fontWeight: 600 }}>{Math.round((scaled.calories / budget) * 100)}% of daily goal</span>
+                    </div>
+                )}
+                {goal !== "all" && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 13px", borderRadius: 10, background: swapTip ? C.orangeLight : C.greenLight, borderLeft: `3px solid ${swapTip ? C.orange : C.green}` }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: swapTip ? C.orangeDark : C.greenDark, textTransform: "uppercase", letterSpacing: "0.08em", minWidth: 58 }}>{swapTip ? "Tweak it" : "Great fit"}</div>
+                        <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
+                    </div>
+                )}
+                {sel.description && <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.7 }}>{sel.description}</p>}
+                {sel.ingredients && (
+                    <div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 5 }}>Ingredients</div>
+                        <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.75, opacity: 0.75 }}>{sel.ingredients}</div>
+                    </div>
+                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
+                    <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orangeDark, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
+                    <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()); setCopied(true) } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.greenDark : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.greenDark : C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
+                </div>
+            </div>
+        </>
+    ) : null
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
@@ -721,9 +799,10 @@ function NutritionCalculator({
             {/* Results count */}
             {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>{cards.length} result{cards.length === 1 ? "" : "s"}{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
 
-            {/* Main layout */}
-            <div style={{ paddingRight: sel && !isMobile ? 340 : 0, paddingBottom: trayState.items.length > 0 ? 88 : 0, transition: "padding-right 0.2s ease" }}>
-                <div style={{ padding: "4px 32px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, alignContent: "start" }}>
+            {/* Main layout — grid + optional in-flow detail column (desktop split view) */}
+            <div style={{ display: "flex", alignItems: "flex-start" }}>
+              <div style={{ flex: 1, minWidth: 0, paddingBottom: trayState.items.length > 0 ? 88 : 0 }}>
+                <div style={{ padding: "4px 32px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, alignContent: "start" }}>
 
                     {isLoading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
 
@@ -807,83 +886,18 @@ function NutritionCalculator({
                         )
                     })}
                 </div>
+              </div>
+              {sel && !isMobile && (
+                <aside style={detailColStyle} role="region" aria-label={`${sel.title} details`}>{detailInner}</aside>
+              )}
             </div>
 
-            {/* Detail panel scrim — dims the page behind the slide-over so it reads as a
-                modal (not a floating rail clipping the page) and gives a click-to-close target */}
-            {sel && !isMobile && (
-                <div onClick={handleClose} aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(28,43,28,0.38)", animation: "cbwFadeUp 0.2s ease" }} />
-            )}
-
-            {/* Detail panel */}
-            {sel && (
-                <div style={detailPanelStyle} role="dialog" aria-modal="true" aria-label={`${sel.title} details`}>
-                    <div style={{ height: 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
-                        {sel.thumbnail ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
-                        <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
-                        {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.greenDark : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
-                    </div>
-                    <div style={{ padding: "18px 20px 36px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
-                        <div>
-                            <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel.title}</h3>
-                            {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
-                        </div>
-                        {selAlt && (
-                            <div>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Format</div>
-                                <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Wrap or bowl">
-                                    {[sel, selAlt].sort((a, b) => (a.title.endsWith("Wrap") ? 0 : 1) - (b.title.endsWith("Wrap") ? 0 : 1)).map(v => {
-                                        const active = v.id === sel.id
-                                        return (
-                                            <button key={v.id} onClick={() => setSelected(v.id)} aria-pressed={active}
-                                                style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${active ? C.teal : C.border}`, background: active ? C.tealLight : "transparent", color: active ? C.teal : C.inkSoft }}>
-                                                {v.title.endsWith("Wrap") ? "Wrap" : "Bowl"}{v.price > 0 ? ` · $${v.price.toFixed(2)}` : ""}
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                        <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
-                            <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
-                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orangeDark : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orangeDark : C.inkSoft }}>{p.label}</button>)}
-                            </div>
-                        </div>
-                        <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
-                            <MacroRing protein={scaled.protein} carbs={scaled.carbs} fat={scaled.fat} calories={scaled.calories} />
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <MacroStat label="Protein" value={scaled.protein} unit="g" color={C.orange} />
-                                <MacroStat label="Carbs"   value={scaled.carbs}   unit="g" color={C.yellow} />
-                                {scaled.fat > 0 && <MacroStat label="Fat" value={scaled.fat} unit="g" color={C.green} />}
-                            </div>
-                        </div>
-                        {budget > 0 && scaled.calories > 0 && (
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 13px", borderRadius: 10, background: C.tealLight, border: `1px solid ${C.teal}` }}>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: C.ink }}>This bowl</span>
-                                <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{scaled.calories} cal</span>
-                                <span style={{ fontSize: 11, color: C.teal, fontWeight: 600 }}>{Math.round((scaled.calories / budget) * 100)}% of daily goal</span>
-                            </div>
-                        )}
-                        {goal !== "all" && (
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 13px", borderRadius: 10, background: swapTip ? C.orangeLight : C.greenLight, borderLeft: `3px solid ${swapTip ? C.orange : C.green}` }}>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: swapTip ? C.orangeDark : C.greenDark, textTransform: "uppercase", letterSpacing: "0.08em", minWidth: 58 }}>{swapTip ? "Tweak it" : "Great fit"}</div>
-                                <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
-                            </div>
-                        )}
-                        {sel.description && <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.7 }}>{sel.description}</p>}
-                        {sel.ingredients && (
-                            <div>
-                                <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 5 }}>Ingredients</div>
-                                <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.75, opacity: 0.75 }}>{sel.ingredients}</div>
-                            </div>
-                        )}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
-                            <a href={orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orangeDark, color: C.white, fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
-                            <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()); setCopied(true) } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.greenDark : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.greenDark : C.ink, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
-                        </div>
-                    </div>
-                </div>
+            {/* Mobile bottom sheet — thumb-reachable, dims page, tap-scrim to close */}
+            {sel && isMobile && (
+                <>
+                    <div onClick={handleClose} aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(28,43,28,0.45)", animation: "cbwFadeUp 0.2s ease" }} />
+                    <div style={sheetStyle} role="dialog" aria-modal="true" aria-label={`${sel.title} details`}>{detailInner}</div>
+                </>
             )}
 
             {/* Nutrition disclaimer — same wording as crazybowlsandwraps.com/nutrition-information */}
