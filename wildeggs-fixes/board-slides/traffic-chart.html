@@ -71,6 +71,20 @@
   </div>
 
   <p class="foot">Source: Google Search Console API &amp; GA4 Data API, first-party pull (service account), Jul 7 2026. Launch week (Jun 29–Jul 5) includes 2 pre-launch + 5 post-launch days. Confidence: 4/5 — weekly aggregation smooths day-of-week noise; re-cut with 2–3 full post-launch weeks for a cleaner before/after read.</p>
+
+  <div style="height:1px;background:var(--grid);margin:26px 0 22px;"></div>
+
+  <p class="viz-title">Non-branded search: clicks &amp; ranking position, 90d vs. prior 90d</p>
+  <p class="viz-sub">"Breakfast near me" is our largest identified opportunity (450K+ impressions/quarter) — already improving before this week's schema fixes shipped</p>
+
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--series-1)"></i>Prior 90d (Jan 8–Apr 7)</span>
+    <span><i class="swatch" style="background:var(--series-2)"></i>Current 90d (Apr 8–Jul 6)</span>
+  </div>
+
+  <svg id="chart2" viewBox="0 0 860 220" role="img" aria-label="Clicks and position for breakfast near me and brunch near me, prior vs current 90 days"></svg>
+
+  <p class="foot">Position bars use an inverted scale (lower position = better ranking = taller bar) so both charts read "bigger is better." Source: Search Console API, query-level pull, Jul 7 2026. Confidence: 4/5 on breakfast-near-me trend (clear, consistent); 2/5 on the brunch-near-me position read — its prior-period impression base (483K) mostly evaporated, likely the same duplicate-indexing cleanup seen site-wide, not yet confirmed as the sole cause.</p>
 </div>
 
 <script>
@@ -174,4 +188,52 @@ data.forEach((d,i) => {
   hit.addEventListener('mouseleave', () => { hoverLine.style.opacity = 0; tooltip.style.opacity = 0; });
   svg.appendChild(hit);
 });
+
+// ---- Chart 2: grouped bar comparison, clicks + inverted position ----
+const svg2 = document.getElementById('chart2');
+const queries = [
+  {name:'breakfast near me', prior_clicks:1992, cur_clicks:2551, prior_pos:7.8, cur_pos:6.7},
+  {name:'brunch near me',    prior_clicks:179,  cur_clicks:221,  prior_pos:5.8, cur_pos:11.6}
+];
+const W2=860, H2=220, padL2=140, padR2=20, padT2=20, padB2=20;
+const groupW = (W2-padL2-padR2), rowH = (H2-padT2-padB2)/queries.length;
+const maxClicks = Math.max(...queries.flatMap(q=>[q.prior_clicks,q.cur_clicks])) * 1.15;
+const maxPosInv = 14; // inverted position scale ceiling (lower position = longer bar)
+
+queries.forEach((q, qi) => {
+  const rowY = padT2 + qi*rowH;
+  // query label
+  const lbl = el('text', {x: 8, y: rowY + rowH/2 - 4, class:'tick-label', 'text-anchor':'start', style:'font-weight:650;font-size:12px;fill:var(--text-primary)'});
+  lbl.textContent = q.name;
+  svg2.appendChild(lbl);
+
+  // clicks sub-bars (top half of row)
+  const barH = rowH*0.32;
+  const clickScale = (groupW-10) / maxClicks;
+  [['prior_clicks','--series-1'],['cur_clicks','--series-2']].forEach(([key,color], i) => {
+    const w = q[key]*clickScale;
+    const y = rowY + i*(barH+3);
+    svg2.appendChild(el('rect', {x:padL2, y, width:w, height:barH, rx:3, style:`fill:var(${color})`}));
+    const t = el('text', {x: padL2+w+6, y: y+barH-3, style:'font-size:10.5px;fill:var(--text-secondary)'});
+    t.textContent = q[key].toLocaleString()+' clicks';
+    svg2.appendChild(t);
+  });
+
+  // position sub-bars (inverted, bottom half) — offset to the right half of the row area
+  const posX0 = padL2 + groupW*0.62;
+  const posScale = (groupW*0.35) / maxPosInv;
+  [['prior_pos','--series-1'],['cur_pos','--series-2']].forEach(([key,color], i) => {
+    const w = (maxPosInv - q[key]) * posScale;
+    const y = rowY + i*(barH+3);
+    svg2.appendChild(el('rect', {x:posX0, y, width:Math.max(w,2), height:barH, rx:3, style:`fill:var(${color});opacity:0.55`}));
+    const t = el('text', {x: posX0+w+6, y: y+barH-3, style:'font-size:10.5px;fill:var(--text-secondary)'});
+    t.textContent = 'pos '+q[key];
+    svg2.appendChild(t);
+  });
+});
+// section dividers
+const divX = padL2 + groupW*0.58;
+svg2.appendChild(el('line', {x1:divX, x2:divX, y1:padT2-4, y2:H2-padB2+4, class:'gridline'}));
+const capL = el('text', {x:padL2, y:12, class:'axis-label'}); capL.textContent='CLICKS (90-day total)'; svg2.appendChild(capL);
+const capR = el('text', {x:padL2+groupW*0.62, y:12, class:'axis-label'}); capR.textContent='AVG. POSITION (longer = better)'; svg2.appendChild(capR);
 </script>
