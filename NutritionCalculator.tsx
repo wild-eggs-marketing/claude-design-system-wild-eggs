@@ -140,6 +140,11 @@ const DIETARY_TAGS: Record<string, (i: MenuItem) => boolean> = {
 
 const DIETARY: string[] = Object.keys(DIETARY_TAGS)
 
+// Deliberate menu order for "Browse All" (no goal to rank by) so the default view
+// reads as curated rather than raw data order. Unknown categories sort last.
+const CATEGORY_ORDER = ["Bowls", "Wraps", "Salads", "Breakfast", "Starters", "Sides", "Kids", "Desserts"]
+const catRank = (c: string): number => { const i = CATEGORY_ORDER.indexOf(c); return i === -1 ? 99 : i }
+
 // ── 6. Storage factory ────────────────────────────────────────────────────────
 
 function createStorage(type: "local" | "session") {
@@ -245,7 +250,12 @@ function applyFilters(items: MenuItem[], f: FilterState): MenuItem[] {
     if (f.sortBy === "calories-asc")  return [...list].sort((a, b) => a.calories - b.calories)
     if (f.sortBy === "calories-desc") return [...list].sort((a, b) => b.calories - a.calories)
     if (f.sortBy === "protein-desc")  return [...list].sort((a, b) => b.protein  - a.protein)
-    if (f.sortBy === "goal-fit")      return [...list].sort((a, b) => fitScore(b, f.goal) - fitScore(a, f.goal))
+    if (f.sortBy === "goal-fit") {
+        // On Browse All there's no goal to rank by — fall back to curated category order
+        // (stable sort preserves within-category menu order) instead of raw data order.
+        if (f.goal === "all") return [...list].sort((a, b) => catRank(a.category) - catRank(b.category))
+        return [...list].sort((a, b) => fitScore(b, f.goal) - fitScore(a, f.goal))
+    }
     return list
 }
 
@@ -418,11 +428,9 @@ function NutritionCalculator({
 
     // — State ——————————————————————————————————————————————————————————————————
     const [goal,       setGoal]       = useState<string>(() => ls.get(LS_KEYS.goal) ?? "all")
-    // "default" was removed as a sort option — normalize any stale stored value
-    const [sortBy,     setSortBy]     = useState<string>(() => {
-        const s = ls.get(LS_KEYS.sort)
-        return !s || s === "default" ? "goal-fit" : s
-    })
+    // Sort is intentionally NOT persisted across sessions — every visit starts on
+    // "Best Goal Fit" so a previously-chosen sort can't silently reorder the menu.
+    const [sortBy,     setSortBy]     = useState<string>("goal-fit")
     const [category,   setCategory]   = useState<string>("All")
     const [dietary,    setDietary]    = useState<string[]>([])
     const [search,     setSearch]     = useState<string>("")
@@ -468,7 +476,6 @@ function NutritionCalculator({
     // — Effects ————————————————————————————————————————————————————————————————
     useEffect(() => { injectStyles() }, [])
     useEffect(() => { ls.set(LS_KEYS.goal, goal) },    [goal])
-    useEffect(() => { ls.set(LS_KEYS.sort, sortBy) },  [sortBy])
     useEffect(() => { selected ? ls.set(LS_KEYS.item, selected) : ls.del(LS_KEYS.item) }, [selected])
     useEffect(() => { setPortion(1); setCopied(false) }, [selected])
 
@@ -648,6 +655,25 @@ function NutritionCalculator({
         return null
     }, [sel, goal, scaled])
 
+    // Same-goal "you might also like" — up to 3 items that match the active goal
+    // (or share the category on Browse All), ranked by goal fit, wrap/bowl deduped.
+    const suggestions = useMemo((): MenuItem[] => {
+        if (!sel) return []
+        const g = GOALS.find(x => x.id === goal)
+        const base = g && goal !== "all" ? filterByGoal(effectiveItems, g) : effectiveItems.filter(i => i.category === sel.category)
+        const excl = new Set([sel.id, selAlt?.id].filter(Boolean) as string[])
+        const pool = base.filter(i => !excl.has(i.id) && i.calories > 0)
+        const ranked = goal !== "all" ? [...pool].sort((a, b) => fitScore(b, goal) - fitScore(a, goal)) : pool
+        const seen = new Set<string>(); const out: MenuItem[] = []
+        for (const i of ranked) {
+            const m = FORMAT_RE.exec(i.title); const key = m ? m[1].toLowerCase() : i.id
+            if (seen.has(key)) continue
+            seen.add(key); out.push(i)
+            if (out.length === 3) break
+        }
+        return out
+    }, [sel, selAlt, effectiveItems, goal])
+
     // — Convenience ————————————————————————————————————————————————————————————
     const budgetRemaining = budget > 0 ? budget - trayTotals.calories : null
     const activeFilters   = dietary.length + (category !== "All" ? 1 : 0) + (search ? 1 : 0)
@@ -687,6 +713,12 @@ function NutritionCalculator({
                     <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel.title}</h3>
                     {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
                 </div>
+                {trayState.items.length > 0 && (
+                    <button onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 10, background: C.tealLight, border: `1px solid ${C.teal}`, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.06em" }}>Comparing {trayState.items.length}</span>
+                        <span style={{ fontSize: 11, color: C.ink, fontWeight: 600 }}>{trayTotals.calories} cal · {trayTotals.protein}g pro</span>
+                    </button>
+                )}
                 {selAlt && (
                     <div>
                         <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Format</div>
@@ -735,6 +767,25 @@ function NutritionCalculator({
                     <div>
                         <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 5 }}>Ingredients</div>
                         <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.75, opacity: 0.75 }}>{sel.ingredients}</div>
+                    </div>
+                )}
+                {suggestions.length > 0 && (
+                    <div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 8 }}>{goal !== "all" ? `More ${GOALS.find(g => g.id === goal)?.label ?? ""} picks` : "You might also like"}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {suggestions.map(s => (
+                                <button key={s.id} onClick={() => setSelected(s.id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: 6, borderRadius: 10, border: `1px solid ${C.border}`, background: C.white, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: C.inkGhost }}>
+                                        {s.thumbnail && <img src={s.thumbnail} alt="" role="presentation" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title.replace(/ (Wrap|Bowl)$/, "")}</div>
+                                        <div style={{ fontSize: 11, color: C.inkSoft }}>{s.calories} cal · {s.protein}g pro</div>
+                                    </div>
+                                    <span aria-hidden="true" style={{ fontSize: 14, color: C.inkSoft, flexShrink: 0 }}>›</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
