@@ -50,7 +50,7 @@ function injectStyles() {
     _stylesInjected = true
     const s = document.createElement("style")
     s.dataset.cbw = "1"
-    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes cbwSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
+    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes cbwSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}[data-cbw-root] input[data-cbw-budget]::placeholder{color:rgba(245,238,227,0.60)}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
     document.head.appendChild(s)
 }
 
@@ -487,6 +487,14 @@ function NutritionCalculator({
     }, [copied])
     useEffect(() => { ss.set(SS_KEY_TRAY, JSON.stringify(trayState.items)) }, [trayState.items])
 
+    // Lock page scroll behind the mobile bottom sheet
+    useEffect(() => {
+        if (typeof document === "undefined" || !isMobile || !selected) return
+        const prev = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        return () => { document.body.style.overflow = prev }
+    }, [isMobile, selected])
+
     // Clears a stale `selected` (from localStorage) when items load and the ID no longer exists.
     useEffect(() => {
         if (effectiveItems.length > 0 && selected && !effectiveItems.find(i => i.id === selected || i.title === selected)) {
@@ -680,6 +688,19 @@ function NutritionCalculator({
     const noItems         = effectiveItems.length === 0
     const isLoading       = fetchState === "loading"
     const isError         = fetchState === "error"
+    const padX            = isMobile ? 16 : 32   // responsive gutters — 32px was cramped on phones
+
+    // Scented dietary filters: what each pill would yield if toggled ON given every
+    // other active filter — surfaces impossible combos (e.g. Low Carb × Fuel the Day)
+    // as (0) BEFORE the tap instead of a dead-end empty state.
+    const dietaryCounts = useMemo(() => {
+        const counts: Record<string, number> = {}
+        DIETARY.forEach(d => {
+            const withPill = Array.from(new Set([...dietary, d]))
+            counts[d] = countCards(applyFilters(effectiveItems, { goal, category, dietary: withPill, search: deferredSearch, sortBy: "" }))
+        })
+        return counts
+    }, [effectiveItems, goal, category, dietary, deferredSearch, countCards])
     // Desktop: detail is an in-flow sticky column beside the grid (stays inside the
     // component, never covers the site header, keeps the catalog visible — the
     // research-backed split-view pattern). Mobile: a bottom sheet.
@@ -704,7 +725,9 @@ function NutritionCalculator({
         <>
             <div style={{ height: isMobile ? 170 : 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
                 {isMobile && <div aria-hidden="true" style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.7)", zIndex: 2 }} />}
-                {sel.thumbnail ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
+                {(sel.thumbnail || selAlt?.thumbnail)
+                    ? <img src={sel.thumbnail || selAlt!.thumbnail} alt={sel.title} onError={e => { const el = e.currentTarget; const fb = selAlt?.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
                 <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
                 {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.greenDark : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
             </div>
@@ -798,10 +821,10 @@ function NutritionCalculator({
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div data-cbw-root="" style={{ fontFamily, background: C.cream, minHeight: "100vh" }}>
+        <div data-cbw-root="" style={{ fontFamily, background: C.cream, minHeight: "100vh", width: "100%" }}>
 
             {/* Goal header */}
-            <div style={{ background: C.teal, padding: "28px 32px 20px" }}>
+            <div style={{ background: C.teal, padding: `28px ${padX}px 20px` }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)", marginBottom: 12 }}>What&apos;s your goal?</div>
@@ -812,7 +835,7 @@ function NutritionCalculator({
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 160 }}>
                         <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)" }}>Daily cal budget</label>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <input type="number" value={budget || ""} onChange={e => setBudget(Math.max(0, Number(e.target.value)))} placeholder="e.g. 1800" aria-label="Daily calorie budget" style={{ width: 100, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${budget > 0 ? C.orange : "rgba(255,255,255,0.20)"}`, background: "rgba(255,255,255,0.10)", color: C.cream, fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none" }} />
+                            <input type="number" data-cbw-budget="" value={budget || ""} onChange={e => setBudget(Math.max(0, Number(e.target.value)))} placeholder="e.g. 1800" aria-label="Daily calorie budget" style={{ width: 100, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${budget > 0 ? C.orange : "rgba(255,255,255,0.20)"}`, background: "rgba(255,255,255,0.10)", color: C.cream, fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none" }} />
                             {budgetRemaining !== null && <div style={{ fontSize: 12, color: budgetRemaining >= 0 ? C.cream : C.yellow, fontWeight: 700 }} aria-live="polite">{budgetRemaining >= 0 ? `${budgetRemaining} left` : `${Math.abs(budgetRemaining)} over`}</div>}
                         </div>
                     </div>
@@ -820,7 +843,7 @@ function NutritionCalculator({
             </div>
 
             {/* Toolbar */}
-            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "10px 32px", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `10px ${padX}px`, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or ingredient" aria-label="Search menu items" style={{ flex: 1, minWidth: 160, padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${search ? C.orange : C.border}`, fontSize: 13, color: C.ink, background: C.inkGhost, outline: "none", fontFamily: "inherit", boxSizing: "border-box", opacity: isSearchPending ? 0.65 : 1, transition: "border-color 0.15s, opacity 0.1s" }} />
                 <select value={sortBy} onChange={e => setSortBy(e.target.value)} aria-label="Sort order" style={{ padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.ink, background: C.white, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
                     <option value="goal-fit">Best Goal Fit</option>
@@ -833,27 +856,27 @@ function NutritionCalculator({
             </div>
 
             {/* Dietary + category pills */}
-            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "8px 32px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {DIETARY.map(d => { const active = dietary.includes(d); return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, transition: "all 0.12s" }}>{d}</button> })}
+            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `8px ${padX}px`, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                {DIETARY.map(d => { const active = dietary.includes(d); const n = dietaryCounts[d] ?? 0; const dead = !active && n === 0; return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} disabled={dead} title={dead ? "No items match with your current filters" : undefined} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: dead ? "not-allowed" : "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, opacity: dead ? 0.35 : 1, transition: "all 0.12s" }}>{d} ({n})</button> })}
                 <div style={{ width: 1, height: 16, background: C.border, margin: "0 2px" }} aria-hidden="true" />
                 {categories.map(cat => <button key={cat} onClick={() => setCategory(cat)} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
             </div>
 
             {/* Fetch error banner */}
             {isError && (
-                <div role="alert" style={{ padding: "10px 32px", background: C.orangeLight, borderBottom: `1px solid ${C.orange}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div role="alert" style={{ padding: `10px ${padX}px`, background: C.orangeLight, borderBottom: `1px solid ${C.orange}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <span style={{ fontSize: 12, color: C.orangeDark, fontWeight: 600 }}>Could not load menu data from endpoint.</span>
                     <button onClick={() => { setFetchState("idle"); setRetryKey(k => k + 1) }} style={{ padding: "4px 12px", borderRadius: 6, border: `1.5px solid ${C.orangeDark}`, background: "none", color: C.orangeDark, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Retry</button>
                 </div>
             )}
 
             {/* Results count */}
-            {!noItems && !isLoading && <div style={{ padding: "8px 32px" }}><span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>{cards.length} result{cards.length === 1 ? "" : "s"}{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
+            {!noItems && !isLoading && <div style={{ padding: `8px ${padX}px` }}><span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>{cards.length} result{cards.length === 1 ? "" : "s"}{sortBy === "goal-fit" && goal !== "all" ? " — sorted by goal fit" : ""}</span></div>}
 
             {/* Main layout — grid + optional in-flow detail column (desktop split view) */}
             <div style={{ display: "flex", alignItems: "flex-start" }}>
               <div style={{ flex: 1, minWidth: 0, paddingBottom: trayState.items.length > 0 ? 88 : 0 }}>
-                <div style={{ padding: "4px 32px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, alignContent: "start" }}>
+                <div style={{ padding: `4px ${padX}px 60px`, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14, alignContent: "start" }}>
 
                     {isLoading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
 
@@ -896,7 +919,9 @@ function NutritionCalculator({
                                 >{inTray ? "−" : "+"}</button>
                                 <div onClick={() => setSelected(isSelected ? null : item.id)} style={{ cursor: "pointer" }}>
                                     <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: isTopMatch && !isSelected ? 20 : 0 }}>
-                                        {item.thumbnail ? <img src={item.thumbnail} alt="" role="presentation" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.tealLight}, ${C.inkGhost})` }} />}
+                                        {(item.thumbnail || alt?.thumbnail)
+                                            ? <img src={item.thumbnail || alt!.thumbnail} loading="lazy" alt="" role="presentation" onError={e => { const el = e.currentTarget; const fb = item.id === card.item.id ? card.partner?.thumbnail : card.item.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                            : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.tealLight}, ${C.inkGhost})` }} />}
                                     </div>
                                     <div style={{ padding: "11px 13px 13px" }}>
                                         {alt && (() => {
@@ -952,7 +977,7 @@ function NutritionCalculator({
             )}
 
             {/* Nutrition disclaimer — same wording as crazybowlsandwraps.com/nutrition-information */}
-            <div style={{ padding: "0 32px 24px", paddingBottom: trayState.items.length > 0 ? 104 : 24 }}>
+            <div style={{ padding: `0 ${padX}px 24px`, paddingBottom: trayState.items.length > 0 ? 104 : 24 }}>
                 <p style={{ fontSize: 11, color: C.inkSoft, lineHeight: 1.6, maxWidth: 720, margin: 0 }}>
                     Please note that these nutrition values are estimated based on our standard serving portions.
                     As food servings may have a slight variance each time you visit, please expect these values to be
@@ -974,15 +999,15 @@ function NutritionCalculator({
             {/* Comparison tray */}
             {trayState.items.length > 0 && (
                 <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: C.ink, borderTop: `1px solid rgba(255,255,255,0.08)` }}>
-                    <button onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })} aria-expanded={trayState.open} style={{ width: "100%", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>Compare {trayState.items.length} bowl{trayState.items.length > 1 ? "s" : ""}<span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 8, textTransform: "none", letterSpacing: 0 }}>press C</span></span>
+                    <button onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })} aria-expanded={trayState.open} style={{ width: "100%", padding: `10px ${padX}px`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>Compare {trayState.items.length} bowl{trayState.items.length > 1 ? "s" : ""}{!isMobile && <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 8, textTransform: "none", letterSpacing: 0 }}>press C</span>}</span>
                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                            <span style={{ fontSize: 12, color: "rgba(245,238,227,0.75)" }}>{trayTotals.calories} cal · {trayTotals.protein}g protein · {trayTotals.carbs}g carbs combined</span>
+                            <span style={{ fontSize: 11, color: "rgba(245,238,227,0.75)", textAlign: "right" }}>{trayTotals.calories} cal · {trayTotals.protein}g pro{isMobile ? "" : ` · ${trayTotals.carbs}g carbs combined`}</span>
                             <span style={{ fontSize: 14, color: "rgba(245,238,227,0.50)" }} aria-hidden="true">{trayState.open ? "▼" : "▲"}</span>
                         </div>
                     </button>
                     {trayState.open && (
-                        <div style={{ padding: "0 32px 20px", display: "flex", gap: 16, overflowX: "auto" }}>
+                        <div style={{ padding: `0 ${padX}px 20px`, display: "flex", gap: 16, overflowX: "auto" }}>
                             {trayItems.map(item => (
                                 <div key={item.id} style={{ flexShrink: 0, width: 200, background: "rgba(255,255,255,0.05)", borderRadius: 10, overflow: "hidden", border: `1px solid rgba(255,255,255,0.08)` }}>
                                     {item.thumbnail && <img src={item.thumbnail} alt="" role="presentation" style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />}
