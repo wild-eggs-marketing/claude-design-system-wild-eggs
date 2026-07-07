@@ -193,5 +193,20 @@
     "shortIngr": "Black bean egg roll, creamy buffalo sauce",
     "description": "Crispy black bean egg roll served with house made creamy buffalo sauce.",
     "thumbnail": "https://framerusercontent.com/images/mFPcn5xxspn9VXoRi1jP40pI0YA.jpg"
+  },
+  {
+    "id": "fHEn9nkHw",
+    "slug": "bean-and-veggie-bowl",
+    "title": "Bean & Veggie Bowl",
+    "calories": 630,
+    "protein": 44,
+    "carbs": 101,
+    "fat": 6,
+    "category": "Bowls",
+    "price": 8.15,
+    "ingredients": "Beans, steamed mixed veggies*",
+    "shortIngr": "Beans, steamed mixed veggies",
+    "description": "Beans and steamed mixed veggies.",
+    "thumbnail": "https://framerusercontent.com/images/36v13HwNHUCbmGba987lPz1I1ZM.png"
   }
 ]

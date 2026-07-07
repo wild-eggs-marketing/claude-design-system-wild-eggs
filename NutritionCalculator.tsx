@@ -809,9 +809,15 @@ function NutritionCalculator({
                 </div>
             </div>
 
+            {/* Detail panel scrim — dims the page behind the slide-over so it reads as a
+                modal (not a floating rail clipping the page) and gives a click-to-close target */}
+            {sel && !isMobile && (
+                <div onClick={handleClose} aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(28,43,28,0.38)", animation: "cbwFadeUp 0.2s ease" }} />
+            )}
+
             {/* Detail panel */}
             {sel && (
-                <div style={detailPanelStyle} role="dialog" aria-label={`${sel.title} details`}>
+                <div style={detailPanelStyle} role="dialog" aria-modal="true" aria-label={`${sel.title} details`}>
                     <div style={{ height: 200, background: C.inkGhost, position: "relative", flexShrink: 0 }}>
                         {sel.thumbnail ? <img src={sel.thumbnail} alt={sel.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
                         <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
