@@ -416,6 +416,7 @@ interface NutritionCalculatorProps {
     apiKey?:      string
     orderUrl?:    string
     fontFamily?:  string
+    stickyOffset?: number
 }
 
 function NutritionCalculator({
@@ -424,6 +425,7 @@ function NutritionCalculator({
     apiKey      = "",
     orderUrl    = "#",
     fontFamily  = "Bricolage Grotesque, sans-serif",
+    stickyOffset = 96,
 }: NutritionCalculatorProps) {
 
     // — State ——————————————————————————————————————————————————————————————————
@@ -717,7 +719,9 @@ function NutritionCalculator({
     // research-backed split-view pattern). Mobile: a bottom sheet.
     const detailColStyle = {
         width: 380, flexShrink: 0, alignSelf: "stretch" as const,
-        position: "sticky" as const, top: 0, maxHeight: "100vh",
+        // Offset below the site's floating nav so it never overlaps the panel's
+        // close button (nav height + breathing room, tunable per-site in Framer).
+        position: "sticky" as const, top: stickyOffset, maxHeight: `calc(100vh - ${stickyOffset}px)`,
         overflowY: "auto" as const, background: C.white,
         borderLeft: `1px solid ${C.border}`, boxShadow: "-4px 0 24px rgba(0,0,0,0.06)",
         display: "flex", flexDirection: "column" as const,
@@ -725,7 +729,7 @@ function NutritionCalculator({
     }
     const sheetStyle = {
         position: "fixed" as const, left: 0, right: 0, bottom: 0, zIndex: 200,
-        maxHeight: "92vh", background: C.white,
+        maxHeight: "86vh", background: C.white,
         borderRadius: "18px 18px 0 0", overflowY: "auto" as const,
         display: "flex", flexDirection: "column" as const,
         boxShadow: "0 -8px 32px rgba(0,0,0,0.18)", animation: "cbwSheetUp 0.28s ease",
@@ -1110,4 +1114,5 @@ addPropertyControls(NutritionCalculator, {
     },
     orderUrl:   { type: ControlType.String, title: "Order URL",   defaultValue: "#" },
     fontFamily: { type: ControlType.String, title: "Font Family", defaultValue: "Bricolage Grotesque, sans-serif" },
+    stickyOffset: { type: ControlType.Number, title: "Sticky Offset", defaultValue: 96, min: 0, max: 240, unit: "px", description: "Height of the site's floating nav — keeps the detail panel (and its close button) below it." },
 })
