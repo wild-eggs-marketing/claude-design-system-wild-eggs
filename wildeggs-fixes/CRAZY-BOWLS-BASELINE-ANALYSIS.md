@@ -35,6 +35,26 @@ Prepared July 7, 2026 · Source: GA4 Data API + Admin API, property `469819156` 
 
 ---
 
+## Search Console baseline (available data: June 7–July 5, 2026 only)
+
+GSC access was just granted — **the property itself only has 29 days of collected data (since June 7, 2026)**, so no 90-day or prior-period comparison exists yet. A genuine 90-day trend won't be available until early September 2026. What the 29 days show:
+
+| Metric | Value (Jun 7–Jul 5) |
+|---|---|
+| Clicks | 21,461 |
+| Impressions | 76,166 |
+| CTR | 28.2% |
+| Avg. position | 8.9 |
+| Non-branded click share | **6.5%** (17,159 branded vs. 1,194 non-branded) |
+
+**Branded dependency is even more extreme than Wild Eggs' pre-fix 88.8%** — 93.5% of clicks are on "crazy bowls and wraps" variants. Non-branded volume is small in absolute terms (top non-branded query, "crazy bowls and wraps near me," is only 65 clicks at position 1.8) — this reads as a smaller total addressable search volume for the category (bowls/wraps generic terms) rather than a ranking problem, but worth validating once more data accumulates.
+
+**Top pages mostly mirror the GA4 landing-page picture**: homepage (14,527 clicks), `/menu/` (3,777), `/nutrition-information/` (1,163), `/locations/` (901), `/choose-your-location/` (351). No FAQ, blog, or per-item pages show meaningful search visibility — confirms there's no structured-data or content-depth work done here yet, same conclusion as the GA4 channel-mix finding above.
+
+**Confidence: 4/5** on the numbers themselves (clean API data); **2/5** on any trend interpretation — 29 days is too short to call anything a trend yet. Re-run this section in 60 days.
+
+---
+
 ## The order-funnel finding — same structural gap as Wild Eggs, different vendor stack
 
 CB&W runs on entirely different ordering/loyalty infrastructure than Wild Eggs (confirms the Marketing Budget doc's "Brink," "Paytronix" references) — this matters for any future tracking fix, since the Toast-specific research done for Wild Eggs doesn't directly transfer:
@@ -55,16 +75,11 @@ CB&W runs on entirely different ordering/loyalty infrastructure than Wild Eggs (
 
 ---
 
-## What's not yet possible: Search Console
-
-The service account does not yet have access to `crazybowlsandwraps.com` in Search Console — only `wildeggs.com` is currently authorized. **Action needed:** grant `wild-eggs-cbw-analytics@deep-byte-500814-m1.iam.gserviceaccount.com` access in Search Console for the crazybowlsandwraps.com property (same process as Wild Eggs: Settings → Users and permissions → Add user). Once granted, I can pull the same 90-day query/impression/position baseline as the Wild Eggs GSC slide.
-
 ---
 
 ## Recommended next steps, in order
 
-1. **Grant GSC access** for crazybowlsandwraps.com (5 minutes) — completes the baseline.
-2. **Fix the order-tracking gap now, on the current site** (don't wait for the Framer rebuild): create `order_platform_click` (link_url contains `orderexperience.net`) and a second event for `order.online`, mark both as Key Events — identical pattern to the Wild Eggs fix, executed the same way via the GA4 Admin API once you confirm you want it done.
+1. **Fix the order-tracking gap now, on the current site** (don't wait for the Framer rebuild): create `order_platform_click` (link_url contains `orderexperience.net`) and a second event for `order.online`, mark both as Key Events — identical pattern to the Wild Eggs fix, executed the same way via the GA4 Admin API once you confirm you want it done.
 3. **Investigate Par Brink/orderexperience.net's completion-tracking options** — separate research from the Toast findings, since it's a different vendor. Will need its own webhook/pixel/API capability check before promising anything.
 4. **Carry the Wild Eggs AEO playbook forward** once the Framer rebuild is scoped — the "76% organic-search-dependent, near-zero AI referral" profile here is the pre-fix version of exactly what Wild Eggs just started improving.
 
