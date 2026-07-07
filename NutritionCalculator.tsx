@@ -436,7 +436,8 @@ function NutritionCalculator({
     const [search,     setSearch]     = useState<string>("")
     const [selected,   setSelected]   = useState<string | null>(() => ls.get(LS_KEYS.item))
     const [portion,    setPortion]    = useState<number>(1)
-    const [budget,     setBudget]     = useState<number>(0)
+    // Persisted so a returning guest keeps their daily calorie budget (sane-range guard).
+    const [budget,     setBudget]     = useState<number>(() => { const v = Number(ls.get("cbw-budget") ?? 0); return v >= 500 && v <= 6000 ? v : 0 })
     const [showMacros, setShowMacros] = useState<boolean>(true)
     const [cmsItems,   setCmsItems]   = useState<MenuItem[]>([])
     const [fetchState, setFetchState] = useState<FetchState>("idle")
@@ -458,7 +459,16 @@ function NutritionCalculator({
     const effectiveItems   = hasRealPropItems ? items : cmsItems
 
     // — Stable callbacks ———————————————————————————————————————————————————————
-    const handleClose      = useCallback(() => setSelected(null), [])
+    // On close, return focus to the originating card (WCAG 2.4.3 focus order).
+    const handleClose      = useCallback(() => {
+        setSelected(prev => {
+            if (prev && typeof document !== "undefined") {
+                const el = document.querySelector<HTMLElement>(`[data-cbw-open="${CSS.escape(prev)}"]`)
+                if (el) setTimeout(() => el.focus(), 0)
+            }
+            return null
+        })
+    }, [])
     const handleDeepLink   = useCallback((id: string) => setSelected(id), [])
     const handleToggleTray = useCallback((id: string) => trayDispatch({ type: "TOGGLE", id }), [])
     const handleGoalClick  = useCallback((id: string) => setGoal(id), [])
@@ -478,6 +488,7 @@ function NutritionCalculator({
     useEffect(() => { ls.set(LS_KEYS.goal, goal) },    [goal])
     useEffect(() => { selected ? ls.set(LS_KEYS.item, selected) : ls.del(LS_KEYS.item) }, [selected])
     useEffect(() => { setPortion(1); setCopied(false) }, [selected])
+    useEffect(() => { budget > 0 ? ls.set("cbw-budget", String(budget)) : ls.del("cbw-budget") }, [budget])
 
     // Auto-reset the "Copied!" confirmation after 2s
     useEffect(() => {
@@ -758,20 +769,31 @@ function NutritionCalculator({
                         </div>
                     </div>
                 )}
-                <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
-                    <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
-                        {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orangeDark : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orangeDark : C.inkSoft }}>{p.label}</button>)}
+                {sel.calories > 0 ? (
+                    <>
+                        <div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
+                            <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
+                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orangeDark : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orangeDark : C.inkSoft }}>{p.label}</button>)}
+                            </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
+                            <MacroRing protein={scaled.protein} carbs={scaled.carbs} fat={scaled.fat} calories={scaled.calories} />
+                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                <MacroStat label="Protein" value={scaled.protein} unit="g" color={C.orange} />
+                                <MacroStat label="Carbs"   value={scaled.carbs}   unit="g" color={C.yellow} />
+                                {scaled.fat > 0 && <MacroStat label="Fat" value={scaled.fat} unit="g" color={C.green} />}
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    // Zero-data guard: never show an empty 0-cal macro ring — mirror the
+                    // card-level "nutrition coming soon" state instead.
+                    <div style={{ padding: "16px 14px", background: C.inkGhost, borderRadius: 12, textAlign: "center" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Nutrition analysis coming soon</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>This item is pending lab analysis. Ask our staff about ingredients and allergens{selAlt && selAlt.calories > 0 ? `, or check the ${selAlt.title.endsWith("Wrap") ? "Wrap" : "Bowl"} version above for a close estimate` : ""}.</div>
                     </div>
-                </div>
-                <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
-                    <MacroRing protein={scaled.protein} carbs={scaled.carbs} fat={scaled.fat} calories={scaled.calories} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                        <MacroStat label="Protein" value={scaled.protein} unit="g" color={C.orange} />
-                        <MacroStat label="Carbs"   value={scaled.carbs}   unit="g" color={C.yellow} />
-                        {scaled.fat > 0 && <MacroStat label="Fat" value={scaled.fat} unit="g" color={C.green} />}
-                    </div>
-                </div>
+                )}
                 {budget > 0 && scaled.calories > 0 && (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 13px", borderRadius: 10, background: C.tealLight, border: `1px solid ${C.teal}` }}>
                         <span style={{ fontSize: 12, fontWeight: 600, color: C.ink }}>This bowl</span>
@@ -779,7 +801,7 @@ function NutritionCalculator({
                         <span style={{ fontSize: 11, color: C.teal, fontWeight: 600 }}>{Math.round((scaled.calories / budget) * 100)}% of daily goal</span>
                     </div>
                 )}
-                {goal !== "all" && (
+                {goal !== "all" && sel.calories > 0 && (
                     <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 13px", borderRadius: 10, background: swapTip ? C.orangeLight : C.greenLight, borderLeft: `3px solid ${swapTip ? C.orange : C.green}` }}>
                         <div style={{ fontSize: 10, fontWeight: 700, color: swapTip ? C.orangeDark : C.greenDark, textTransform: "uppercase", letterSpacing: "0.08em", minWidth: 58 }}>{swapTip ? "Tweak it" : "Great fit"}</div>
                         <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
@@ -803,7 +825,7 @@ function NutritionCalculator({
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title.replace(/ (Wrap|Bowl)$/, "")}</div>
-                                        <div style={{ fontSize: 11, color: C.inkSoft }}>{s.calories} cal · {s.protein}g pro</div>
+                                        <div style={{ fontSize: 11, color: C.inkSoft, fontStyle: s.calories > 0 ? "normal" : "italic" }}>{s.calories > 0 ? `${s.calories} cal · ${s.protein}g pro` : "nutrition coming soon"}</div>
                                     </div>
                                     <span aria-hidden="true" style={{ fontSize: 14, color: C.inkSoft, flexShrink: 0 }}>›</span>
                                 </button>
@@ -836,7 +858,13 @@ function NutritionCalculator({
                         <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)" }}>Daily cal budget</label>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <input type="number" data-cbw-budget="" value={budget || ""} onChange={e => setBudget(Math.max(0, Number(e.target.value)))} placeholder="e.g. 1800" aria-label="Daily calorie budget" style={{ width: 100, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${budget > 0 ? C.orange : "rgba(255,255,255,0.20)"}`, background: "rgba(255,255,255,0.10)", color: C.cream, fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none" }} />
-                            {budgetRemaining !== null && <div style={{ fontSize: 12, color: budgetRemaining >= 0 ? C.cream : C.yellow, fontWeight: 700 }} aria-live="polite">{budgetRemaining >= 0 ? `${budgetRemaining} left` : `${Math.abs(budgetRemaining)} over`}</div>}
+                            {budgetRemaining !== null && (
+                                <div style={{ fontSize: 12, color: budgetRemaining >= 0 ? C.cream : C.yellow, fontWeight: 700, lineHeight: 1.3 }} aria-live="polite" title="Your daily budget minus everything in your Compare tray">
+                                    {trayState.items.length > 0
+                                        ? (budgetRemaining >= 0 ? `${budgetRemaining} left` : `${Math.abs(budgetRemaining)} over`)
+                                        : <span style={{ fontWeight: 500, color: "rgba(245,238,227,0.72)" }}>add items to Compare to track</span>}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -917,7 +945,10 @@ function NutritionCalculator({
                                     aria-label={inTray ? `Remove ${item.title} from compare` : trayFull ? "Compare tray full" : `Add ${item.title} to compare`}
                                     style={{ position: "absolute", top: isTopMatch && !isSelected ? 26 : 8, right: 8, zIndex: 3, width: 24, height: 24, borderRadius: "50%", background: inTray ? C.teal : trayFull ? C.inkGhost : "rgba(255,255,255,0.88)", border: `1.5px solid ${inTray ? C.teal : trayFull ? "transparent" : C.border}`, color: inTray ? C.white : C.inkSoft, fontSize: 12, fontWeight: 800, cursor: trayFull ? "not-allowed" : "pointer", opacity: trayFull ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0 }}
                                 >{inTray ? "−" : "+"}</button>
-                                <div onClick={() => setSelected(isSelected ? null : item.id)} style={{ cursor: "pointer" }}>
+                                <div role="button" tabIndex={0} data-cbw-open={item.id} aria-expanded={isSelected} aria-label={`${item.title} — view details`}
+                                    onClick={() => setSelected(isSelected ? null : item.id)}
+                                    onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(isSelected ? null : item.id) } }}
+                                    style={{ cursor: "pointer", outlineOffset: -2 }}>
                                     <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: isTopMatch && !isSelected ? 20 : 0 }}>
                                         {(item.thumbnail || alt?.thumbnail)
                                             ? <img src={item.thumbnail || alt!.thumbnail} loading="lazy" alt="" role="presentation" onError={e => { const el = e.currentTarget; const fb = item.id === card.item.id ? card.partner?.thumbnail : card.item.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
