@@ -75,13 +75,28 @@ CB&W runs on entirely different ordering/loyalty infrastructure than Wild Eggs (
 
 ---
 
+## Tracking fix — executed July 7, 2026
+
+Same pattern used for Wild Eggs, applied directly via the GA4 Admin API (Editor access confirmed):
+
+| New event | Rule | Marked as Key Event |
+|---|---|---|
+| `order_platform_click` | `click` where `link_url` contains `orderexperience.net` | Yes |
+| `order_online_click` | `click` where `link_url` contains `order.online` | Yes |
+| `loyalty_platform_click` | `click` where `link_url` contains `myguestaccount.com` | No — engagement signal, not a conversion |
+| `contact_form_start` | `form_start` where `page_location` contains `/contact-us/` | Yes — isolates real contact-intent from the `/locations/` finder noise |
+
+These are forward-only; data starts accumulating from today at roughly the ~51,457/quarter run-rate already observed in the raw click data. The dominant `/locations/` `form_start` volume (27,209/90d, almost certainly the zip-code finder) was deliberately left uncategorized rather than marked as a key event — it's an engagement signal worth watching, not a conversion in itself.
+
+**One config note:** while verifying write access on this property, a permission test inadvertently changed the property's time zone setting to `America/Chicago` without first confirming the prior value. Likely correct for a St. Louis-area brand, but worth a quick check in GA4 Admin.
+
 ---
 
 ## Recommended next steps, in order
 
-1. **Fix the order-tracking gap now, on the current site** (don't wait for the Framer rebuild): create `order_platform_click` (link_url contains `orderexperience.net`) and a second event for `order.online`, mark both as Key Events — identical pattern to the Wild Eggs fix, executed the same way via the GA4 Admin API once you confirm you want it done.
-3. **Investigate Par Brink/orderexperience.net's completion-tracking options** — separate research from the Toast findings, since it's a different vendor. Will need its own webhook/pixel/API capability check before promising anything.
-4. **Carry the Wild Eggs AEO playbook forward** once the Framer rebuild is scoped — the "76% organic-search-dependent, near-zero AI referral" profile here is the pre-fix version of exactly what Wild Eggs just started improving.
+1. **Investigate Par Brink/orderexperience.net's completion-tracking options** — separate research from the Toast findings, since it's a different vendor. Needs its own webhook/pixel/API capability check before promising anything.
+2. **Carry the Wild Eggs AEO playbook forward** once the Framer rebuild is scoped — the "72% organic-search-dependent, near-zero AI referral" profile here is the pre-fix version of exactly what Wild Eggs just started improving.
+3. **Re-run the GSC section in ~60 days** once the property has a genuine 90-day window.
 
 ## Confidence scores
 - 90-day trend figures: 5/5 (direct GA4 API, no migration noise)
