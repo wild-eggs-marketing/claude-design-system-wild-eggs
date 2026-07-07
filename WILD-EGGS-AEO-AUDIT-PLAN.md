@@ -121,7 +121,37 @@ Pulled from internal sources after the initial plan (Google Drive: "Wild Eggs - 
 3. GBP completeness across all 19 locations + Ovation-driven review velocity (Phase 3) is confirmed as the top off-site lever; GBP access must be confirmed first.
 4. Competitor set to track: First Watch, Snooze, Another Broken Egg, Big Bad Breakfast, Bob Evans, local independents (per internal analysis; monday "Bi-weekly competition news" board already exists as the intel feed).
 
-## 6. Sources
+## 6. Live-site audit (July 7, 2026) — post-P0, Framer production
+
+Audited via Framer MCP against the live wildeggs.com project: full page tree, SchemaInjector.tsx code review, all 20 Locations records, all 138 Menu Items, all 34 Blog posts. Confidence 5/5 — source-level access.
+
+### What's in great shape
+- Architecture matches or beats every competitor tactic from section 2: per-location pages with meta + 3 FAQs, per-menu-item pages (`/menu/:slug`), `/allergens-and-nutrition`, gluten-free/kids/catering menus, blog with city guides, `SchemaInjector` emitting Restaurant+LocalBusiness, FAQPage, Menu, MenuItem, BlogPosting, Organization, and BreadcrumbList as SSR JSON-LD.
+- 19/20 location records fully populated (meta, FAQs, hours, geo, landmarks); blog SEO fields 100% complete (34/34); menu items 100% on title/category/image/price/ordering links.
+
+### Punch list (ranked)
+
+**P0 — ship this week**
+1. **Production deployment `optimizationStatus: "error"`** — investigate/re-publish; an un-optimized deploy can degrade CWV and SSR output.
+2. **SchemaInjector `SAME_AS` points at wrong social handles** (`facebook.com/wildeggs`, `instagram.com/wildeggs`, `twitter.com/wildeggs`; real handle is `wildeggsrestaurants`) — this actively mis-links the brand entity on every page.
+3. **`columbus-oh` record is live with "Coming soon!" in meta title/description, FAQs, hours, and phone** — will index as garbage; also off-pattern slug and the only `/locations/` canonical (all others canonicalize to `wildeggs.com/{slug}` — one pattern is wrong site-wide; pick one and fix).
+4. **MenuItem schema price bug:** CMS prices are stored as `"$14.99"` but the injector emits them raw into `Offer.price`, which must be numeric — strip the `$` in code or CMS, else the markup is invalid.
+5. **Hours conflicts:** injector hardcodes 06:30 weekday defaults (wrong for Oakley + Downtown Indy per its own comments; Bowling Green's own meta description says 7:30 AM). Parse the CMS hours fields instead of constants.
+
+**P1 — next 2 weeks**
+6. **Wisely vs Toast contradiction in 7 location FAQs** — FAQ answers send guests to `waitlist.getwisely.com/...` while the waitlist link fields point to Toast. The FAQs are quotable AI answers; they currently give the wrong platform. Also: Oakley's FAQ quotes a raw Toast UUID URL in prose; Palomar's two order-link fields disagree; Westport's Toast slug format differs.
+7. **`acceptsReservations: false` hardcoded** while Jeffersontown + Jeffersonville meta descriptions promise "Reservations and waitlist available", and the Reservations URL field is empty on all 20 records — align the claim, the field, and the schema.
+8. **Menu nutrition/allergen completeness:** Nutritional Information 57% (60 items missing, worst: Catering 24, Kids 15), Allergen Warnings 62% (52 missing, worst: Drinks 24, Sides 11). Food-safety flags: `biscuits-and-gravy` has placeholder `<br>` HTML for nutrition and no allergens; `french-fries` has empty ingredients. This data feeds the dietary-query AEO advantage — finish it.
+9. **"Hours: See hours card on this page or call ahead."** stamped into every location's Main Content — replace with the actual hours text (it exists in dedicated fields); it's dead weight in the most quotable body copy.
+10. **WebPage schema `name` uses `metaDescription.substring(0,70)`** — should be the page title. Verify `enableFaq`/`enableRating` are actually toggled on in the location template instances (defaults are off; can't confirm published HTML from this sandbox).
+
+**P2 — this month**
+11. Six locations lack landmark copy in Main Content (J-Town, Tates Creek, Hamburg, Palomar, Middletown, Dupont); Evansville is missing its menu reference + header image and its map pin looks off; Google Maps URL formats vary across 4 styles (standardize on CID or place links).
+12. Blog mix: 20/34 posts are "In the News"; only 1 Louisville Guide and 2 City Guides — the evergreen "best brunch in {city}" content that wins AI citations is the thin slice. Derby post is future-dated 2026-10-01 (Derby is May — check).
+13. aggregateRating is manual-entry and off by default — populate from real GBP review data per location, or leave off (self-serving unverifiable ratings risk Google action).
+14. Windsor.ai Free-plan limit still blocks GSC/GA4 reads through Windsor even though GSC is now connected in Google — upgrade or trim connected accounts to restore the measurement loop.
+
+## 7. Sources
 
 - Uberall AI restaurant visibility report, May 2026 — businesswire.com/news/home/20260507962493/en/
 - Restaurant schema guides — malou.io/en-us/blog/structured-data-for-restaurants; gatilab.com/local-business-schema-markup/; richmenu.io/restaurant-schema-markup/; thedigitalrestaurant.com/restaurant-schema-markup-guide/; schema.org/Restaurant
