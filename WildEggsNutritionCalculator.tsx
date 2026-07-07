@@ -435,7 +435,7 @@ interface WildEggsNutritionCalculatorProps {
 
 function WildEggsNutritionCalculator({
     items = [],
-    cmsEndpoint = "",
+    cmsEndpoint = "https://wild-eggs-nutrition-calculator.elle-f37.workers.dev/",
     apiKey      = "",
     orderUrl    = "#",
     fontFamily  = "'Hedvig Letters Sans', 'Helvetica Neue', sans-serif",
@@ -1096,7 +1096,7 @@ addPropertyControls(WildEggsNutritionCalculator, {
     cmsEndpoint: {
         type: ControlType.String,
         title: "CMS Endpoint",
-        placeholder: "https://api.framer.com/store/api/v1/collections/fEfKTjIH1/items",
+        defaultValue: "https://wild-eggs-nutrition-calculator.elle-f37.workers.dev/", placeholder: "https://wild-eggs-nutrition-calculator.elle-f37.workers.dev/",
         description: "Framer CMS API URL or any JSON endpoint returning menu items. Supports Framer's { type, value } field format, flat arrays, and { items: [] } wrappers.",
     },
     apiKey: {
