@@ -96,7 +96,32 @@ Uberall (May 2026): **83% of restaurant locations never appear in AI answers; AI
 
 ---
 
-## 5. Sources
+## 5. Addendum (July 7, 2026) — Verified internal baseline
+
+Pulled from internal sources after the initial plan (Google Drive: "Wild Eggs - Marketing Analysis", "Month 1 Marketing Focus", "Marketing Budget"; monday.com boards). These supersede the assumptions above where they conflict. Confidence 5/5 — first-party documents.
+
+**Footprint & traffic**
+- **19 locations** across KY/IN/OH (not ~40 as assumed); new markets: Evansville, Tates Creek; Columbus/Dayton openings planned.
+- ~**42K unique monthly website visitors** (Wild Eggs), ~32K (Crazy Bowls & Wraps).
+
+**Confirmed technical-SEO state of the current (WordPress/PriceWeber) site**
+- Structured data markup: **"Requires Immediate Attention"** — not optimized for locations, menus, ordering, reservations, catering, reviews, FAQs. Gap #2 is now confirmed, not inferred.
+- **Google Search Console not connected** (explains why Windsor GSC pulls return nothing regardless of plan tier). GA4 installed only via plugin — key events not firing.
+- 6 pages missing canonicals; accessibility "Requires Immediate Attention" (ADA risk noted); nav dropdown overlap; broken Attentive SMS popup and outdated Wisely reservation links creating conversion dead ends; sitemap oddly hosted at blueoutcomes.com.
+- Domain authority rated solid, low spam score — the migration to Framer must preserve this (301 map required).
+- **Zero PPC has ever been run.**
+
+**Owned-audience baseline (the reactivation engine)**
+- 117,461 email-marketable contacts · 32,110 SMS-consented (Ovation — never used) · 37,347 Toast loyalty enrollees · 49,865 Attentive SMS subscribers.
+- Ready-made campaign segments: 5,468 "late" guests (send within 2 weeks), 20,883 churned guests.
+
+**Plan adjustments**
+1. Phase 0 measurement fix is bigger than the Windsor plan limit: **connect GSC and instrument GA4 key events directly** (order_start, order_complete, reservation_complete, catering_click, loyalty_signup — already specified in the CMO engagement doc).
+2. Phase 1 technical work lands via the in-flight **Framer rebuild** (its CMS already models per-location FAQs, meta fields, hours, geo, and per-menu-item nutrition/FAQ fields) — the plan's schema/FAQ recommendations become CMS content-population tasks plus JSON-LD template work, not net-new architecture. Add a **301 redirect map** workstream to protect existing domain authority.
+3. GBP completeness across all 19 locations + Ovation-driven review velocity (Phase 3) is confirmed as the top off-site lever; GBP access must be confirmed first.
+4. Competitor set to track: First Watch, Snooze, Another Broken Egg, Big Bad Breakfast, Bob Evans, local independents (per internal analysis; monday "Bi-weekly competition news" board already exists as the intel feed).
+
+## 6. Sources
 
 - Uberall AI restaurant visibility report, May 2026 — businesswire.com/news/home/20260507962493/en/
 - Restaurant schema guides — malou.io/en-us/blog/structured-data-for-restaurants; gatilab.com/local-business-schema-markup/; richmenu.io/restaurant-schema-markup/; thedigitalrestaurant.com/restaurant-schema-markup-guide/; schema.org/Restaurant
