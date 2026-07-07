@@ -1,0 +1,106 @@
+[
+ {
+  "week": "2026-W15",
+  "days": 7,
+  "sessions": 11511,
+  "clicks": 6113,
+  "sessions_idx": 100.0,
+  "clicks_idx": 100.0
+ },
+ {
+  "week": "2026-W16",
+  "days": 7,
+  "sessions": 11170,
+  "clicks": 6479,
+  "sessions_idx": 97.0,
+  "clicks_idx": 106.0
+ },
+ {
+  "week": "2026-W17",
+  "days": 7,
+  "sessions": 11457,
+  "clicks": 6651,
+  "sessions_idx": 99.5,
+  "clicks_idx": 108.8
+ },
+ {
+  "week": "2026-W18",
+  "days": 7,
+  "sessions": 11786,
+  "clicks": 6969,
+  "sessions_idx": 102.4,
+  "clicks_idx": 114.0
+ },
+ {
+  "week": "2026-W19",
+  "days": 7,
+  "sessions": 20273,
+  "clicks": 9545,
+  "sessions_idx": 176.1,
+  "clicks_idx": 156.1
+ },
+ {
+  "week": "2026-W20",
+  "days": 7,
+  "sessions": 11155,
+  "clicks": 6718,
+  "sessions_idx": 96.9,
+  "clicks_idx": 109.9
+ },
+ {
+  "week": "2026-W21",
+  "days": 7,
+  "sessions": 10892,
+  "clicks": 6729,
+  "sessions_idx": 94.6,
+  "clicks_idx": 110.1
+ },
+ {
+  "week": "2026-W22",
+  "days": 7,
+  "sessions": 9837,
+  "clicks": 5746,
+  "sessions_idx": 85.5,
+  "clicks_idx": 94.0
+ },
+ {
+  "week": "2026-W23",
+  "days": 7,
+  "sessions": 9407,
+  "clicks": 5552,
+  "sessions_idx": 81.7,
+  "clicks_idx": 90.8
+ },
+ {
+  "week": "2026-W24",
+  "days": 7,
+  "sessions": 9529,
+  "clicks": 5615,
+  "sessions_idx": 82.8,
+  "clicks_idx": 91.9
+ },
+ {
+  "week": "2026-W25",
+  "days": 7,
+  "sessions": 14800,
+  "clicks": 6782,
+  "sessions_idx": 128.6,
+  "clicks_idx": 110.9
+ },
+ {
+  "week": "2026-W26",
+  "days": 7,
+  "sessions": 10642,
+  "clicks": 5645,
+  "sessions_idx": 92.5,
+  "clicks_idx": 92.3
+ },
+ {
+  "week": "2026-W27",
+  "days": 7,
+  "sessions": 12516,
+  "clicks": 5747,
+  "sessions_idx": 108.7,
+  "clicks_idx": 94.0
+ }
+]
