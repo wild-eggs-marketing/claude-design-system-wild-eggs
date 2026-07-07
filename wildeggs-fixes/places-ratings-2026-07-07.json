@@ -1,0 +1,182 @@
+[
+ {
+  "slug": "wild-eggs-evansville-in",
+  "city": "Evansville",
+  "state": "IN",
+  "rating": 4.5,
+  "reviews": 228,
+  "place_id": "ChIJXU49FgArbogRfyOHLEjxgqs",
+  "matched": "1223 Hirschland Rd Ste 105, Evansville, IN 47715, USA"
+ },
+ {
+  "slug": "wild-eggs-avon-in",
+  "city": "Avon",
+  "state": "IN",
+  "rating": 4.3,
+  "reviews": 466,
+  "place_id": "ChIJ4SMMJ4avbIgR0P7V636H7rI",
+  "matched": "9769 E US Hwy 36, Avon, IN 46123, USA"
+ },
+ {
+  "slug": "wild-eggs-greenwood-in",
+  "city": "Greenwood",
+  "state": "IN",
+  "rating": 4.5,
+  "reviews": 548,
+  "place_id": "ChIJzxW6781Da4gRHVXD3i55tN4",
+  "matched": "1279 N Emerson Ave Ste A-1, Greenwood, IN 46143, USA"
+ },
+ {
+  "slug": "wild-eggs-oakley-cincinnati-oh",
+  "city": "Cincinnati",
+  "state": "OH",
+  "rating": 4.3,
+  "reviews": 1731,
+  "place_id": "ChIJPTj8iG-tQYgRLT8hesR-sjc",
+  "matched": "3240 Vandercar Way, Cincinnati, OH 45209, USA"
+ },
+ {
+  "slug": "wild-eggs-downtown-cincinnati-oh",
+  "city": "Cincinnati",
+  "state": "OH",
+  "rating": 4.5,
+  "reviews": 1403,
+  "place_id": "ChIJQQ99gVuxQYgRGPcZGLcalR4",
+  "matched": "301 E 4th St, Cincinnati, OH 45202, USA"
+ },
+ {
+  "slug": "wild-eggs-new-albany-in",
+  "city": "New Albany",
+  "state": "IN",
+  "rating": 4.7,
+  "reviews": 780,
+  "place_id": "ChIJOxhWnXFtaYgRwfZ87Gp1mMo",
+  "matched": "223 W 5th St, New Albany, IN 47150, USA"
+ },
+ {
+  "slug": "wild-eggs-jeffersontown-louisville-ky",
+  "city": "Louisville",
+  "state": "KY",
+  "rating": 4.7,
+  "reviews": 894,
+  "place_id": "ChIJOzKVzrihaYgRn2iy7-c-5F4",
+  "matched": "9010 Taylorsville Rd, Louisville, KY 40299, USA"
+ },
+ {
+  "slug": "wild-eggs-tates-creek-lexington-ky",
+  "city": "Lexington",
+  "state": "KY",
+  "rating": 4.4,
+  "reviews": 71,
+  "place_id": "ChIJ_0uTvNRbQogR3TadAMM-V7Y",
+  "matched": "4228 Saron Dr Ste A, Lexington, KY 40515, USA"
+ },
+ {
+  "slug": "wild-eggs-jeffersonville-in",
+  "city": "Jeffersonville",
+  "state": "IN",
+  "rating": 4.6,
+  "reviews": 1980,
+  "place_id": "ChIJ74C8pPRxaYgRRt86xeGvKf8",
+  "matched": "1450 Veterans Pkwy #160, Jeffersonville, IN 47130, USA"
+ },
+ {
+  "slug": "wild-eggs-fishers-in",
+  "city": "Fishers",
+  "state": "IN",
+  "rating": 4.4,
+  "reviews": 1275,
+  "place_id": "ChIJw6F0Gw60FIgRsxQtdDf8SV0",
+  "matched": "13272 Market Square Dr, Fishers, IN 46038, USA"
+ },
+ {
+  "slug": "wild-eggs-downtown-indianapolis-in",
+  "city": "Indianapolis",
+  "state": "IN",
+  "rating": 4.4,
+  "reviews": 1879,
+  "place_id": "ChIJB1SNfZVQa4gRWXcusoY6lH4",
+  "matched": "314 N Delaware St, Indianapolis, IN 46204, USA"
+ },
+ {
+  "slug": "wild-eggs-carmel-in",
+  "city": "Carmel",
+  "state": "IN",
+  "rating": 4.5,
+  "reviews": 1692,
+  "place_id": "ChIJP8kJoWqsFIgRxcsg73jbYTQ",
+  "matched": "1438 W Main St, Carmel, IN 46032, USA"
+ },
+ {
+  "slug": "wild-eggs-hamburg-lexington-ky",
+  "city": "Lexington",
+  "state": "KY",
+  "rating": 4.5,
+  "reviews": 1823,
+  "place_id": "ChIJt3utI99PQogRuni0id0Eq3k",
+  "matched": "1925 Justice Dr, Lexington, KY 40509, USA"
+ },
+ {
+  "slug": "wild-eggs-bowling-green-ky",
+  "city": "Bowling Green",
+  "state": "KY",
+  "rating": 4.3,
+  "reviews": 1353,
+  "place_id": "ChIJ3yWpwRnpZYgRqgdxfM1kiZs",
+  "matched": "804 Campbell Ln #100, Bowling Green, KY 42104, USA"
+ },
+ {
+  "slug": "wild-eggs-palomar-lexington-ky",
+  "city": "Lexington",
+  "state": "KY",
+  "rating": 4.5,
+  "reviews": 1327,
+  "place_id": "ChIJ1X2SsiNdQogRWKgibImYgxc",
+  "matched": "3735 Palomar Centre Dr, Lexington, KY 40513, USA"
+ },
+ {
+  "slug": "wild-eggs-downtown-louisville-ky",
+  "city": "Louisville",
+  "state": "KY",
+  "rating": 4.5,
+  "reviews": 3492,
+  "place_id": "ChIJa3NJzrhyaYgRywZc9GTl5iY",
+  "matched": "121 S Floyd St, Louisville, KY 40202, USA"
+ },
+ {
+  "slug": "wild-eggs-middletown-louisville-ky",
+  "city": "Louisville",
+  "state": "KY",
+  "rating": 4.7,
+  "reviews": 2171,
+  "place_id": "ChIJUYraNZqYaYgRqRrkmYhNpQY",
+  "matched": "153 S English Station Rd, Louisville, KY 40245, USA"
+ },
+ {
+  "slug": "wild-eggs-westport-village-louisville-ky",
+  "city": "Louisville",
+  "state": "KY",
+  "rating": 4.7,
+  "reviews": 1753,
+  "place_id": "ChIJV7aSbHB1aYgRvwf6ouhhwrE",
+  "matched": "1311 Herr Ln, Louisville, KY 40222, USA"
+ },
+ {
+  "slug": "wild-eggs-dupont-louisville-ky",
+  "city": "Louisville",
+  "state": "KY",
+  "rating": 4.5,
+  "reviews": 2898,
+  "place_id": "ChIJTSwy6tIKaYgRqeXXKfJER6s",
+  "matched": "3985 Dutchmans Ln, Louisville, KY 40207, USA"
+ },
+ {
+  "slug": "columbus-oh",
+  "city": "Westerville",
+  "state": "OH",
+  "rating": null,
+  "reviews": null,
+  "place_id": "ChIJJa4E9ZlhOIgRzlt-bXzqp5w",
+  "matched": "5912 Old Hamilton Rd, Columbus, OH 43230, USA"
+ }
+]
