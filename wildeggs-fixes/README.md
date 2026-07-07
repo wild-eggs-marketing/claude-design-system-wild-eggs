@@ -2,15 +2,14 @@
 
 Framer MCP dropped mid-session. Status of each planned fix:
 
-## 1. SchemaInjector.tsx (codeFileId cnzbZUJ) — SENT, UNCONFIRMED
-An updateCodeFile call was sent and timed out — verify whether it applied before re-sending.
+## 1. SchemaInjector.tsx (codeFileId cnzbZUJ) — ✅ APPLIED & VERIFIED July 7
 The full corrected file is in `SchemaInjector.fixed.tsx`. Changes vs. original:
 - SAME_AS → facebook.com/wildeggsrestaurants + instagram.com/wildeggsrestaurants (removed wrong /wildeggs handles and unverified twitter)
 - buildMenuItem: sanitizePrice() strips "$"/text so Offer.price is numeric (fixes invalid markup on all 138 item pages)
 - buildWebsite: WebPage `name` now derived from the URL path label ("Catering | Wild Eggs") instead of metaDescription.substring(0,70)
 - Shared PATH_LABELS/labelForPathPart used by both WebPage name and breadcrumbs
 
-## 2. Locations CMS (collection YAC695LcL) — NOT YET APPLIED
+## 2. Locations CMS (collection YAC695LcL) — ✅ APPLIED July 7 (20/20 records, 0 failures; canonicals, hours text, Wisely→Toast FAQs, Oakley, Palomar, Columbus, 2 meta descriptions). NOTE: the self-referencing "Location" field (DHHedjrQs) held invalid slug-string data on 6 records; normalized to valid item-ID references during the batch. REMAINING: hit Publish in Framer to take changes live.
 - **columbus-oh** (Coming Soon record): replace "Coming soon!" placeholders —
   Meta Title: "Wild Eggs Columbus (Westerville) | Breakfast & Brunch Coming Soon"
   Meta Description: "Wild Eggs is coming to Westerville, OH — scratch-kitchen breakfast & brunch at 5912 Old Hamilton Rd. Opening soon; follow @wildeggsrestaurants for the opening date."
