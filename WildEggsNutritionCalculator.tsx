@@ -1,5 +1,4 @@
 import { addPropertyControls, ControlType } from "framer"
-import { DEFAULT_ITEMS } from "./WildEggsMenuData"
 import { useState, useMemo, useEffect, useRef, useDeferredValue, useReducer, useCallback, memo } from "react"
 
 // ── 1. Constants ──────────────────────────────────────────────────────────────
@@ -473,7 +472,7 @@ function WildEggsNutritionCalculator({
     const isMobile        = useViewport()
 
     const hasRealPropItems = items.some(i => i.title.trim() !== "")
-    const effectiveItems   = hasRealPropItems ? items : (cmsItems.length > 0 ? cmsItems : (DEFAULT_ITEMS as MenuItem[]))
+    const effectiveItems   = hasRealPropItems ? items : cmsItems
 
     // — Stable callbacks ———————————————————————————————————————————————————————
     // On close, return focus to the originating card (WCAG 2.4.3 focus order).
