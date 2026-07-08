@@ -27,23 +27,27 @@ const FIELD = {
 // Primary/Dark Teal rgb(13,79,79), Cream-Brand rgb(245,238,227), Ink rgb(28,43,28),
 // Yellow rgb(246,192,52), Lime Deep rgb(123,144,21), Warm Apricot rgb(242,119,78),
 // Teal Tint rgb(234,244,244).
+// Palette verified directly against the project's Framer ColorStyles (getProjectXml),
+// not carried over from an earlier, unverified summary — several tokens below replace
+// values that didn't actually exist in the site's style list (e.g. there is no
+// "Warm Apricot" or "Lime Deep" style; the real actions are Paprika and Deep Green).
 const C = {
-    orange:      "rgb(242, 119, 78)",   // Warm Apricot (site token)
-    orangeDark:  "rgb(193, 71, 33)",    // AA-compliant apricot for text on white / white text on it
-    orangeLight: "rgba(242, 119, 78, 0.12)",
-    yellow:      "rgb(246, 192, 52)",   // Yellow (site token)
-    amber:       "rgb(158, 121, 0)",    // AA-compliant stand-in for yellow as text on white
-    green:       "rgb(123, 144, 21)",   // Lime Deep (site token)
-    greenDark:   "rgb(90, 106, 15)",
-    greenLight:  "rgba(123, 144, 21, 0.12)",
-    teal:        "rgb(13, 79, 79)",     // Primary Color / Dark Teal (site token)
-    tealLight:   "rgb(234, 244, 244)",  // Teal Tint (site token)
-    cream:       "rgb(245, 238, 227)",  // Cream - Brand (site token)
+    orange:      "rgb(175, 60, 35)",    // /Action: Paprika — white text passes 6.0:1
+    orangeDark:  "rgb(175, 60, 35)",    // Paprika also passes 6.0:1 as text-on-white
+    orangeLight: "rgba(175, 60, 35, 0.10)",
+    yellow:      "rgb(181, 130, 34)",   // /Accent - Gold — needs ink text (white fails 3.4:1)
+    amber:       "rgb(120, 86, 23)",    // Darker gold for text-on-white use (6.7:1, AA)
+    green:       "rgb(18, 104, 73)",    // /deep-green — white text passes 6.8:1
+    greenDark:   "rgb(18, 104, 73)",    // Deep Green also passes 6.8:1 as text-on-white
+    greenLight:  "rgba(18, 104, 73, 0.10)",
+    teal:        "rgb(47, 92, 100)",    // /Primary: Teal 1 . Refuge
+    tealLight:   "rgba(47, 92, 100, 0.08)",
+    cream:       "rgb(250, 247, 240)",  // /Canvas: Cream
     white:       "rgb(255, 255, 255)",
-    ink:         "rgb(28, 43, 28)",     // Ink (site token)
-    inkSoft:     "rgba(28, 43, 28, 0.65)",
-    inkGhost:    "rgba(28, 43, 28, 0.07)",
-    border:      "rgba(28, 43, 28, 0.09)",
+    ink:         "rgb(30, 26, 20)",     // /Cast Iron
+    inkSoft:     "rgba(30, 26, 20, 0.65)",
+    inkGhost:    "rgba(30, 26, 20, 0.07)",
+    border:      "rgba(30, 26, 20, 0.09)",
 }
 
 // ── 3. Styles — injected once per page load ───────────────────────────────────
@@ -122,9 +126,13 @@ const GOALS: GoalDef[] = [
     { id: "all",   label: "Browse All",    sub: "Full menu",     accent: C.cream, accentText: C.teal },
     // accentText is dark ink on every colored fill — white fails WCAG AA on apricot,
     // lime, and yellow; ink passes 4.5:1+ on all three site tokens.
-    { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, accentText: C.ink, minProtein: 30 },
-    { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  accentText: C.ink, maxCalories: 500 },
-    { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, accentText: C.ink, minCarbs: 50 },
+    // accentText verified per-fill against the site's actual token values: ink on
+    // paprika is 2.88:1 (fails AA), ink on deep-green is 2.56:1 (fails) — both need
+    // cream/white text (6.0:1 / 6.8:1). Gold is the opposite: white on gold is only
+    // 3.4:1 (fails), ink on gold passes at 5.1:1.
+    { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, accentText: C.cream, minProtein: 30 },
+    { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  accentText: C.cream, maxCalories: 500 },
+    { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, accentText: C.ink,   minCarbs: 50 },
 ]
 
 // Dietary predicates — powered by the machine-readable MenuTrinfo allergen strings
@@ -147,7 +155,7 @@ const DIETARY: string[] = Object.keys(DIETARY_TAGS)
 
 // Deliberate menu order for "Browse All" (no goal to rank by) so the default view
 // reads as curated rather than raw data order. Unknown categories sort last.
-const CATEGORY_ORDER = ["Bonnie's Bennies", "Breakfast Mains", "Pancakes, Waffles & Sweets", "Lunch & Sandwiches", "Kids Menu", "Sides", "Drinks & Cocktails", "Gluten-friendly", "Catering"]
+const CATEGORY_ORDER = ["Bonnie's Bennies", "Breakfast Mains", "Pancakes, Waffles & Sweets", "Lunch & Sandwiches", "Kids Menu", "Sides", "Drinks & Cocktails", "Gluten-friendly"]
 const catRank = (c: string): number => { const i = CATEGORY_ORDER.indexOf(c); return i === -1 ? 99 : i }
 
 // ── 6. Storage factory ────────────────────────────────────────────────────────
@@ -268,7 +276,7 @@ function trayReducer(state: TrayState, action: TrayAction): TrayState {
 // ── 9. Pure filter logic ──────────────────────────────────────────────────────
 
 // Single source of truth for goal-matching — used by both applyFilters and buildGoalCounts.
-const NON_MEAL_CATEGORIES = new Set(["Drinks & Cocktails", "Catering"])
+const NON_MEAL_CATEGORIES = new Set(["Drinks & Cocktails"])
 
 function filterByGoal(items: MenuItem[], g: GoalDef): MenuItem[] {
     // Goals rank dishes; without this, "Keep It Light" crowns Sweet Tea (5 cal)
@@ -421,11 +429,13 @@ const GoalButton = memo(function GoalButton({ g, active, count, total, onClick }
             padding: "11px 18px", borderRadius: 10,
             border: `1.5px solid ${active ? g.accent : isEmpty ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.15)"}`,
             background: active ? g.accent : isEmpty ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.06)",
-            color: active ? (g.accentText ?? C.white) : isEmpty ? "rgba(245,238,227,0.35)" : "rgba(245,238,227,0.80)",
+            // Inactive-but-available label text: 0.80 alpha measured 3.5:1 against the
+            // translucent button fill (fails AA); 0.92 clears 4.5:1 with margin.
+            color: active ? (g.accentText ?? C.white) : isEmpty ? "rgba(245,238,227,0.35)" : "rgba(245,238,227,0.92)",
             cursor: isEmpty ? "default" : "pointer", textAlign: "left", transition: "all 0.15s", minWidth: 110, fontFamily: "inherit"
         }}>
             <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2 }}>{g.label}</div>
-            <div style={{ fontSize: 10, opacity: 0.85, marginTop: 3 }}>{active ? `${count} items` : isEmpty ? "none available" : g.sub}</div>
+            <div style={{ fontSize: 10, marginTop: 3 }}>{active ? `${count} items` : isEmpty ? "none available" : g.sub}</div>
         </button>
     )
 })
@@ -467,7 +477,7 @@ function WildEggsNutritionCalculator({
     cmsEndpoint = "https://wild-eggs-nutrition-calculator.elle-f37.workers.dev/",
     apiKey      = "",
     orderUrl    = "#",
-    fontFamily  = "Bricolage Grotesque, sans-serif",
+    fontFamily  = "'Hedvig Letters Serif', Georgia, serif",
     stickyOffset = 96,
 }: WildEggsNutritionCalculatorProps) {
 
@@ -484,6 +494,7 @@ function WildEggsNutritionCalculator({
     // Persisted so a returning guest keeps their daily calorie budget (sane-range guard).
     const [budget,     setBudget]     = useState<number>(() => { const v = Number(ls.get("we-budget") ?? 0); return v >= 500 && v <= 6000 ? v : 0 })
     const [showMacros, setShowMacros] = useState<boolean>(true)
+    const headingFont = "'Fraunces', Georgia, serif"
     const [cmsItems,   setCmsItems]   = useState<MenuItem[]>([])
     const [fetchState, setFetchState] = useState<FetchState>("idle")
     const [retryKey,   setRetryKey]   = useState<number>(0)
@@ -501,7 +512,10 @@ function WildEggsNutritionCalculator({
     const isMobile        = useViewport()
 
     const hasRealPropItems = items.some(i => i.title.trim() !== "")
-    const effectiveItems   = hasRealPropItems ? items : cmsItems
+    // Catering is priced and served as bulk trays (a dozen, a gallon) with no defined
+    // per-serving basis — a per-person nutrition calculator has nothing correct to show.
+    const rawItems         = hasRealPropItems ? items : cmsItems
+    const effectiveItems   = useMemo(() => rawItems.filter(i => i.category !== "Catering"), [rawItems])
 
     // — Stable callbacks ———————————————————————————————————————————————————————
     // On close, return focus to the originating card (WCAG 2.4.3 focus order).
@@ -792,7 +806,7 @@ function WildEggsNutritionCalculator({
             </div>
             <div style={{ padding: "18px 20px 36px", display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
                 <div>
-                    <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "0 0 3px", lineHeight: 1.2 }}>{sel.title}</h3>
+                    <h3 style={{ fontSize: 19, fontWeight: 700, color: C.ink, margin: "0 0 3px", lineHeight: 1.2, fontFamily: headingFont }}>{sel.title}</h3>
                     {sel.category && <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, textTransform: "uppercase", letterSpacing: "0.12em" }}>{sel.category}</div>}
                 </div>
                 {trayState.items.length > 0 && (
@@ -893,7 +907,7 @@ function WildEggsNutritionCalculator({
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
                     <div>
                         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)", marginBottom: 12 }}>What&apos;s your goal?</div>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Nutrition goal">
                             {GOALS.map(g => <GoalButton key={g.id} g={g} active={goal === g.id} count={goalCounts[g.id] ?? 0} total={effectiveItems.length} onClick={() => handleGoalClick(g.id)} />)}
                         </div>
                     </div>
@@ -927,10 +941,14 @@ function WildEggsNutritionCalculator({
             </div>
 
             {/* Dietary + category pills */}
-            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `8px ${padX}px`, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {DIETARY.map(d => { const active = dietary.includes(d); const n = dietaryCounts[d] ?? 0; const dead = !active && n === 0; return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} disabled={dead} title={dead ? "No items match with your current filters" : undefined} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: dead ? "not-allowed" : "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, opacity: dead ? 0.35 : 1, transition: "all 0.12s" }}>{active ? "\u2715 " : ""}{d} ({n})</button> })}
+            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `8px ${padX}px`, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }} role="group" aria-label="Filter by dietary tag or category">
+                <div style={{ display: "contents" }} role="group" aria-label="Dietary tags">
+                    {DIETARY.map(d => { const active = dietary.includes(d); const n = dietaryCounts[d] ?? 0; const dead = !active && n === 0; return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} disabled={dead} title={dead ? "No items match with your current filters" : undefined} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: dead ? "not-allowed" : "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, opacity: dead ? 0.35 : 1, transition: "all 0.12s" }}>{active ? "\u2715 " : ""}{d} ({n})</button> })}
+                </div>
                 <div style={{ width: 1, height: 16, background: C.border, margin: "0 2px" }} aria-hidden="true" />
-                {categories.map(cat => <button key={cat} onClick={() => setCategory(category === cat ? "All" : cat)} title={category === cat ? "Click again to clear" : undefined} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
+                <div style={{ display: "contents" }} role="group" aria-label="Category">
+                    {categories.map(cat => <button key={cat} onClick={() => setCategory(category === cat ? "All" : cat)} title={category === cat ? "Click again to clear" : undefined} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
+                </div>
             </div>
 
             {/* Fetch error banner */}
@@ -1016,7 +1034,7 @@ function WildEggsNutritionCalculator({
                                                 </div>
                                             )
                                         })()}
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3 }}><Highlight text={item.title} query={deferredSearch} /></div>
+                                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, marginBottom: 2, lineHeight: 1.3, fontFamily: headingFont }}><Highlight text={item.title} query={deferredSearch} /></div>
                                         {item.shortIngr && <div style={{ fontSize: 11, color: C.inkSoft, marginBottom: showMacros ? 8 : 0, lineHeight: 1.4 }}><Highlight text={item.shortIngr} query={deferredSearch} /></div>}
                                         {showMacros && item.calories > 0 && (item.protein > 0 || item.carbs > 0) && (
                                             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 8 }}>
@@ -1071,7 +1089,7 @@ function WildEggsNutritionCalculator({
             {/* Comparison tray */}
             {trayState.items.length > 0 && (
                 <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: C.ink, borderTop: `1px solid rgba(255,255,255,0.08)` }}>
-                    <button onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })} aria-expanded={trayState.open} style={{ width: "100%", padding: `10px ${padX}px`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    <button onClick={() => trayDispatch({ type: "TOGGLE_OPEN" })} aria-expanded={trayState.open} aria-label={`${trayState.open ? "Collapse" : "Expand"} comparison tray, ${trayState.items.length} item${trayState.items.length > 1 ? "s" : ""}`} style={{ width: "100%", padding: `10px ${padX}px`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                         <span style={{ fontSize: 12, fontWeight: 700, color: C.cream, letterSpacing: "0.06em", textTransform: "uppercase" }}>Compare {trayState.items.length} dish{trayState.items.length > 1 ? "es" : ""}{!isMobile && <span style={{ fontWeight: 400, opacity: 0.75, marginLeft: 8, textTransform: "none", letterSpacing: 0 }}>press C</span>}</span>
                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                             <span style={{ fontSize: 11, color: "rgba(245,238,227,0.75)", textAlign: "right" }}>{trayTotals.calories} cal · {trayTotals.protein}g pro{isMobile ? "" : ` · ${trayTotals.carbs}g carbs combined`}</span>
@@ -1150,6 +1168,6 @@ addPropertyControls(WildEggsNutritionCalculator, {
         },
     },
     orderUrl:   { type: ControlType.String, title: "Order URL",   defaultValue: "#" },
-    fontFamily: { type: ControlType.String, title: "Font Family", defaultValue: "Bricolage Grotesque, sans-serif" },
+    fontFamily: { type: ControlType.String, title: "Font Family", defaultValue: "'Hedvig Letters Serif', Georgia, serif" },
     stickyOffset: { type: ControlType.Number, title: "Sticky Offset", defaultValue: 96, min: 0, max: 240, unit: "px", description: "Height of the site's floating nav — keeps the detail panel (and its close button) below it." },
 })
