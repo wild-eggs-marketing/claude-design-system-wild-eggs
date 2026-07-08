@@ -258,8 +258,12 @@ function trayReducer(state: TrayState, action: TrayAction): TrayState {
 // ── 9. Pure filter logic ──────────────────────────────────────────────────────
 
 // Single source of truth for goal-matching — used by both applyFilters and buildGoalCounts.
+const NON_MEAL_CATEGORIES = new Set(["Drinks & Cocktails", "Catering"])
+
 function filterByGoal(items: MenuItem[], g: GoalDef): MenuItem[] {
-    let list = items
+    // Goals rank dishes; without this, "Keep It Light" crowns Sweet Tea (5 cal)
+    // best match and buries every actual meal.
+    let list = g.id !== "all" ? items.filter(i => !NON_MEAL_CATEGORIES.has(i.category)) : items
     if (g.minProtein  !== undefined) list = list.filter(i => i.protein  >= g.minProtein!)
     // calories > 0 guard: items with missing nutrition data (0 cal) must not pass a calorie cap
     if (g.maxCalories !== undefined) list = list.filter(i => i.calories > 0 && i.calories <= g.maxCalories!)
@@ -500,7 +504,8 @@ function WildEggsNutritionCalculator({
     }, [])
     const handleDeepLink   = useCallback((id: string) => setSelected(id), [])
     const handleToggleTray = useCallback((id: string) => trayDispatch({ type: "TOGGLE", id }), [])
-    const handleGoalClick  = useCallback((id: string) => setGoal(id), [])
+    // Re-clicking the active goal deselects it (back to Browse All) — every filter must be un-clickable in place.
+    const handleGoalClick  = useCallback((id: string) => setGoal(prev => prev === id && id !== "all" ? "all" : id), [])
 
     const urlMountCb = useCallback(({ goal: g, category: cat, sortBy: s, item }: { goal?: string; category?: string; sortBy?: string; item?: string }) => {
         const validGoal = GOALS.find(x => x.id === g)
@@ -898,7 +903,7 @@ function WildEggsNutritionCalculator({
 
             {/* Toolbar */}
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `10px ${padX}px`, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or ingredient" aria-label="Search menu items" style={{ flex: 1, minWidth: 160, padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${search ? C.orange : C.border}`, fontSize: 13, color: C.ink, background: C.inkGhost, outline: "none", fontFamily: "inherit", boxSizing: "border-box", opacity: isSearchPending ? 0.65 : 1, transition: "border-color 0.15s, opacity 0.1s" }} />
+                <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or ingredient" aria-label="Search menu items" style={{ flex: 1, minWidth: 160, padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${search ? C.orange : C.border}`, fontSize: 13, color: C.ink, background: C.inkGhost, outline: "none", fontFamily: "inherit", boxSizing: "border-box", opacity: isSearchPending ? 0.65 : 1, transition: "border-color 0.15s, opacity 0.1s" }} />
                 <select value={sortBy} onChange={e => setSortBy(e.target.value)} aria-label="Sort order" style={{ padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.ink, background: C.white, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
                     <option value="goal-fit">Best Goal Fit</option>
                     <option value="protein-desc">Most Protein</option>
@@ -911,9 +916,9 @@ function WildEggsNutritionCalculator({
 
             {/* Dietary + category pills */}
             <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `8px ${padX}px`, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {DIETARY.map(d => { const active = dietary.includes(d); const n = dietaryCounts[d] ?? 0; const dead = !active && n === 0; return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} disabled={dead} title={dead ? "No items match with your current filters" : undefined} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: dead ? "not-allowed" : "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, opacity: dead ? 0.35 : 1, transition: "all 0.12s" }}>{d} ({n})</button> })}
+                {DIETARY.map(d => { const active = dietary.includes(d); const n = dietaryCounts[d] ?? 0; const dead = !active && n === 0; return <button key={d} onClick={() => setDietary(active ? dietary.filter(x => x !== d) : [...dietary, d])} aria-pressed={active} disabled={dead} title={dead ? "No items match with your current filters" : undefined} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: dead ? "not-allowed" : "pointer", fontFamily: "inherit", border: `1.5px solid ${active ? C.greenDark : C.border}`, background: active ? C.greenDark : "transparent", color: active ? C.white : C.inkSoft, opacity: dead ? 0.35 : 1, transition: "all 0.12s" }}>{active ? "\u2715 " : ""}{d} ({n})</button> })}
                 <div style={{ width: 1, height: 16, background: C.border, margin: "0 2px" }} aria-hidden="true" />
-                {categories.map(cat => <button key={cat} onClick={() => setCategory(cat)} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
+                {categories.map(cat => <button key={cat} onClick={() => setCategory(category === cat ? "All" : cat)} title={category === cat ? "Click again to clear" : undefined} aria-pressed={category === cat} style={{ padding: "4px 11px", borderRadius: 100, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1.5px solid ${category === cat ? C.teal : C.border}`, background: category === cat ? C.teal : "transparent", color: category === cat ? C.white : C.inkSoft, transition: "all 0.12s" }}>{cat} ({categoryCounts[cat] ?? 0})</button>)}
             </div>
 
             {/* Fetch error banner */}
