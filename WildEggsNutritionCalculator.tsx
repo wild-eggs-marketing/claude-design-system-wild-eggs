@@ -23,26 +23,27 @@ const FIELD = {
 
 // ── 2. Design tokens ──────────────────────────────────────────────────────────
 
-// Wild Eggs brand tokens — sourced from the project's Nutrition_Panel.tsx and color styles:
-// Teal #2f5c64 (primary), Paprika #af3c23 (action), Gold #b58222 (accent),
-// Deep Green #126849, Cream #faf7f0 (canvas), Cast-Iron Brown #1e1a14 (text).
+// Wild Eggs site tokens — matched to the project's color styles (getProjectXml):
+// Primary/Dark Teal rgb(13,79,79), Cream-Brand rgb(245,238,227), Ink rgb(28,43,28),
+// Yellow rgb(246,192,52), Lime Deep rgb(123,144,21), Warm Apricot rgb(242,119,78),
+// Teal Tint rgb(234,244,244).
 const C = {
-    orange:      "rgb(175, 60, 35)",    // Paprika — action color (5.9:1 on white, AA)
-    orangeDark:  "rgb(148, 50, 29)",    // deeper paprika for large fills / text emphasis
-    orangeLight: "rgba(175, 60, 35, 0.10)",
-    yellow:      "rgb(181, 130, 34)",   // Gold accent
-    amber:       "rgb(140, 100, 25)",   // AA-compliant gold when used as text on white
-    green:       "rgb(18, 104, 73)",    // Deep Green (6.7:1 with white text, AA)
-    greenDark:   "rgb(13, 78, 55)",
-    greenLight:  "rgba(18, 104, 73, 0.10)",
-    teal:        "rgb(47, 92, 100)",    // Teal 1 - primary brand
-    tealLight:   "rgba(47, 92, 100, 0.08)",
-    cream:       "rgb(250, 247, 240)",  // Canvas cream
+    orange:      "rgb(242, 119, 78)",   // Warm Apricot (site token)
+    orangeDark:  "rgb(193, 71, 33)",    // AA-compliant apricot for text on white / white text on it
+    orangeLight: "rgba(242, 119, 78, 0.12)",
+    yellow:      "rgb(246, 192, 52)",   // Yellow (site token)
+    amber:       "rgb(158, 121, 0)",    // AA-compliant stand-in for yellow as text on white
+    green:       "rgb(123, 144, 21)",   // Lime Deep (site token)
+    greenDark:   "rgb(90, 106, 15)",
+    greenLight:  "rgba(123, 144, 21, 0.12)",
+    teal:        "rgb(13, 79, 79)",     // Primary Color / Dark Teal (site token)
+    tealLight:   "rgb(234, 244, 244)",  // Teal Tint (site token)
+    cream:       "rgb(245, 238, 227)",  // Cream - Brand (site token)
     white:       "rgb(255, 255, 255)",
-    ink:         "rgb(30, 26, 20)",     // Cast-iron brown
-    inkSoft:     "rgba(30, 26, 20, 0.65)",
-    inkGhost:    "rgba(30, 26, 20, 0.07)",
-    border:      "rgba(30, 26, 20, 0.09)",
+    ink:         "rgb(28, 43, 28)",     // Ink (site token)
+    inkSoft:     "rgba(28, 43, 28, 0.65)",
+    inkGhost:    "rgba(28, 43, 28, 0.07)",
+    border:      "rgba(28, 43, 28, 0.09)",
 }
 
 // ── 3. Styles — injected once per page load ───────────────────────────────────
@@ -119,11 +120,11 @@ const PORTION_LABELS: { val: number; label: string }[] = [
 const GOALS: GoalDef[] = [
     // "all" uses cream (not teal) — a teal fill would vanish into the teal header when active
     { id: "all",   label: "Browse All",    sub: "Full menu",     accent: C.cream, accentText: C.teal },
-    // accentText per fill: cream on the dark paprika/green fills (5.9:1 / 6.7:1 AA),
-    // ink on gold (5.0:1 AA) — white on gold would fail at 3.4:1.
-    { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, accentText: C.cream, minProtein: 30 },
-    { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  accentText: C.cream, maxCalories: 500 },
-    { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, accentText: C.ink,   minCarbs: 50 },
+    // accentText is dark ink on every colored fill — white fails WCAG AA on apricot,
+    // lime, and yellow; ink passes 4.5:1+ on all three site tokens.
+    { id: "power", label: "Power Up",      sub: "30g+ protein",  accent: C.orange, accentText: C.ink, minProtein: 30 },
+    { id: "light", label: "Keep It Light", sub: "Under 500 cal", accent: C.green,  accentText: C.ink, maxCalories: 500 },
+    { id: "fuel",  label: "Fuel the Day",  sub: "Carb-forward",  accent: C.yellow, accentText: C.ink, minCarbs: 50 },
 ]
 
 // Dietary predicates — powered by the machine-readable MenuTrinfo allergen strings
@@ -168,6 +169,13 @@ const ss = createStorage("session")
 
 // Matches "Thai Wrap" / "Thai Bowl" style titles for wrap-or-bowl pairing.
 const FORMAT_RE = /^(.*)\s+(Wrap|Bowl)$/
+
+// framerusercontent serves resized renditions via ?scale-down-to — cards never
+// need the full-resolution upload.
+function scaledSrc(url: string, px: number): string {
+    if (!url || !url.includes("framerusercontent.com")) return url
+    return url + (url.includes("?") ? "&" : "?") + "scale-down-to=" + px
+}
 
 function fitScore(item: MenuItem, goalId: string): number {
     if (goalId === "power") return item.protein
@@ -438,7 +446,7 @@ function WildEggsNutritionCalculator({
     cmsEndpoint = "https://wild-eggs-nutrition-calculator.elle-f37.workers.dev/",
     apiKey      = "",
     orderUrl    = "#",
-    fontFamily  = "'Hedvig Letters Sans', 'Helvetica Neue', sans-serif",
+    fontFamily  = "Bricolage Grotesque, sans-serif",
     stickyOffset = 96,
 }: WildEggsNutritionCalculatorProps) {
 
@@ -756,7 +764,7 @@ function WildEggsNutritionCalculator({
                 {isMobile && <div aria-hidden="true" style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.7)", zIndex: 2 }} />}
                 {(sel.thumbnail || selAlt?.thumbnail)
                     ? <img src={sel.thumbnail || selAlt!.thumbnail} alt={sel.title} onError={e => { const el = e.currentTarget; const fb = selAlt?.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                    : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.teal}, ${C.green})` }} />}
+                    : <div aria-hidden="true" style={{ width: "100%", height: "100%", background: C.tealLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 56, fontWeight: 800, color: C.teal, opacity: 0.55 }}>{sel.title.charAt(0)}</div>}
                 <button onClick={handleClose} aria-label="Close detail panel" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "none", cursor: "pointer", fontSize: 16, color: C.ink, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
                 {scaled.proteinDensity > 0 && <div style={{ position: "absolute", bottom: 12, left: 12, background: scaled.proteinDensity >= 8 ? C.greenDark : C.teal, color: C.white, fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 8, letterSpacing: "0.06em" }}>{scaled.proteinDensity}g protein / 100 cal</div>}
             </div>
@@ -789,12 +797,6 @@ function WildEggsNutritionCalculator({
                 )}
                 {sel.calories > 0 ? (
                     <>
-                        <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Portion size</div>
-                            <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Portion size">
-                                {PORTION_LABELS.map(p => <button key={p.val} onClick={() => setPortion(p.val)} aria-pressed={portion === p.val} style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", border: `1.5px solid ${portion === p.val ? C.orangeDark : C.border}`, background: portion === p.val ? C.orangeLight : "transparent", color: portion === p.val ? C.orangeDark : C.inkSoft }}>{p.label}</button>)}
-                            </div>
-                        </div>
                         <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px", background: C.inkGhost, borderRadius: 12 }}>
                             <MacroRing protein={scaled.protein} carbs={scaled.carbs} fat={scaled.fat} calories={scaled.calories} />
                             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -840,7 +842,7 @@ function WildEggsNutritionCalculator({
                             {suggestions.map(s => (
                                 <button key={s.id} onClick={() => setSelected(s.id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: 6, borderRadius: 10, border: `1px solid ${C.border}`, background: C.white, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
                                     <div style={{ width: 44, height: 44, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: C.inkGhost }}>
-                                        {s.thumbnail && <img src={s.thumbnail} alt="" role="presentation" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
+                                        {s.thumbnail && <img src={scaledSrc(s.thumbnail, 128)} alt="" role="presentation" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title.replace(/ (Wrap|Bowl)$/, "")}</div>
@@ -970,8 +972,8 @@ function WildEggsNutritionCalculator({
                                     style={{ cursor: "pointer", outlineOffset: -2 }}>
                                     <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: isTopMatch && !isSelected ? 20 : 0 }}>
                                         {(item.thumbnail || alt?.thumbnail)
-                                            ? <img src={item.thumbnail || alt!.thumbnail} loading="lazy" alt="" role="presentation" onError={e => { const el = e.currentTarget; const fb = item.id === card.item.id ? card.partner?.thumbnail : card.item.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                                            : <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, ${C.tealLight}, ${C.inkGhost})` }} />}
+                                            ? <img src={scaledSrc(item.thumbnail || alt!.thumbnail, 512)} loading="lazy" alt="" role="presentation" onError={e => { const el = e.currentTarget; const fb = item.id === card.item.id ? card.partner?.thumbnail : card.item.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                            : <div aria-hidden="true" style={{ width: "100%", height: "100%", background: C.tealLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, fontWeight: 800, color: C.teal, opacity: 0.55 }}>{item.title.charAt(0)}</div>}
                                     </div>
                                     <div style={{ padding: "11px 13px 13px" }}>
                                         {alt && (() => {
@@ -1126,6 +1128,6 @@ addPropertyControls(WildEggsNutritionCalculator, {
         },
     },
     orderUrl:   { type: ControlType.String, title: "Order URL",   defaultValue: "#" },
-    fontFamily: { type: ControlType.String, title: "Font Family", defaultValue: "'Hedvig Letters Sans', 'Helvetica Neue', sans-serif" },
+    fontFamily: { type: ControlType.String, title: "Font Family", defaultValue: "Bricolage Grotesque, sans-serif" },
     stickyOffset: { type: ControlType.Number, title: "Sticky Offset", defaultValue: 96, min: 0, max: 240, unit: "px", description: "Height of the site's floating nav — keeps the detail panel (and its close button) below it." },
 })
