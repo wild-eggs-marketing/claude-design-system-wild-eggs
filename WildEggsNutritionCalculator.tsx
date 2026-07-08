@@ -23,10 +23,6 @@ const FIELD = {
 
 // ── 2. Design tokens ──────────────────────────────────────────────────────────
 
-// Wild Eggs site tokens — matched to the project's color styles (getProjectXml):
-// Primary/Dark Teal rgb(13,79,79), Cream-Brand rgb(245,238,227), Ink rgb(28,43,28),
-// Yellow rgb(246,192,52), Lime Deep rgb(123,144,21), Warm Apricot rgb(242,119,78),
-// Teal Tint rgb(234,244,244).
 // Palette verified directly against the project's Framer ColorStyles (getProjectXml),
 // not carried over from an earlier, unverified summary — several tokens below replace
 // values that didn't actually exist in the site's style list (e.g. there is no
@@ -116,10 +112,6 @@ interface ScaledMacros {
 }
 
 // ── 5. Domain constants ───────────────────────────────────────────────────────
-
-const PORTION_LABELS: { val: number; label: string }[] = [
-    { val: 0.5, label: "Half" }, { val: 1, label: "Regular" }, { val: 1.5, label: "Large" },
-]
 
 const GOALS: GoalDef[] = [
     // "all" uses cream (not teal) — a teal fill would vanish into the teal header when active
@@ -249,11 +241,6 @@ function mapCmsItem(raw: Record<string, unknown>, index: number): MenuItem {
         orderLink:   str("orderLink", "orderUrl", "order_link"),
     }
 }
-
-// ── 7b. Baked-in menu data ────────────────────────────────────────────────────
-// Snapshot of the "Menu Items" CMS collection (138 items, MenuTrinfo April 2024).
-// Used when no items prop / cmsEndpoint is provided, so the component works the
-// moment it's dropped on a page. Re-export from the CMS to refresh.
 
 // ── 8. Reducer ────────────────────────────────────────────────────────────────
 
