@@ -182,10 +182,20 @@ function scaledSrc(url: string, px: number): string {
     return url + (url.includes("?") ? "&" : "?") + "scale-down-to=" + px
 }
 
+// Goal ranking, tuned against the actual MenuTrinfo data:
+// - power: raw protein crowned Chicken & Waffle (67g protein but 1,600 cal / 48g
+//   sugar); penalizing sugar surfaces Grilled Chicken Salad and the Bennies.
+// - light: raw 1000/cal crowned a 40-cal side; real meals rank above bare sides,
+//   then lower calories win (Old Fashioned Oatmeal becomes best match).
+// - fuel: raw carbs crowned the 83g-sugar Cinnamon Roll; complex-carb scoring
+//   (carbs minus sugars, fiber and protein rewarded) surfaces the Big Stack
+//   and Breakfast Burrito instead.
+const MAIN_CATEGORIES = new Set(["Bonnie's Bennies", "Breakfast Mains", "Lunch & Sandwiches", "Pancakes, Waffles & Sweets"])
+
 function fitScore(item: MenuItem, goalId: string): number {
-    if (goalId === "power") return item.protein
-    if (goalId === "light") return item.calories > 0 ? 1000 / item.calories : 0
-    if (goalId === "fuel")  return item.carbs
+    if (goalId === "power") return item.protein - item.sugars / 2
+    if (goalId === "light") return item.calories > 0 ? (MAIN_CATEGORIES.has(item.category) ? 2000 : 0) + (1000 - item.calories) : 0
+    if (goalId === "fuel")  return item.carbs - item.sugars + 2 * item.fiber + item.protein / 2
     return 0
 }
 
@@ -263,7 +273,9 @@ const NON_MEAL_CATEGORIES = new Set(["Drinks & Cocktails", "Catering"])
 function filterByGoal(items: MenuItem[], g: GoalDef): MenuItem[] {
     // Goals rank dishes; without this, "Keep It Light" crowns Sweet Tea (5 cal)
     // best match and buries every actual meal.
-    let list = g.id !== "all" ? items.filter(i => !NON_MEAL_CATEGORIES.has(i.category)) : items
+    // calories > 0: items pending analysis (e.g. Bacon City has macros but no calorie
+    // count yet) must not rank in — let alone win — a goal.
+    let list = g.id !== "all" ? items.filter(i => !NON_MEAL_CATEGORIES.has(i.category) && i.calories > 0) : items
     if (g.minProtein  !== undefined) list = list.filter(i => i.protein  >= g.minProtein!)
     // calories > 0 guard: items with missing nutrition data (0 cal) must not pass a calorie cap
     if (g.maxCalories !== undefined) list = list.filter(i => i.calories > 0 && i.calories <= g.maxCalories!)
