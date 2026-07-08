@@ -172,6 +172,11 @@ const FORMAT_RE = /^(.*)\s+(Wrap|Bowl)$/
 
 // framerusercontent serves resized renditions via ?scale-down-to — cards never
 // need the full-resolution upload.
+// Build-your-own items can never have fixed nutrition — their macros depend on
+// what the guest picks. They get "varies" copy instead of "coming soon".
+const BYO_RE = /build your own|create your own/i
+const isBYO = (i: MenuItem): boolean => BYO_RE.test(i.title)
+
 function scaledSrc(url: string, px: number): string {
     if (!url || !url.includes("framerusercontent.com")) return url
     return url + (url.includes("?") ? "&" : "?") + "scale-down-to=" + px
@@ -811,8 +816,8 @@ function WildEggsNutritionCalculator({
                     // Zero-data guard: never show an empty 0-cal macro ring — mirror the
                     // card-level "nutrition coming soon" state instead.
                     <div style={{ padding: "16px 14px", background: C.inkGhost, borderRadius: 12, textAlign: "center" }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 4 }}>Nutrition analysis coming soon</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>This item is pending lab analysis. Ask our staff about ingredients and allergens{selAlt && selAlt.calories > 0 ? `, or check the ${selAlt.title.endsWith("Wrap") ? "Wrap" : "Bowl"} version above for a close estimate` : ""}.</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 4 }}>{isBYO(sel) ? "Nutrition depends on your choices" : "Nutrition analysis coming soon"}</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.6 }}>{isBYO(sel) ? "Every combination is different — build it your way and ask our staff about any ingredient or allergen." : "This item is pending lab analysis. Ask our staff about ingredients and allergens."}</div>
                     </div>
                 )}
                 {budget > 0 && scaled.calories > 0 && (
@@ -846,7 +851,7 @@ function WildEggsNutritionCalculator({
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title.replace(/ (Wrap|Bowl)$/, "")}</div>
-                                        <div style={{ fontSize: 11, color: C.inkSoft, fontStyle: s.calories > 0 ? "normal" : "italic" }}>{s.calories > 0 ? `${s.calories} cal · ${s.protein}g pro` : "nutrition coming soon"}</div>
+                                        <div style={{ fontSize: 11, color: C.inkSoft, fontStyle: s.calories > 0 ? "normal" : "italic" }}>{s.calories > 0 ? `${s.calories} cal · ${s.protein}g pro` : (isBYO(s) ? "varies by your picks" : "nutrition coming soon")}</div>
                                     </div>
                                     <span aria-hidden="true" style={{ fontSize: 14, color: C.inkSoft, flexShrink: 0 }}>›</span>
                                 </button>
@@ -1005,7 +1010,7 @@ function WildEggsNutritionCalculator({
                                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                             {item.calories > 0
                                                 ? <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{item.calories}<span style={{ fontSize: 10, fontWeight: 600, color: C.inkSoft }}> cal</span></span>
-                                                : <span style={{ fontSize: 11, fontWeight: 600, color: C.inkSoft, fontStyle: "italic" }}>nutrition coming soon</span>}
+                                                : <span style={{ fontSize: 11, fontWeight: 600, color: C.inkSoft, fontStyle: "italic" }}>{isBYO(item) ? "varies by your picks" : "nutrition coming soon"}</span>}
                                             {item.price > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>${item.price.toFixed(2)}</span>}
                                         </div>
                                     </div>
