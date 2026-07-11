@@ -9,7 +9,7 @@ need a live axe/Lighthouse pass — Framer defaults are typically compliant.
 | # | Issue | WCAG | Severity | Status |
 |---|---|---|---|---|
 | 1 | Icon-only social links (Footer, every page) have no accessible name | 4.1.2, 2.4.4 | Critical | **Fixed** — runtime patcher |
-| 2 | Meaningful images are CSS backgrounds; no alt text site-wide | 1.1.1 | Serious | Open (needs image-layer migration) |
+| 2 | Meaningful images are CSS backgrounds; no alt text site-wide | 1.1.1 | Serious | **Fixed** — ALT_MANIFEST in runtime patcher (role="img" + aria-label); plus alt="" backstop on unlabeled imgs |
 | 3 | Footer newsletter has no email input; "Subscribe" is a link to /loyalty | 3.3.2, 4.1.2 | Serious | Open (Footer needs manual redesign; MCP can't edit it) |
 | 4 | Hero TextTicker: infinite marquee, no reduced-motion, text ×7 exposed to AT | 2.2.2, 1.1.1 | Serious | **Fixed** — TextTicker.tsx |
 | 5 | Apricot small-text links 2.79:1 on white (map popups) | 1.4.3 | Serious | **Fixed** — LocationsMap.tsx (teal 9.3:1, underlined) |
@@ -39,10 +39,25 @@ NutritionCalculator already strong (aria-labels, live regions, reduced-motion).
    "(opens in new tab)" on labeled external links, footer h6 → aria-level 2.
    Re-applies after SPA navigation via MutationObserver.
 
+## Alt text approach (finding 2)
+
+CSS background images are natively silent to assistive tech; the failure was
+meaningful photos with no text alternative. Remediated in `A11ySiteFixes.tsx`:
+
+- **ALT_MANIFEST**: filename → description map. Matching frames get
+  `role="img"` + `aria-label`; matching `<img>` variants get real `alt`.
+  Covers the home hero bowl, "Real ingredients" photo, Lobster Rangoon photo,
+  and the locations hero. Add new photos by appending a manifest entry.
+- **Backstop**: any `<img>` with no alt attribute gets `alt=""` so raw
+  filenames are never announced. Menu-card and detail-page images sit next to
+  the item's visible title, so decorative-empty alt is the correct semantics.
+- Descriptions were written from page context; copy team should refine wording.
+- Long-term ideal remains converting these frames to real image layers with
+  alt in the Framer editor — the manifest keeps AA compliance until then, and
+  is the only mechanism available via MCP (the schema exposes no alt).
+
 ## Remaining (manual / next)
 
-- **Alt text migration** (finding 2): convert content-bearing backgroundImage
-  frames to image layers with alt, hero-first. Biggest lift.
 - **Footer newsletter** (finding 3): add a real labeled email input + submit,
   or reframe as a plain "Join Crazy Points" CTA. Footer component returns an
   MCP read error, so this is an in-editor fix.
