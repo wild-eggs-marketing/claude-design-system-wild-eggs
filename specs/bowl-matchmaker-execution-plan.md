@@ -142,3 +142,17 @@ Shipped to Framer project "Crazy Bowls_V1" (branded **Quiz Your Crazy**):
 | 10 | Quiz-reveal → deterministic share MP4s from HTML | HyperFrames (heygen-com, 23.7K stars) | Same reveal HTML becomes the video asset | 0.65 |
 | 11 | Pre-launch creative scoring of share cards/videos | Higgsfield virality_predictor | Pick winning variant per archetype before spend | 0.6 |
 | 12 | Per-archetype OG preview images so shared links unfurl as archetype cards | vercel/satori or 14 pre-generated OGs | Share loop CTR; constrained by Framer per-page OG | 0.6 |
+
+## 11. Revisions — 2026-07-11 (later)
+
+**Higgsfield dropped (no paid plan).** Replacements:
+- Archetype card art → **code-crafted canvas share cards** using real bowl photos + brand type/colors (shipped, see below). Zero cost, zero AI-slop risk, brand-true.
+- Future illustration needs → Pollinations.ai (keyless, free) or HF Inference free tier (FLUX.1-schnell).
+- 3D (AR menu play) → TripoSR (open source, Hugging Face) or Meshy free tier → GLB for model-viewer.
+- Background removal → RMBG via transformers.js / rembg (open source).
+- Virality scoring → dropped; replace with GA4 A/B readback via Windsor.ai.
+- Remotion/HyperFrames plays unaffected (free OSS).
+
+**Shipped in `QuizYourCrazy.tsx` (rev 2, clean typecheck):**
+1. **Share card generator** — canvas-rendered 1080×1350 PNG (archetype name auto-fit in Passion One, circular bowl photo w/ CORS fallback, tagline, macro chips, Crazy Meter bar, squiggle, URL footer). Web Share API w/ files on mobile; PNG download + link copy on desktop. Button states: "Get my bowl card" → "Plating your card..." → "Card saved. Link copied. Go be crazy."
+2. **BuzzFeed-voice copy pass** on every string, per human-voice/anti-AI rules (no em-dashes, no filler, no performative emoji; oddly-specific self-recognition humor): "Pick a mood. Be honest." / "Zen. Do not perceive me." / "Comfort me like a carb." / "Mild. I have a meeting at 2." / "Fuel. I have 47 tabs open." / "Crazier than my group chat." / reactions like "The quinoa will whisper." and "Legal has been notified. Proceed." / reveal kicker "Results are in. Try to act surprised." / retake link "Retake it. Nobody has to know." Archetype taglines rewritten as BuzzFeed-style result payoffs ("62 grams of protein. You flex reaching for the salt.").
