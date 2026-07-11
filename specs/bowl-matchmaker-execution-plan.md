@@ -116,3 +116,29 @@ Archetypes become reusable brand IP: share-card frames for LTOs, "Crazy Meter" f
 - Live Framer audit 2026-07-11: Menu CMS (99 items, field IDs above), TextTicker/OpenNowBadge components, palette + type system
 - Peak-end rule (Kahneman) — motion budget concentrated at reveal
 - Precedents: BuzzFeed identity-quiz share mechanics; Spotify Wrapped shareable-card loop
+
+---
+
+## 9. BUILD RECORD — 2026-07-11
+
+Shipped to Framer project "Crazy Bowls_V1" (branded **Quiz Your Crazy**):
+- Code component `QuizYourCrazy.tsx` (codeFileId `NnaX1N5`, clean typecheck). 4-tap quiz, deterministic scoring over 14 real Menu-CMS items (real photos/macros), archetype reveal (Gains Goblin, Heat Seeker, Peanut Prophet…), bowl-fill progress SVG, tap reactions, heat-tint background, ingredient confetti, Crazy Meter, Lobster Rangoon certifiable rider, UTM'd order CTA, copy-link share, stateful result URLs (?qcr=slug&c=n), remix ("same vibe, more heat"), prefers-reduced-motion + aria-live + keyboard support.
+- Page `/quiz-your-crazy` (nodeId HMzL3QfqS): replaced 404 placeholder with Navbar (PoYU29bBM) → QuizYourCrazy (Vb6tEwvIc) → Footer (OpzCc_ZXo).
+- NOT yet published — publish from the Framer editor to push live.
+
+## 10. AI leverage stack — 10x output & delight plays (ranked)
+
+| # | Play | Tool/repo | Why | Conf. |
+|---|---|---|---|---|
+| 1 | Archetype trading-card art (14 illustrated cards, brand palette) + cutouts | Higgsfield MCP generate_image + remove_background (connected) | Turns results into collectible IP; feeds share cards + ads | 0.85 |
+| 2 | Nightly copy engine: rotating quiz reactions/taglines/ticker lines batch-written into CMS | Claude API (haiku for volume) + Framer MCP upsertCMSItem | Quiz never feels stale; LLM in the loop, not runtime | 0.8 |
+| 3 | Physics ingredient confetti + upgrade path to animated mascot | canvas-confetti (custom SVG shapes), Rive | Signature delight at near-zero cost; battle-tested OSS | 0.8 |
+| 4 | 3D bowl on reveal + True-Scale AR menu | Higgsfield generate_3d → GLB + google/model-viewer | Ties quiz to AR play #1; photo→3D now minutes | 0.8 |
+| 5 | Personalized archetype reveal videos (14 pre-rendered MP4s; reusable for Reels/ads) | Remotion (remotion.dev) | Programmatic video = every LTO gets a video for free | 0.75 |
+| 6 | Archetype-level ad intelligence: UTM campaigns per archetype → GA4/Meta readback → retarget by personality segment | Windsor.ai MCP (connected) + Claude Ads audit | Quiz answers = zero-party data; closes marketing loop | 0.75 |
+| 7 | In-browser AI bonus question: free-text "describe your mood" → zero-shot classified to quiz axes, on-device | huggingface/transformers.js (WebGPU) | Real AI, no backend, no PII leaves the device | 0.7 |
+| 8 | Export quiz components to React repo for CI/tests/review loops | unframer (remorses/unframer) | Real engineering rigor on Framer code | 0.7 |
+| 9 | Archetype AR lenses ("unlock your Heat Seeker lens") | Snap Lens Studio AI / Easy Lens | Bridges quiz → AR play #2; text-prompt lens creation | 0.65 |
+| 10 | Quiz-reveal → deterministic share MP4s from HTML | HyperFrames (heygen-com, 23.7K stars) | Same reveal HTML becomes the video asset | 0.65 |
+| 11 | Pre-launch creative scoring of share cards/videos | Higgsfield virality_predictor | Pick winning variant per archetype before spend | 0.6 |
+| 12 | Per-archetype OG preview images so shared links unfurl as archetype cards | vercel/satori or 14 pre-generated OGs | Share loop CTR; constrained by Framer per-page OG | 0.6 |
