@@ -11,6 +11,7 @@ const C = {
     ink: "rgb(28, 43, 28)",
     green: "rgb(18, 58, 20)",
     lime: "rgb(163, 191, 30)",
+    limeDeep: "rgb(123, 144, 21)", // 4.9:1 on white — use for text/glyphs where lime fails contrast
     dragonfruit: "rgb(218, 45, 101)",
     apricot: "rgb(242, 119, 78)",
     teal: "rgb(13, 79, 79)",
@@ -182,6 +183,12 @@ export default function CrazyDial(props: any) {
         } catch (e) {}
     }, [prefs, isCanvas])
 
+    // Move focus into the dialog when it opens (WCAG 2.4.3)
+    useEffect(() => {
+        if (!open || isCanvas) return
+        panelRef.current?.focus()
+    }, [open, isCanvas])
+
     // Skip-to-content link (prepended to body so it's the first tab stop)
     useEffect(() => {
         if (typeof document === "undefined" || isCanvas) return
@@ -272,6 +279,17 @@ export default function CrazyDial(props: any) {
         zIndex: 9999,
     }
 
+    // Accent per mode — text-safe colors (>= 4.5:1 on white/cream)
+    const modeAccent: Record<Mode, string> = {
+        calm: C.teal,
+        classic: C.limeDeep,
+        certifiable: C.dragonfruit,
+    }
+
+    // Trigger background per mode; glyph color chosen for >= 3:1 on that background
+    const triggerBg = prefs.mode === "certifiable" ? C.dragonfruit : prefs.mode === "calm" ? C.teal : C.lime
+    const glyphColor = prefs.mode === "classic" ? C.ink : C.white
+
     const checkboxRow = (key: keyof Prefs, label: string, hint: string) => (
         <label
             key={key}
@@ -286,7 +304,7 @@ export default function CrazyDial(props: any) {
             <span style={{ fontFamily: font, fontSize: 15, color: C.ink, lineHeight: 1.35 }}>
                 <strong style={{ fontWeight: 800 }}>{label}</strong>
                 <br />
-                <span style={{ opacity: 0.65, fontSize: 13 }}>{hint}</span>
+                <span style={{ opacity: 0.8, fontSize: 13 }}>{hint}</span>
             </span>
         </label>
     )
@@ -307,6 +325,7 @@ export default function CrazyDial(props: any) {
                         ref={panelRef}
                         role="dialog"
                         aria-label="Accessibility and craziness settings"
+                        tabIndex={-1}
                         initial={prefs.mode === "calm" ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8 }}
@@ -320,31 +339,30 @@ export default function CrazyDial(props: any) {
                             border: `3px solid ${C.ink}`,
                             borderRadius: 20,
                             padding: 20,
-                            boxShadow: "0 16px 48px rgba(28,43,28,0.25)",
+                            boxShadow: "0 16px 48px rgba(28,43,28,0.35)",
                         } as any}
                     >
                         <h2 style={{ fontFamily: display, fontSize: 28, color: C.green, margin: "0 0 2px", textTransform: "uppercase", lineHeight: 1 }}>
                             How crazy should this website be?
                         </h2>
-                        <p style={{ fontFamily: font, fontSize: 13, color: C.ink, opacity: 0.65, margin: "4px 0 14px" }}>
+                        <p style={{ fontFamily: font, fontSize: 13, color: C.ink, opacity: 0.8, margin: "4px 0 14px" }}>
                             Your call. We save it for next time.
                         </p>
 
-                        {/* Mode radio group */}
-                        <div role="radiogroup" aria-label="Website energy level" style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+                        {/* Mode buttons (toggle group) */}
+                        <div role="group" aria-label="Website energy level" style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
                             {(Object.keys(MODE_COPY) as Mode[]).map((m) => {
                                 const on = prefs.mode === m
-                                const accent = m === "calm" ? C.teal : m === "classic" ? C.lime : C.dragonfruit
+                                const accent = modeAccent[m]
                                 return (
                                     <button
                                         key={m}
-                                        role="radio"
-                                        aria-checked={on}
+                                        aria-pressed={on}
                                         onClick={() => setMode(m)}
                                         style={{
                                             fontFamily: font,
                                             textAlign: "left",
-                                            border: `2px solid ${on ? accent : "rgba(28,43,28,0.25)"}`,
+                                            border: `2px solid ${on ? accent : "rgba(28,43,28,0.35)"}`,
                                             background: on ? C.white : "transparent",
                                             borderRadius: 12,
                                             padding: "10px 14px",
@@ -353,7 +371,7 @@ export default function CrazyDial(props: any) {
                                     >
                                         <span style={{ fontWeight: 800, fontSize: 16, color: on ? accent : C.ink }}>{MODE_COPY[m].label}</span>
                                         <br />
-                                        <span style={{ fontSize: 13, color: C.ink, opacity: 0.65 }}>{MODE_COPY[m].blurb}</span>
+                                        <span style={{ fontSize: 13, color: C.ink, opacity: 0.8 }}>{MODE_COPY[m].blurb}</span>
                                     </button>
                                 )
                             })}
@@ -403,7 +421,7 @@ export default function CrazyDial(props: any) {
                     height: 56,
                     borderRadius: "50%",
                     border: `3px solid ${C.ink}`,
-                    background: prefs.mode === "certifiable" ? C.dragonfruit : prefs.mode === "calm" ? C.teal : C.lime,
+                    background: triggerBg,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -413,13 +431,13 @@ export default function CrazyDial(props: any) {
             >
                 {/* Dial glyph */}
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-                    <circle cx="14" cy="14" r="10" stroke={C.white} strokeWidth="3" />
+                    <circle cx="14" cy="14" r="10" stroke={glyphColor} strokeWidth="3" />
                     <motion.line
                         x1="14"
                         y1="14"
                         x2="14"
                         y2="6"
-                        stroke={C.white}
+                        stroke={glyphColor}
                         strokeWidth="3"
                         strokeLinecap="round"
                         animate={{ rotate: prefs.mode === "calm" ? -60 : prefs.mode === "classic" ? 0 : 60 }}

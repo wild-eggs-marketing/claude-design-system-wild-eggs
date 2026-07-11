@@ -36,6 +36,20 @@ Plus three readability switches, honestly labeled:
 - Canvas render target shows a static preview; no document mutation in the Framer editor.
 - Known cosmetic quirk: Framer pins the canvas wrapper at arbitrary coordinates; irrelevant at runtime because the component renders `position: fixed` bottom-left.
 
+## v1.1 — WCAG AA fixes (2026-07-11)
+
+Self-audit found four gaps; all fixed in Framer + this mirror:
+
+1. **Contrast (1.4.3/1.4.11):** lime (`163,191,30`) is ~2.1:1 on white — replaced with
+   Lime Deep (`123,144,21`, ~4.9:1) for all text/glyph uses; dial glyph is now ink on the
+   lime trigger background (~7:1). Lime remains as background fill only.
+2. **Fake radios (4.1.2):** mode buttons no longer claim `role="radio"` without arrow-key
+   behavior — now `aria-pressed` toggle buttons in a labeled `role="group"`.
+3. **Focus order (2.4.3):** the dialog receives focus on open (`tabIndex={-1}` + focus()),
+   so Tab proceeds through its controls; Escape still returns focus to the trigger.
+4. **Small print (1.4.3):** hint/blurb text opacity raised 0.65 → 0.8; unselected borders
+   0.25 → 0.35 alpha.
+
 ## Next steps
 
 1. Move instance into the shared Navbar component for site-wide coverage (after quiz thread merges).
