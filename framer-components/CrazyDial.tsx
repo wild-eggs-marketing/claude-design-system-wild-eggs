@@ -139,19 +139,23 @@ function bowlRain() {
 /**
  * CRAZY DIAL — accessibility + delight layer for the whole site
  *
- * Floating control: pick how crazy the website behaves (Calm / Classic /
- * Certifiable) plus readability switches. Persists per visitor, respects
+ * Pick how crazy the website behaves (Calm / Classic / Certifiable) plus
+ * readability switches. Persists per visitor, respects
  * prefers-reduced-motion, injects a skip-to-content link.
  *
- * @framerIntrinsicWidth 64
- * @framerIntrinsicHeight 64
+ * Placement: "inline" sits in a layout (e.g. the Navbar) and the panel drops
+ * down below the trigger; "floating" fixes the dial to a viewport corner.
+ *
+ * @framerIntrinsicWidth 44
+ * @framerIntrinsicHeight 44
  *
  * @framerSupportedLayoutWidth fixed
  * @framerSupportedLayoutHeight fixed
  */
 export default function CrazyDial(props: any) {
-    const { corner = "bottom-left" } = props
+    const { corner = "bottom-left", placement = "floating" } = props
     const isCanvas = RenderTarget.current() === RenderTarget.canvas
+    const inline = placement === "inline"
 
     const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
     const [open, setOpen] = useState(false)
@@ -255,6 +259,17 @@ export default function CrazyDial(props: any) {
         return () => document.removeEventListener("keydown", onKey)
     }, [open])
 
+    // Inline mode: close when clicking outside the widget
+    useEffect(() => {
+        if (!open || !inline || typeof document === "undefined") return
+        const onDown = (e: MouseEvent) => {
+            const t = e.target as HTMLElement
+            if (!t.closest("[data-cb-dial]")) setOpen(false)
+        }
+        document.addEventListener("mousedown", onDown)
+        return () => document.removeEventListener("mousedown", onDown)
+    }, [open, inline])
+
     const setMode = useCallback((mode: Mode) => {
         setPrefs((p) => ({ ...p, mode }))
         setAnnounce(`${MODE_COPY[mode].label} mode on. ${MODE_COPY[mode].blurb}`)
@@ -272,12 +287,22 @@ export default function CrazyDial(props: any) {
     const display = "'Passion One', sans-serif"
 
     const isLeft = corner.includes("left")
-    const anchor: any = {
-        position: isCanvas ? "relative" : "fixed",
-        bottom: isCanvas ? undefined : 20,
-        [isLeft ? "left" : "right"]: isCanvas ? undefined : 20,
-        zIndex: 9999,
-    }
+    const anchor: any = inline
+        ? { position: "relative", zIndex: 9999, width: "fit-content", height: "fit-content" }
+        : {
+              position: isCanvas ? "relative" : "fixed",
+              bottom: isCanvas ? undefined : 20,
+              [isLeft ? "left" : "right"]: isCanvas ? undefined : 20,
+              zIndex: 9999,
+          }
+
+    // Panel opens downward when inline (navbar), upward when floating (corner)
+    const panelPos: any = inline
+        ? { top: "calc(100% + 12px)", [isLeft ? "left" : "right"]: 0 }
+        : { bottom: isCanvas ? undefined : 72, [isLeft ? "left" : "right"]: 0 }
+
+    const triggerSize = inline ? 44 : 56
+    const glyphSize = inline ? 24 : 28
 
     // Accent per mode — text-safe colors (>= 4.5:1 on white/cream)
     const modeAccent: Record<Mode, string> = {
@@ -326,14 +351,13 @@ export default function CrazyDial(props: any) {
                         role="dialog"
                         aria-label="Accessibility and craziness settings"
                         tabIndex={-1}
-                        initial={prefs.mode === "calm" ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.96 }}
+                        initial={prefs.mode === "calm" ? { opacity: 0 } : { opacity: 0, y: inline ? -12 : 16, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8 }}
+                        exit={{ opacity: 0, y: inline ? -8 : 8 }}
                         transition={{ duration: 0.22, ease: "easeOut" }}
                         style={{
                             position: "absolute",
-                            bottom: isCanvas ? undefined : 72,
-                            [isLeft ? "left" : "right"]: 0,
+                            ...panelPos,
                             width: "min(340px, calc(100vw - 40px))",
                             background: C.cream,
                             border: `3px solid ${C.ink}`,
@@ -417,20 +441,20 @@ export default function CrazyDial(props: any) {
                 whileHover={prefs.mode === "calm" ? undefined : { scale: 1.08, rotate: -6 }}
                 whileTap={prefs.mode === "calm" ? undefined : { scale: 0.92 }}
                 style={{
-                    width: 56,
-                    height: 56,
+                    width: triggerSize,
+                    height: triggerSize,
                     borderRadius: "50%",
-                    border: `3px solid ${C.ink}`,
+                    border: `${inline ? 2.5 : 3}px solid ${C.ink}`,
                     background: triggerBg,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 6px 20px rgba(28,43,28,0.3)",
+                    boxShadow: inline ? "0 2px 8px rgba(28,43,28,0.18)" : "0 6px 20px rgba(28,43,28,0.3)",
                 }}
             >
                 {/* Dial glyph */}
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                <svg width={glyphSize} height={glyphSize} viewBox="0 0 28 28" fill="none" aria-hidden="true">
                     <circle cx="14" cy="14" r="10" stroke={glyphColor} strokeWidth="3" />
                     <motion.line
                         x1="14"
@@ -451,11 +475,18 @@ export default function CrazyDial(props: any) {
 }
 
 addPropertyControls(CrazyDial, {
+    placement: {
+        type: ControlType.Enum,
+        title: "Placement",
+        options: ["floating", "inline"],
+        optionTitles: ["Floating corner", "Inline (navbar)"],
+        defaultValue: "floating",
+    },
     corner: {
         type: ControlType.Enum,
-        title: "Corner",
+        title: "Align",
         options: ["bottom-left", "bottom-right"],
-        optionTitles: ["Bottom left", "Bottom right"],
+        optionTitles: ["Left", "Right"],
         defaultValue: "bottom-left",
     },
 })

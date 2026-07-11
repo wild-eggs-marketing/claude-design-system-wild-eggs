@@ -2,7 +2,11 @@
 
 **Status:** v1 shipped to Framer project (Crazy Bowls V1) · 2026-07-11
 **Framer code file:** `CrazyDial.tsx` (source mirrored in `framer-components/CrazyDial.tsx`)
-**Placed on:** Home page (`/`). Roll out to remaining pages (or into the Navbar component) after the Quiz Your Crazy thread lands, to avoid edit collisions.
+**Placed in:** the Navbar component (all pages, all breakpoints) as an inline
+44px dial between "Find a location" and the menu icon; the settings panel drops
+down below it, right-aligned, and closes on outside click or Escape. The
+original home-page floating instance was removed. The component keeps a
+`placement` control (floating corner / inline) for future use.
 
 ## Concept
 
