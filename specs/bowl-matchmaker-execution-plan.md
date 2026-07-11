@@ -170,3 +170,23 @@ Shipped to Framer project "Crazy Bowls_V1" (branded **Quiz Your Crazy**):
 ## 13. Padding/clipping fix — 2026-07-11 (rev 5)
 
 Root cause: quiz instance had been placed inside the hero's clipped BackgroundWrapper (absolute, bottom -830px), so the footer rendered at the hero's natural height and the wallpaper painted over the quiz. Fixes: reparented instance into page flow (HeroSection child, width 1fr, fit-content); hero padding zeroed; component root now creates its own stacking context (zIndex 2) and defaults to transparent background so the section wallpaper shows around content; question + reveal screens wrapped in solid white cards (green border, per-question color hard shadow) so text never fights the wallpaper; new props bottomPadding (140) and transparentBg. Structure verified: Desktop > HeroSection(wallpaper bg + quiz in flow) > FooterSection.
+
+## 14. Rev 6 + 7 — live-state feedback + full copy audit (2026-07-11)
+
+**Rev 6 (UX):** reaction beat 1200→1800ms (new "Reaction Time" instance prop, 600–4000ms); reveal card compressed to fit desktop viewports (200px photo, clamped type, tighter gaps); fluid clamp() type + padding across breakpoints; rebound link fixed /menu → /menu/{slug} (real CMS detail pages); Crazy Points enrollment block added post-reveal (join + sign-in URLs as instance props, UTM-tagged per archetype) — Chipotle pattern: never gate the quiz, capture identity after the payoff via loyalty.
+
+**Rev 7 (copy audit — root bug + 12 upgrades):**
+0. BUG: reloading your own result URL triggered the "shared by a friend" copy path. Fixed: qcr param matching this device's stored result = return visit, not share.
+1. Return-visit reveal: kicker "Back for more. Respect." line "Buffalo Bowl. Still yours. The bowl waited. It knew you'd be back."
+2. Shared reveal rewritten as a story: kicker "Incoming: a friend's accusation" line "A friend says you're Buffalo Bowl material. Bold claim. Take the quiz and settle it."
+3. Head-to-head sharpened: "They called you X. You're actually Y. Lunch just got interesting." / same-bowl: "Your friend called it. That's either beautiful or concerning."
+4. Intro: "Four questions. One diagnosis. Zero judgment." / "It's science. Loosely. Very loosely."
+5. Name field placeholder: "Name for the trophy (optional)".
+6. Heat prompt: "How brave is your tongue today?"
+7. Medium-heat reaction: "The people's choice. Democracy works."
+8. Low-match line: "The rest is chemistry." (replaces confusing "And climbing. Opposites attract.")
+9. Crazy Meter level 3 renamed "Crazier than most" (was bare "Crazier"), shared across meter + canvas card.
+10. Rangoon rider: "Certifiable clause:" (was "rider," insider jargon).
+11. Rewards block: "Get points for being like this. Crazy Points turns bowls into free bowls."
+12. Rebound link: "Your rebound: the Thai Bowl. We won't tell." (and no longer 404s).
+Also: remix hidden on return visits (no answers to remix).
