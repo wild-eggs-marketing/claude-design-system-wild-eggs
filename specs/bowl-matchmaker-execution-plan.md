@@ -195,3 +195,25 @@ Also: remix hidden on return visits (no answers to remix).
 
 Card audit from real download (Ben / Raw Talent). 13 fixes shipped in renderShareCard:
 fitText() helper (every line auto-shrinks, nothing can clip); footer URL rebuilt (was clipping both edges); brand eyebrow CRAZY BOWLS & WRAPS added; "WHICH BOWL ARE YOU?" Passion One hook as footer focal; collectible line "1 OF 14 BOWL-SONALITIES · COLLECT YOUR CRAZY" (honest count); squiggle moved under archetype name (brand underline, was floating); lime hard-shadow behind photo (matches site card language); Crazy Meter got SENSIBLE/CERTIFIABLE end labels; tagline auto-fit (long lines were at clip risk); vertical rhythm rebalanced (dead zone above photo vs cramped footer); header period dropped; chips tightened 26px; italic font weight actually loaded for canvas (was silently falling back).
+
+## 16. Rev 9 — tagline audit, name-hero card, story format (2026-07-12)
+
+**Tagline audit (dish-true + BuzzFeed result-copy formula).** 5 rewrites:
+- Buffalo/Heat Seeker: "You put buffalo sauce on lettuce and called it balance." (was generic, no dish)
+- Thai/Peanut Prophet: "Peanut sauce on everything. You've been right every time."
+- Fajita/Fiesta Instigator: "Jalapeños and avocado. On a Tuesday. You absolute event."
+- Poke/Raw Talent: "Raw tuna doesn't need fire to impress. Neither do you." (old line buried the raw joke)
+- Caesar/Sensible Legend: "Romaine, asiago, caesar. Empires fall. This doesn't."
+- Stir Fry polish: "Your veggies, your sauce, your rules. Zero drama."
+Kept (already dish-true + personal): Gains Goblin, Island Optimist, Main Character, Pesto Romantic, Overachiever, Zen Machine, Backyard Boss, Featherweight Champ.
+
+**Card personalization (6 shipped):**
+1. NAME IS THE HERO — giant Passion One dragonfruit name at top, "IS OFFICIALLY" kicker, archetype beneath (layout auto-switches when no name).
+2. "CERTIFIED CRAZY" rotated double-ring stamp overlapping the photo (official-document parody).
+3. Real certification date line ("CERTIFIED JUL 12, 2026").
+4. Bowl ID from name + real macros (ELL-4680) — collectible serial, honest math.
+5. Possessive Crazy Meter ("ELLE'S CRAZY METER: CERTIFIABLE").
+6. Personalized share text ("Elle is The Heat Seeker. Which bowl are you?").
+Backlog: duo/head-to-head card (two names, two bowls), birthday mode, crew tally card, seasonal LTO frames.
+
+**Story card shipped:** 1080×1920 variant, same renderer via layout tables; share sends feed+story files together via Web Share (single-file and staggered-download fallbacks); "Story Card" instance toggle.
