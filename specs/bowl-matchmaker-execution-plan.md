@@ -190,3 +190,8 @@ Root cause: quiz instance had been placed inside the hero's clipped BackgroundWr
 11. Rewards block: "Get points for being like this. Crazy Points turns bowls into free bowls."
 12. Rebound link: "Your rebound: the Thai Bowl. We won't tell." (and no longer 404s).
 Also: remix hidden on return visits (no answers to remix).
+
+## 15. Rev 8 — share card surgical pass (2026-07-11)
+
+Card audit from real download (Ben / Raw Talent). 13 fixes shipped in renderShareCard:
+fitText() helper (every line auto-shrinks, nothing can clip); footer URL rebuilt (was clipping both edges); brand eyebrow CRAZY BOWLS & WRAPS added; "WHICH BOWL ARE YOU?" Passion One hook as footer focal; collectible line "1 OF 14 BOWL-SONALITIES · COLLECT YOUR CRAZY" (honest count); squiggle moved under archetype name (brand underline, was floating); lime hard-shadow behind photo (matches site card language); Crazy Meter got SENSIBLE/CERTIFIABLE end labels; tagline auto-fit (long lines were at clip risk); vertical rhythm rebalanced (dead zone above photo vs cramped footer); header period dropped; chips tightened 26px; italic font weight actually loaded for canvas (was silently falling back).
