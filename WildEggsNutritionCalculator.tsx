@@ -54,7 +54,7 @@ function injectStyles() {
     _stylesInjected = true
     const s = document.createElement("style")
     s.dataset.cbw = "1"
-    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes cbwSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}[data-cbw-root] input[data-cbw-budget]::placeholder{color:rgba(245,238,227,0.60)}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
+    s.textContent = `@keyframes cbwPulse{0%,100%{opacity:1}50%{opacity:0.45}}@keyframes cbwFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes cbwSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes cbwPop{0%{transform:scale(1)}45%{transform:scale(1.35)}100%{transform:scale(1)}}[data-cbw-root] button[data-cbw-intray="true"]{animation:cbwPop 0.3s ease}[data-cbw-root] :focus-visible{outline:2.5px solid rgb(47,92,100);outline-offset:2px;border-radius:4px}[data-cbw-root] input[data-cbw-budget]::placeholder{color:rgba(245,238,227,0.60)}@media (prefers-reduced-motion: reduce){[data-cbw-root] *{animation:none!important;transition:none!important}}`
     document.head.appendChild(s)
 }
 
@@ -144,6 +144,11 @@ const DIETARY_TAGS: Record<string, (i: MenuItem) => boolean> = {
 }
 
 const DIETARY: string[] = Object.keys(DIETARY_TAGS)
+
+const ALLERGEN_LABELS: Record<string, string> = {
+    egg: "Egg", milk: "Milk/Dairy", wheat: "Wheat/Gluten", soy: "Soy",
+    peanuts: "Peanuts", tree_nuts: "Tree Nuts", sesame: "Sesame", fish: "Fish", shellfish: "Shellfish",
+}
 
 // Deliberate menu order for "Browse All" (no goal to rank by) so the default view
 // reads as curated rather than raw data order. Unknown categories sort last.
@@ -482,6 +487,10 @@ function WildEggsNutritionCalculator({
     const [budget,     setBudget]     = useState<number>(() => { const v = Number(ls.get("we-budget") ?? 0); return v >= 500 && v <= 6000 ? v : 0 })
     const [showMacros, setShowMacros] = useState<boolean>(true)
     const headingFont = "'Fraunces', Georgia, serif"
+    // Time-of-day greeting — computed once per mount (not reactive; a visit doesn't span dayparts)
+    const greeting = useMemo(() => {
+        try { const h = new Date().getHours(); return h < 11 ? "Good morning" : h < 15 ? "Good afternoon" : "Good evening" } catch { return "Welcome" }
+    }, [])
     const [cmsItems,   setCmsItems]   = useState<MenuItem[]>([])
     const [fetchState, setFetchState] = useState<FetchState>("idle")
     const [retryKey,   setRetryKey]   = useState<number>(0)
@@ -650,6 +659,18 @@ function WildEggsNutritionCalculator({
         maxProtein: effectiveItems.reduce((m, i) => Math.max(m, i.protein),  1),
         maxCarbs:   effectiveItems.reduce((m, i) => Math.max(m, i.carbs),    1),
     }), [effectiveItems])
+
+    // "Chef's pick of the day": one dish rotates daily (deterministic by date, so all
+    // visitors see the same pick and it changes at midnight — no randomness on rerender).
+    const chefsPickId = useMemo(() => {
+        const pool = effectiveItems.filter(i => i.calories > 0 && MAIN_CATEGORIES.has(i.category))
+        if (!pool.length) return null
+        try {
+            const d = new Date()
+            const daySeed = d.getFullYear() * 372 + (d.getMonth() + 1) * 31 + d.getDate()
+            return pool[daySeed % pool.length].id
+        } catch { return null }
+    }, [effectiveItems])
 
     const { filtered, maxScore } = useMemo(() => {
         const f  = applyFilters(effectiveItems, { goal, category, dietary, search: deferredSearch, sortBy })
@@ -851,6 +872,19 @@ function WildEggsNutritionCalculator({
                         <div style={{ fontSize: 14, color: C.ink, lineHeight: 1.5 }}>{swapTip ?? "This item aligns well with your " + (GOALS.find(g => g.id === goal)?.label ?? "") + " goal."}</div>
                     </div>
                 )}
+                {sel.calories > 0 && sel.allergens.length > 0 && (
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: C.inkSoft, textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 6 }}>Contains</div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            {sel.allergens.map(a => <span key={a} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 12, fontWeight: 600, background: C.orangeLight, color: C.orangeDark, border: `1px solid ${C.orange}` }}>{ALLERGEN_LABELS[a] ?? a}</span>)}
+                        </div>
+                    </div>
+                )}
+                {sel.calories > 0 && sel.sodium >= 1500 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 13px", borderRadius: 10, background: C.orangeLight, fontSize: 13, color: C.orangeDark, fontWeight: 600 }}>
+                        High sodium — {sel.sodium.toLocaleString()}mg is {Math.round(sel.sodium / 2300 * 100)}% of the FDA daily limit.
+                    </div>
+                )}
                 {sel.description && <p style={{ fontSize: 15, color: C.inkSoft, margin: 0, lineHeight: 1.7 }}>{sel.description}</p>}
                 {sel.ingredients && (
                     <div>
@@ -879,7 +913,7 @@ function WildEggsNutritionCalculator({
                 )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
                     <a href={sel.orderLink || orderUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 10, background: C.orangeDark, color: C.white, fontWeight: 700, fontSize: 16, textDecoration: "none", fontFamily: "inherit", letterSpacing: "0.01em" }}>{sel.price > 0 ? `Order Now — $${sel.price.toFixed(2)}` : "Order Now"}</a>
-                    <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); navigator.clipboard?.writeText(url.toString()); setCopied(true) } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.greenDark : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.greenDark : C.ink, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
+                    <button onClick={() => { try { if (typeof window !== "undefined") { const url = new URL(window.location.href); url.searchParams.set("item", sel.id); const shareUrl = url.toString(); const nav = navigator as Navigator & { share?: (d: { title: string; url: string }) => Promise<void> }; if (nav.share) { nav.share({ title: sel.title, url: shareUrl }).catch(() => { /* user cancelled */ }) } else { navigator.clipboard?.writeText(shareUrl); setCopied(true) } } } catch { /* noop */ } }} aria-live="polite" style={{ padding: "11px", borderRadius: 10, border: `1.5px solid ${copied ? C.greenDark : C.border}`, background: copied ? C.greenLight : "none", color: copied ? C.greenDark : C.ink, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>{copied ? "✓ Link copied!" : "Copy shareable link"}</button>
                 </div>
             </div>
         </>
@@ -893,7 +927,7 @@ function WildEggsNutritionCalculator({
             <div style={{ background: C.teal, padding: `28px ${padX}px 20px` }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
                     <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)", marginBottom: 12 }}>What&apos;s your goal?</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)", marginBottom: 12 }}>{greeting} — what&apos;s your goal?</div>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Nutrition goal">
                             {GOALS.map(g => <GoalButton key={g.id} g={g} active={goal === g.id} count={goalCounts[g.id] ?? 0} total={effectiveItems.length} onClick={() => handleGoalClick(g.id)} />)}
                         </div>
@@ -902,6 +936,9 @@ function WildEggsNutritionCalculator({
                         <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,238,227,0.78)" }}>Daily cal budget</label>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <input type="number" data-cbw-budget="" value={budget || ""} onChange={e => setBudget(Math.max(0, Number(e.target.value)))} placeholder="e.g. 1800" aria-label="Daily calorie budget" style={{ width: 100, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${budget > 0 ? C.orange : "rgba(255,255,255,0.20)"}`, background: "rgba(255,255,255,0.10)", color: C.cream, fontSize: 15, fontWeight: 600, fontFamily: "inherit", outline: "none" }} />
+                            {budget === 0 && [1500, 1800, 2000].map(b => (
+                                <button key={b} onClick={() => setBudget(b)} style={{ padding: "5px 9px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)", color: "rgba(245,238,227,0.92)", fontFamily: "inherit" }}>{b}</button>
+                            ))}
                             {budgetRemaining !== null && (
                                 <div style={{ fontSize: 14, color: budgetRemaining >= 0 ? C.cream : C.yellow, fontWeight: 700, lineHeight: 1.3 }} aria-live="polite" title="Your daily budget minus everything in your Compare tray">
                                     {trayState.items.length > 0
@@ -914,8 +951,8 @@ function WildEggsNutritionCalculator({
                 </div>
             </div>
 
-            {/* Toolbar */}
-            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `10px ${padX}px`, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            {/* Toolbar — sticky so filtering never requires scrolling back to the top of 100+ items */}
+            <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: `10px ${padX}px`, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", position: "sticky", top: stickyOffset, zIndex: 50 }}>
                 <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or ingredient" aria-label="Search menu items" style={{ flex: 1, minWidth: 160, padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${search ? C.orange : C.border}`, fontSize: 15, color: C.ink, background: C.inkGhost, outline: "none", fontFamily: "inherit", boxSizing: "border-box", opacity: isSearchPending ? 0.65 : 1, transition: "border-color 0.15s, opacity 0.1s" }} />
                 <select value={sortBy} onChange={e => setSortBy(e.target.value)} aria-label="Sort order" style={{ padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, fontSize: 14, fontWeight: 600, color: C.ink, background: C.white, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
                     <option value="goal-fit">Best Goal Fit</option>
@@ -924,6 +961,7 @@ function WildEggsNutritionCalculator({
                     <option value="calories-desc">Most Calories</option>
                 </select>
                 <button onClick={() => setShowMacros(p => !p)} aria-pressed={showMacros} style={{ padding: "8px 12px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${showMacros ? C.teal : C.border}`, background: showMacros ? C.tealLight : "transparent", color: showMacros ? C.teal : C.inkSoft, fontFamily: "inherit" }}>{showMacros ? "Hide macros" : "Show macros"}</button>
+                <button onClick={() => { const pool = filtered.filter(i => i.calories > 0); if (pool.length) setSelected(pool[Math.floor(Math.random() * pool.length)].id) }} title="Open a random dish from the current results" style={{ padding: "8px 12px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${C.border}`, background: "transparent", color: C.inkSoft, fontFamily: "inherit", whiteSpace: "nowrap" }}>Surprise me</button>
                 {activeFilters > 0 && <button onClick={() => { setSearch(""); setCategory("All"); setDietary([]) }} style={{ padding: "8px 13px", borderRadius: 8, border: `1.5px solid ${C.orangeDark}`, background: C.orangeLight, color: C.orangeDark, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Clear {activeFilters} filter{activeFilters > 1 ? "s" : ""}</button>}
             </div>
 
@@ -959,7 +997,7 @@ function WildEggsNutritionCalculator({
                     {!isLoading && filtered.length === 0 && (
                         <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "80px 0" }}>
                             <div style={{ fontSize: 32, fontWeight: 800, color: C.ink, opacity: 0.08, marginBottom: 14 }}>—</div>
-                            <div style={{ fontSize: 17, fontWeight: 700, color: C.ink, marginBottom: 6 }}>{noItems ? "No items yet" : "Nothing matches"}</div>
+                            <div style={{ fontSize: 17, fontWeight: 700, color: C.ink, marginBottom: 6, fontFamily: headingFont }}>{noItems ? "The kitchen is warming up" : "Nothing\u2019s hatching for that combo"}</div>
                             <div style={{ fontSize: 15, color: C.inkSoft, marginBottom: 16 }}>
                                 {noItems && !cmsEndpoint ? "Add items via the Items panel, or paste a CMS Endpoint URL." : noItems && cmsEndpoint ? "Waiting for data from endpoint…" : "Try relaxing one of these filters:"}
                             </div>
@@ -983,21 +1021,23 @@ function WildEggsNutritionCalculator({
                         const inTray     = trayState.items.includes(item.id) || trayState.items.includes(item.title)
                         const score      = goal !== "all" ? fitScore(item, goal) : 0
                         const isTopMatch = goal !== "all" && score === maxScore && cards.length > 1
+                        const isChefsPick = goal === "all" && item.id === chefsPickId
                         const trayFull   = !inTray && trayState.items.length >= MAX_TRAY
                         const cardKey    = alt ? card.key : (item.id !== String(idx) ? item.id : `${item.title}-${idx}`)
                         return (
                             <div key={cardKey} style={{ background: C.white, borderRadius: 12, overflow: "hidden", border: `2px solid ${isSelected ? C.orange : inTray ? C.teal : isTopMatch ? "rgba(123,144,21,0.35)" : "transparent"}`, boxShadow: isSelected ? `0 0 0 3px ${C.orangeLight}, 0 4px 20px rgba(0,0,0,0.09)` : "0 1px 4px rgba(0,0,0,0.06)", transition: "box-shadow 0.15s, border-color 0.15s", position: "relative", animation: "cbwFadeUp 0.25s ease both", animationDelay: `${Math.min(idx * 0.03, 0.3)}s` }}>
-                                {isTopMatch && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: C.greenDark, color: C.white, fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Best match</div>}
+                                {isChefsPick && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: C.yellow, color: C.ink, fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Chef&apos;s pick today</div>}
+                                {isTopMatch && !isSelected && <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, background: GOALS.find(g => g.id === goal)?.accent ?? C.greenDark, color: goal === "fuel" ? C.ink : C.white, fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", padding: "3px 0" }}>Best match</div>}
                                 <button
                                     onClick={e => { e.stopPropagation(); if (!trayFull) handleToggleTray(item.id) }}
                                     aria-label={inTray ? `Remove ${item.title} from compare` : trayFull ? "Compare tray full" : `Add ${item.title} to compare`}
-                                    style={{ position: "absolute", top: isTopMatch && !isSelected ? 26 : 8, right: 8, zIndex: 3, width: 24, height: 24, borderRadius: "50%", background: inTray ? C.teal : trayFull ? C.inkGhost : "rgba(255,255,255,0.88)", border: `1.5px solid ${inTray ? C.teal : trayFull ? "transparent" : C.border}`, color: inTray ? C.white : C.inkSoft, fontSize: 14, fontWeight: 800, cursor: trayFull ? "not-allowed" : "pointer", opacity: trayFull ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0 }}
-                                >{inTray ? "−" : "+"}</button>
+                                    style={{ position: "absolute", top: (isTopMatch || isChefsPick) && !isSelected ? 26 : 8, right: 8, zIndex: 3, width: 24, height: 24, borderRadius: "50%", background: inTray ? C.teal : trayFull ? C.inkGhost : "rgba(255,255,255,0.88)", border: `1.5px solid ${inTray ? C.teal : trayFull ? "transparent" : C.border}`, color: inTray ? C.white : C.inkSoft, fontSize: 14, fontWeight: 800, cursor: trayFull ? "not-allowed" : "pointer", opacity: trayFull ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", padding: 0 }}
+                                 data-cbw-intray={inTray ? "true" : "false"}>{inTray ? "✓" : "+"}</button>
                                 <div role="button" tabIndex={0} data-cbw-open={item.id} aria-expanded={isSelected} aria-label={`${item.title} — view details`}
                                     onClick={() => setSelected(isSelected ? null : item.id)}
                                     onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(isSelected ? null : item.id) } }}
                                     style={{ cursor: "pointer", outlineOffset: -2 }}>
-                                    <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: isTopMatch && !isSelected ? 20 : 0 }}>
+                                    <div style={{ height: 140, background: C.inkGhost, overflow: "hidden", marginTop: (isTopMatch || isChefsPick) && !isSelected ? 20 : 0 }}>
                                         {(item.thumbnail || alt?.thumbnail)
                                             ? <img src={scaledSrc(item.thumbnail || alt!.thumbnail, 512)} loading="lazy" alt="" role="presentation" onError={e => { const el = e.currentTarget; const fb = item.id === card.item.id ? card.partner?.thumbnail : card.item.thumbnail; if (fb && el.src !== fb) { el.src = fb } else { el.style.display = "none" } }} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                                             : <div aria-hidden="true" style={{ width: "100%", height: "100%", background: C.tealLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, fontWeight: 800, color: C.teal, opacity: 0.55 }}>{item.title.charAt(0)}</div>}
