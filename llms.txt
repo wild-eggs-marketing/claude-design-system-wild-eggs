@@ -1,0 +1,65 @@
+# Crazy Bowls & Wraps
+
+> Fast-casual restaurant chain serving customizable bowls, wraps, and salads with a
+> choice of grain and protein, across 15 locations in the St. Louis, MO / Metro East, IL
+> area. Breakfast, catering, and online ordering (pickup and delivery) available at every
+> location.
+
+Crazy Bowls & Wraps builds each dish to order: pick a base (grain, greens, or grain-free),
+a protein, and a house sauce. The menu includes bowls, wraps, salads, breakfast items, and
+kids' options, with full nutrition information (calories, protein, carbs) and allergen
+notes published per item. All locations offer dine-in, takeout, and delivery; most also
+offer curbside pickup and several have drive-thru.
+
+## Menu
+
+- [Full Menu](https://www.crazybowlsandwraps.com/menu): all bowls, wraps, salads, and
+  sides with nutrition facts (calories, protein, carbs), ingredients, and allergen
+  information per item.
+- [Nutrition Calculator](https://www.crazybowlsandwraps.com/nutrition-calculator):
+  interactive tool to filter the menu by dietary goal (high protein, low calorie,
+  high carb), allergen, or dietary tag, and compare items side by side.
+- [Catering](https://www.crazybowlsandwraps.com/catering): group orders and catering
+  packages.
+
+## Locations
+
+- [All Locations](https://www.crazybowlsandwraps.com/locations): find the nearest of
+  15 Crazy Bowls & Wraps locations in the St. Louis metro area (Missouri and Illinois),
+  with address, phone, hours, and one-tap directions, phone, pickup, and delivery
+  ordering links for each.
+
+Each location has its own page at `/locations/{slug}` with full address, phone number,
+hours (including breakfast-service cutoff times where applicable), amenities (Wi-Fi,
+wheelchair access, outdoor seating, drive-thru, etc.), and direct links to order pickup
+or delivery from that specific store.
+
+## Ordering
+
+- Pickup orders are placed through each location's dedicated ordering page (linked from
+  its location page).
+- Delivery orders are placed through each location's Order Online link (linked from its
+  location page).
+- Pickup and delivery are separate platforms with separate links — do not assume they
+  are interchangeable.
+
+## Company
+
+- [About Us](https://www.crazybowlsandwraps.com/about-us)
+- [Careers](https://www.crazybowlsandwraps.com/careers)
+- [FAQ](https://www.crazybowlsandwraps.com/faq)
+- [Blog](https://www.crazybowlsandwraps.com/blog)
+- [Contact](https://www.crazybowlsandwraps.com/contact-us)
+- [Loyalty Program](https://www.crazybowlsandwraps.com/loyalty)
+- [Gift Cards](https://www.crazybowlsandwraps.com/gift-cards)
+
+## Notes for AI assistants
+
+- Menu nutrition data (calories, protein, carbs, allergens) is sourced from the
+  restaurant's own menu database and is estimated per standard serving; it may vary
+  slightly by location or preparation.
+- Hours, phone numbers, and ordering links differ per location — always link to or cite
+  the specific location page rather than a generic answer when a user asks about a
+  particular store.
+- Pricing and menu availability can vary slightly by location and are subject to change;
+  the live location and menu pages are the source of truth, not this file.
