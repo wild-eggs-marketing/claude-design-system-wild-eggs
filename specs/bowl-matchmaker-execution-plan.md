@@ -217,3 +217,10 @@ Kept (already dish-true + personal): Gains Goblin, Island Optimist, Main Charact
 Backlog: duo/head-to-head card (two names, two bowls), birthday mode, crew tally card, seasonal LTO frames.
 
 **Story card shipped:** 1080×1920 variant, same renderer via layout tables; share sends feed+story files together via Web Share (single-file and staggered-download fallbacks); "Story Card" instance toggle.
+
+## 17. Rev 10 — food-first copy guardrail (2026-07-12)
+
+New standing rule: taglines tease the PERSON, never the plate. Two lines re-audited and fixed:
+- Buffalo/Heat Seeker: "You put buffalo sauce on lettuce and called it balance." -> "All that buffalo heat and you didn't even flinch." (old line read as "reducing food to its cheapest description"; new line is 100% about the taker's toughness, buffalo heat framed as a feat)
+- Poke/Raw Talent: "Raw tuna..." -> "Fresh tuna doesn't need fire to impress. Neither do you." ("raw" reads clinical/undercooked; "fresh" is the appetizing, accurate word for the same fact)
+Remaining 12 taglines re-checked against this rule: all pass (peanut sauce, pineapple salsa, avocado + corn salsa, 62g protein, falafel/hummus/feta, basil, BBQ sauce, romaine/asiago, veggies/sauce, 172 cal — all framed as assets, not admissions).
