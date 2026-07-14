@@ -229,3 +229,10 @@ Remaining 12 taglines re-checked against this rule: all pass (peanut sauce, pine
 
 Added track() helper firing to GA4 (gtag), GTM (dataLayer), and Plausible; no-ops in editor/when absent. Events: quiz_start, quiz_complete (KEY — fired once from the final answer, real playthroughs only, with archetype/bowl/match/crazy_level), quiz_share, quiz_order_click, quiz_rewards_join, quiz_rewards_signin, quiz_remix, quiz_settle_it, quiz_shared_open, quiz_result_revisit, quiz_rebound_click.
 Verified via Windsor.ai: GA4 IS connected through Google's API — property "Crazy Bowls" (469819156). Windsor reads GA4 (event names + counts) so completion totals are queryable once events flow. Windsor cannot WRITE GA4 admin config, so "mark as key event" remains a GA4 console toggle (Admin > Events). Completion tracking does NOT require that toggle — custom events auto-register on arrival; the flag only promotes it to a conversion for reporting/ads.
+
+## 19. Rev 12 — share card: domain + squish fixes (2026-07-12)
+
+Two bugs from a real downloaded card (Elle / Overachiever), verified fixed via readCodeFile grep:
+1. Bottom URL used the .framer.website staging domain. Now a single SHARE_DOMAIN const = "crazybowlsandwraps.com/quiz-your-crazy" (live domain, confirmed real via the Search Console connector: https://crazybowlsandwraps.com/). One source of truth for both feed + story cards. Conf 0.95.
+2. Photo squished: card used 4-arg drawImage(img,x,y,w,h) which stretches a non-square source into a square. Replaced with drawCover() — 9-arg drawImage taking the centered largest square of the source (object-fit: cover), so bowl photos never distort. Conf 0.9. (MDN CanvasRenderingContext2D.drawImage 9-arg source-crop form.)
+Old squish call now absent (grep count 0); drawCover present; rendered domain string = crazybowlsandwraps.com.
