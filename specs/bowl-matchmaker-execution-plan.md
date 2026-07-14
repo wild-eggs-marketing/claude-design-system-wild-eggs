@@ -224,3 +224,8 @@ New standing rule: taglines tease the PERSON, never the plate. Two lines re-audi
 - Buffalo/Heat Seeker: "You put buffalo sauce on lettuce and called it balance." -> "All that buffalo heat and you didn't even flinch." (old line read as "reducing food to its cheapest description"; new line is 100% about the taker's toughness, buffalo heat framed as a feat)
 - Poke/Raw Talent: "Raw tuna..." -> "Fresh tuna doesn't need fire to impress. Neither do you." ("raw" reads clinical/undercooked; "fresh" is the appetizing, accurate word for the same fact)
 Remaining 12 taglines re-checked against this rule: all pass (peanut sauce, pineapple salsa, avocado + corn salsa, 62g protein, falafel/hummus/feta, basil, BBQ sauce, romaine/asiago, veggies/sauce, 172 cal — all framed as assets, not admissions).
+
+## 18. Rev 11 — analytics instrumentation (2026-07-12)
+
+Added track() helper firing to GA4 (gtag), GTM (dataLayer), and Plausible; no-ops in editor/when absent. Events: quiz_start, quiz_complete (KEY — fired once from the final answer, real playthroughs only, with archetype/bowl/match/crazy_level), quiz_share, quiz_order_click, quiz_rewards_join, quiz_rewards_signin, quiz_remix, quiz_settle_it, quiz_shared_open, quiz_result_revisit, quiz_rebound_click.
+Verified via Windsor.ai: GA4 IS connected through Google's API — property "Crazy Bowls" (469819156). Windsor reads GA4 (event names + counts) so completion totals are queryable once events flow. Windsor cannot WRITE GA4 admin config, so "mark as key event" remains a GA4 console toggle (Admin > Events). Completion tracking does NOT require that toggle — custom events auto-register on arrival; the flag only promotes it to a conversion for reporting/ads.
