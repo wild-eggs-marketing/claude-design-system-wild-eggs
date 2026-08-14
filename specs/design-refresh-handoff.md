@@ -67,7 +67,7 @@ Crazy Bowls & Wraps and Wild Eggs. Written to be pasted/opened cold. No credenti
 
 ## 3. Repo + where things live
 
-- **Repo:** `ellemaculate/claude-design-system-wild-eggs` · branch `claude/crazy-bowls-ux-strategy-fhkgky`.
+- **Repo:** `wild-eggs-marketing/claude-design-system-wild-eggs` (transferred from ellemaculate 2026-08-14; old URLs redirect) · branch `claude/crazy-bowls-ux-strategy-fhkgky`.
 - **This repo IS a Claude Design System** — `claude/system-prompt.md` (20-chapter design philosophy)
   + `claude/skills/` (15 skills incl. `promo-email-loop` — the render-verified email workflow).
 - **Specs (read all three):**
