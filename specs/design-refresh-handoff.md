@@ -65,6 +65,29 @@ Crazy Bowls & Wraps and Wild Eggs. Written to be pasted/opened cold. No credenti
 
 ---
 
+**"CHIP YEAH" catering promo layer** — live on the Craziologist chat, published 2026-08-18.
+- **Component:** Framer code file `CraziologistChat.tsx`, codeFileId `pABsiXn` (bundled site-wide in
+  `script_main`, so it is on every page; the promo self-gates to `/catering` + campaign traffic).
+- **Mirror + gate in this repo:** `components/crazy-bowls/CraziologistChat.tsx` and
+  `tools/promo-chat-gate/` (85 headless-Chromium assertions; freezes the clock to test any phase).
+- **Dated phases:** $150 thru 8/18, then $100 from 8/19. The component picks the phase containing
+  "now" at page load, so the threshold change happens by itself at midnight with no republish.
+  Phase 2 `endsISO` is a PLACEHOLDER (2026-08-31) pending Elle's real end date.
+- **Offer answers never reach the model.** Verified 2026-08-18 against the live Worker: it is
+  grounding-hardened, has no record of the promo, so it refuses to confirm it and calls `escalate`.
+  Injecting the terms into the outbound messages did not help. Offer questions are matched by
+  `OFFER_RX` and answered from phase copy in the browser. `NUTRITION_RX` hard-vetoes the intercept
+  so allergen/macro questions always reach the Worker. **The Worker needs no deploy for this.**
+- **GA4 baseline before launch (30d):** czg_teaser_shown 10,353 -> czg_open 359 (3.5%); czg_send 277;
+  czg_order_click 9; quiz_start 233 -> quiz_complete 197 (85%); catering_order_confirmed 24.
+  The promo teaser is a *button* (the old one was a label), which targets that 3.5%.
+- **Tracking still owed:** register event param `promo` as an event-scoped custom dimension (NOT
+  retroactive), and mark `czg_promo_answered`, `czg_promo_teaser_click`, `czg_order_click`,
+  `quiz_complete` as key events. No connected tool can do this — Windsor's GA4 connector has zero
+  write actions. Reminder Routine set for 2026-08-19 09:00 CT.
+- **Open:** confirm CHIPYEAH validates at a $100 minimum in online ordering before 8/19; the email
+  in market still says "$150, ends August 18".
+
 ## 3. Repo + where things live
 
 - **Repo:** `wild-eggs-marketing/claude-design-system-wild-eggs` (transferred from ellemaculate 2026-08-14; old URLs redirect) · branch `claude/crazy-bowls-ux-strategy-fhkgky`.
