@@ -11,5 +11,5 @@
     "esModuleInterop": true,
     "paths": { "framer": ["./types/framer/index.d.ts"] }
   },
-  "include": ["CraziologistChat-promo.tsx", "types/**/*.d.ts"]
+  "include": ["CraziologistChat.tsx", "types/**/*.d.ts"]
 }

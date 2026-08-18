@@ -75,12 +75,20 @@ type PromoPhase = {
    2. Offer terms are legal copy. They must not be improvised, ever.
    Everything that is NOT an offer question still goes to the Worker as normal. */
 const OFFER_RX =
-    /\b(chip ?yeah|chip platter|free (chips?|platter)|promo ?code|coupon|discount|the deal|this deal|the offer|catering (deal|offer|promo))\b/i
+    /\b(chip ?yeah|chip platter|free (chips?|platter|food)|(any|some)thing free|promo(tion)?s?|coupon|discount|specials|freebies?|(the|this|that|any|your|a) deal|deals|(the|any|your|current) offers?|catering (deal|offer|promo|special))\b/i
 // "what's the code?" counts. "zip code" does not — the bot asks for those.
 const BARE_CODE_RX = /\bcode\b/i
 const ZIP_CODE_RX = /\b(zip|postal|area)\s*code\b/i
 
+// Deliberately wide. The two failure modes are lopsided: a false positive gives
+// someone the offer terms plus an invitation to talk headcounts, which is fine;
+// a false negative sends an offer question to a Worker that has no record of the
+// promo, so it denies the offer exists and escalates to a human. Favor catching.
+// NUTRITION_RX is the one hard veto — allergen, macro and ingredient questions
+// must always reach the Worker, which has the real data and the disclaimer.
+// (NUTRITION_RX is declared further down; this only reads it at call time.)
 function asksAboutOffer(text: string): boolean {
+    if (NUTRITION_RX.test(text)) return false
     if (OFFER_RX.test(text)) return true
     return BARE_CODE_RX.test(text) && !ZIP_CODE_RX.test(text)
 }

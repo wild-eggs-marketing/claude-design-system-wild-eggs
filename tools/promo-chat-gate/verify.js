@@ -199,6 +199,30 @@ async function routing(label, iso) {
     n = await ask("How many wraps for 30 people?")
     check(n === 2, "ordinary catering question routed to the Worker (calls: " + n + ")")
 
+    // Offer phrasings that must never reach the grounding-hardened Worker.
+    for (const q of [
+        "Any specials on catering right now?",
+        "Is there a promotion going on?",
+        "Do I get anything free with a big order?",
+        "any deals?",
+        "do you have a coupon",
+    ]) {
+        const before = n
+        n = await ask(q)
+        check(n === before, 'offer phrasing answered locally: "' + q + '"')
+    }
+
+    // Allergen and macro questions must ALWAYS reach the Worker, promo or not.
+    for (const q of [
+        "Any gluten free options for catering?",
+        "Do you have nut free platters?",
+        "How much protein in the power bowl?",
+    ]) {
+        const before = n
+        n = await ask(q)
+        check(n === before + 1, 'nutrition question routed to the Worker: "' + q + '"')
+    }
+
     check(errs.length === 0, "no JS errors" + (errs.length ? " — " + errs.join(" | ") : ""))
     await browser.close()
 }

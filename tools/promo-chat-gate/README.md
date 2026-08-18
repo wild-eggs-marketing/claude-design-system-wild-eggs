@@ -14,7 +14,7 @@ teaser, types into the input) rather than reading the source.
     cd tools/promo-chat-gate
     npm i --no-audit --no-fund react react-dom @types/react @types/react-dom \
       typescript esbuild playwright-core
-    cp ../../components/crazy-bowls/CraziologistChat.tsx .
+    cp ../../components/crazy-bowls/CraziologistChat.tsx .   # entry.tsx imports ./CraziologistChat
     npx tsc -p tsconfig.json                       # typecheck
     npx esbuild entry.tsx --bundle --outfile=site/catering/bundle.js \
       --jsx=automatic --loader:.tsx=tsx --alias:framer=./framer-shim.js \
@@ -26,6 +26,11 @@ Fonts: `site/fonts-inline.css` is a Google Fonts css2 response with every woff2
 inlined as a data: URI (curl it with a Chrome UA, then inline). Not committed —
 it is ~700KB of font data. Without it the gate still passes; type just renders in
 a fallback face.
+
+If you ever rename the local copy, update `entry.tsx` and `tsconfig.json` to
+match. A filename mismatch is silent and dangerous: esbuild and tsc both keep
+using the stale file, so the gate passes green against code you did not change.
+Confirm a real rebuild with `grep <a-string-you-just-added> site/catering/bundle.js`.
 
 ## What it asserts
 
@@ -43,11 +48,17 @@ a fallback face.
 - the panel sits fully inside the viewport
 - no page errors, no failed requests
 
-**Routing** — the offer intercept has to be narrow
+**Routing** — the offer intercept has to be wide, but not indiscriminate
 
-- "What's the code?" is answered locally (0 calls)
-- "My zip code is 63105..." goes to the Worker (not mistaken for a promo code)
-- "How many wraps for 30 people?" goes to the Worker
+- answered locally: "What's the code?", "Any specials on catering right now?",
+  "Is there a promotion going on?", "Do I get anything free with a big order?",
+  "any deals?", "do you have a coupon"
+- routed to the Worker: "My zip code is 63105..." (not a promo code),
+  "How many wraps for 30 people?"
+- routed to the Worker, always: "Any gluten free options for catering?",
+  "Do you have nut free platters?", "How much protein in the power bowl?" —
+  NUTRITION_RX is a hard veto on the intercept, because the Worker owns
+  allergen and macro data and the Nutritionix disclaimer
 
 **Targeting and phase windows**
 
