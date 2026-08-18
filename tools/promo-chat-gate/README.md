@@ -20,7 +20,7 @@ teaser, types into the input) rather than reading the source.
       --jsx=automatic --loader:.tsx=tsx --alias:framer=./framer-shim.js \
       --define:process.env.NODE_ENV='"production"'
     cp site/catering/bundle.js site/menu/bundle.js
-    node verify.js                                  # 77 assertions
+    node verify.js                                  # 85 assertions
 
 Fonts: `site/fonts-inline.css` is a Google Fonts css2 response with every woff2
 inlined as a data: URI (curl it with a Chrome UA, then inline). Not committed —
