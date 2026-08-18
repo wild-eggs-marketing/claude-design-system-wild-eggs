@@ -1,0 +1,7 @@
+tools/promo-chat-gate/node_modules/
+tools/promo-chat-gate/package*.json
+tools/promo-chat-gate/bundle.js
+tools/promo-chat-gate/site/**/bundle.js
+tools/promo-chat-gate/site/fonts-inline.css
+tools/promo-chat-gate/shot-*.png
+tools/promo-chat-gate/CraziologistChat-promo.tsx

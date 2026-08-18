@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Catering — render harness</title>
+<link rel="stylesheet" href="../fonts-inline.css">
+<style>
+  html,body{margin:0;padding:0}
+  body{background:#FFF2E6;font-family:'Bricolage Grotesque',system-ui,sans-serif;color:#0D4F4F;min-height:100vh}
+  .page{max-width:1100px;margin:0 auto;padding:48px 24px 200px}
+  .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#DA2D65;margin:0 0 10px}
+  h1{font-family:'Passion One',Impact,sans-serif;font-size:78px;line-height:.86;margin:0 0 16px;text-transform:uppercase}
+  p.lede{font-size:18px;line-height:1.55;max-width:52ch;font-weight:500;margin:0 0 28px}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .card{flex:1 1 240px;background:#F5EEE3;border:3px solid #0D4F4F;border-radius:18px;padding:20px;box-shadow:6px 6px 0 #A3BF1E}
+  .card h3{font-family:'Passion One',Impact,sans-serif;font-size:30px;margin:0 0 6px;text-transform:uppercase}
+  .card p{margin:0;font-size:15px;line-height:1.5;font-weight:500}
+  @media (max-width:520px){ h1{font-size:52px} .page{padding:28px 18px 220px} }
+</style>
+</head>
+<body>
+  <div class="page">
+    <p class="eyebrow">Crazy Bowls &amp; Wraps</p>
+    <h1>Catering</h1>
+    <p class="lede">Bowls, wraps and salads by the crowd. Order online, pick a time, feed the room. This page is a stand-in used only to render-verify the chat component in place.</p>
+    <div class="row">
+      <div class="card"><h3>Bowl Bar</h3><p>Build-your-own by the tray. Serves 10 to 12.</p></div>
+      <div class="card"><h3>Wrap Platter</h3><p>Halved, arranged, labeled. Nobody has to guess.</p></div>
+      <div class="card"><h3>Sides</h3><p>Chips, salsa, cookies. The parts people fight over.</p></div>
+    </div>
+  </div>
+  <div id="root"></div>
+
+<script>
+/* ---- capture what the component actually sends to the Worker ---- */
+window.__sent = [];
+window.dataLayer = window.dataLayer || [];
+window.__events = window.dataLayer;
+const realFetch = window.fetch;
+window.fetch = function (url, opts) {
+  const u = String(url);
+  let parsed = null;
+  try { parsed = JSON.parse(opts && opts.body); } catch (e) {}
+  window.__sent.push({ url: u, body: parsed });
+  /* Answer from the offer facts the component supplied, the way the Worker's
+     model would. If the facts never arrived, the threshold comes out blank and
+     the assertion fails — which is exactly what we want to catch. */
+  var facts = (parsed && parsed.messages && parsed.messages[0] && parsed.messages[0].content) || "";
+  var min = (facts.match(/\$\d+/) || [""])[0];
+  const reply =
+    "Chip yeah. Cater " + min + " or more (pre-tax) and a large chip platter rides along free. " +
+    "Enter code **CHIPYEAH** at online checkout on crazybowlsandwraps.com/catering. " +
+    "One per order, and it does not stack with other offers. How many people are we feeding?";
+  if (u.indexOf("/chat-stream") !== -1) {
+    const enc = new TextEncoder();
+    const stream = new ReadableStream({
+      start(c) {
+        c.enqueue(enc.encode('data: ' + JSON.stringify({ type: "status", tool: "menu" }) + '\n\n'));
+        setTimeout(function () {
+          c.enqueue(enc.encode('data: ' + JSON.stringify({ type: "reply", reply: reply }) + '\n\n'));
+          c.close();
+        }, 220);
+      },
+    });
+    return Promise.resolve(new Response(stream, { status: 200, headers: { "content-type": "text/event-stream" } }));
+  }
+  return Promise.resolve(new Response(JSON.stringify({ reply: reply }), { status: 200, headers: { "content-type": "application/json" } }));
+};
+</script>
+<script type="module" src="./bundle.js"></script>
+</body>
+</html>
