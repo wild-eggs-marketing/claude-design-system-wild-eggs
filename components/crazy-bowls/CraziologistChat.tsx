@@ -364,7 +364,7 @@ function Thumb({ down = false }: { down?: boolean }) {
 
 /**
  * THE CRAZIOLOGIST — chat widget wired to the certified chat Worker.
- * Includes a self-expiring promo layer (see PROMO above).
+ * Includes a self-expiring promo layer (see PROMO_PHASES above).
  *
  * @framerIntrinsicWidth 380
  * @framerIntrinsicHeight 560
