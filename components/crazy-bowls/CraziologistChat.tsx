@@ -119,7 +119,9 @@ const PROMO_PHASES: PromoPhase[] = [
     },
     {
         // Phase 2 — threshold drops to $100, starts Wed 8/19.
-        // >>> CONFIRM THE END DATE. `endsISO` below is the only line to change. <<<
+        // End date confirmed by Elle 2026-08-21: runs through Mon 8/31.
+        // The r2 catering email (send Mon 8/24) states the same date. If the
+        // offer moves, change it HERE and in that email or they contradict.
         id: "chip-yeah-catering-100",
         startsISO: "2026-08-19T00:00:00-05:00",
         endsISO: "2026-08-31T23:59:59-05:00",

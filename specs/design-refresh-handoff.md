@@ -72,7 +72,8 @@ Crazy Bowls & Wraps and Wild Eggs. Written to be pasted/opened cold. No credenti
   `tools/promo-chat-gate/` (85 headless-Chromium assertions; freezes the clock to test any phase).
 - **Dated phases:** $150 thru 8/18, then $100 from 8/19. The component picks the phase containing
   "now" at page load, so the threshold change happens by itself at midnight with no republish.
-  Phase 2 `endsISO` is a PLACEHOLDER (2026-08-31) pending Elle's real end date.
+  Phase 2 runs through 2026-08-31, confirmed by Elle 2026-08-21 (it began as my
+  placeholder; treat any date I generate as unconfirmed until a human says so).
 - **Offer answers never reach the model.** Verified 2026-08-18 against the live Worker: it is
   grounding-hardened, has no record of the promo, so it refuses to confirm it and calls `escalate`.
   Injecting the terms into the outbound messages did not help. Offer questions are matched by
@@ -85,8 +86,13 @@ Crazy Bowls & Wraps and Wild Eggs. Written to be pasted/opened cold. No credenti
   retroactive), and mark `czg_promo_answered`, `czg_promo_teaser_click`, `czg_order_click`,
   `quiz_complete` as key events. No connected tool can do this — Windsor's GA4 connector has zero
   write actions. Reminder Routine set for 2026-08-19 09:00 CT.
-- **Open:** confirm CHIPYEAH validates at a $100 minimum in online ordering before 8/19; the email
-  in market still says "$150, ends August 18".
+- **Follow-up send:** "CHIP YEAH returns" (r2), $100+ thru 8/31, campaign
+  `catering-chip-platter-r2`, scheduled Mon 8/24 ~10am CT. Render-verified; panel photo is
+  `NEW CBW65.jpg` (chips being dipped). Its copy no longer claims the salsa is "charred and
+  blended" because that photo shows fresh diced salsa.
+- **Open:** confirm CHIPYEAH validates at the $100 minimum in online ordering, and that "pre-tax"
+  still applies. Both are checkout claims, so both stay human-verified per the promo-email-loop
+  HUMAN GATE.
 
 ## 3. Repo + where things live
 
