@@ -51,6 +51,9 @@ const ARCHETYPES: Record<string, string> = {
    To extend or end the offer: edit the last phase's `endsISO`, nothing else.
    To run a DIFFERENT promo later: replace the PHASES array. The rest of the
    component needs no edits.
+
+   Every phase must state its own end date in the guest-facing strings below.
+   Offer terms without a deadline are incomplete; the render gate asserts it.
    ========================================================================== */
 type PromoPhase = {
     id: string
@@ -95,7 +98,7 @@ function asksAboutOffer(text: string): boolean {
 
 const PROMO_PHASES: PromoPhase[] = [
     {
-        // Phase 1 — original send. $150 threshold, ends Tue 8/18 at midnight CT.
+        // Phase 1 — original send. $150 threshold, ended Tue 8/18 at midnight CT.
         id: "chip-yeah-catering-150",
         startsISO: "2026-08-11T00:00:00-05:00",
         endsISO: "2026-08-18T23:59:59-05:00",
@@ -119,7 +122,7 @@ const PROMO_PHASES: PromoPhase[] = [
     },
     {
         // Phase 2 — threshold drops to $100, starts Wed 8/19.
-        // End date confirmed by Elle 2026-08-21: runs through Mon 8/31.
+        // Extended through Mon 8/31, confirmed by Elle 2026-08-21.
         // The r2 catering email (send Mon 8/24) states the same date. If the
         // offer moves, change it HERE and in that email or they contradict.
         id: "chip-yeah-catering-100",
@@ -128,18 +131,18 @@ const PROMO_PHASES: PromoPhase[] = [
         campaign: "catering-chip-platter-aug",
         path: "/catering",
         code: "CHIPYEAH",
-        ribbon: "Free chip platter on $100+ catering",
-        teaser: "Free chip platter on $100+ catering. Ask me.",
+        ribbon: "Free chip platter on $100+ catering, thru 8/31",
+        teaser: "Free chip platter on $100+ catering, thru 8/31. Ask me.",
         opener:
-            "Feeding a crowd? Good timing. Cater $100 or more and a large chip platter is on us. Code CHIPYEAH at online checkout. Ask me about platters, headcounts, or what survives a 30-minute car ride.",
+            "Feeding a crowd? Good timing. Cater $100 or more and a large chip platter is on us. Code CHIPYEAH at online checkout, through Monday, August 31. Ask me about platters, headcounts, or what survives a 30-minute car ride.",
         chip: {
             label: "Tell me about the chip deal",
             q: "Tell me about the free chip platter offer for catering.",
         },
         answer:
             "Chip yeah. Cater $100 or more (pre-tax) and a large chip platter comes along free. " +
-            "Enter code **CHIPYEAH** at online checkout. One per order, and it doesn't stack " +
-            "with other offers.\n\n" +
+            "Enter code **CHIPYEAH** at online checkout, through Monday, August 31. One per " +
+            "order, and it doesn't stack with other offers.\n\n" +
             "Order here: [crazybowlsandwraps.com/catering](https://www.crazybowlsandwraps.com/catering?utm_source=site&utm_medium=chat_promo&utm_campaign=catering-chip-platter-aug&utm_content=offer-answer)\n\n" +
             "Want help sizing it? Tell me your headcount and I'll do the math.",
     },

@@ -122,6 +122,12 @@ async function run(label, iso, expect, width, height) {
         /doesn't stack with other offers/.test(body),
         "canned offer terms rendered verbatim"
     )
+    // A phase shipped once with no expiry anywhere in its guest-facing copy.
+    // Offer terms without a deadline are incomplete, so assert it explicitly.
+    check(
+        body.indexOf(expect.deadline) !== -1,
+        'end date "' + expect.deadline + '" stated in the offer answer'
+    )
     check(
         !/can't confirm|flag this for our team|contact-us/i.test(body),
         "no refusal / escalation language in the answer"
@@ -229,8 +235,8 @@ async function routing(label, iso) {
 
 ;(async () => {
     const server = await start(PORT)
-    const P1 = { id: "chip-yeah-catering-150", threshold: "$150", stale: "$100" }
-    const P2 = { id: "chip-yeah-catering-100", threshold: "$100", stale: "$150" }
+    const P1 = { id: "chip-yeah-catering-150", threshold: "$150", stale: "$100", deadline: "through tonight" }
+    const P2 = { id: "chip-yeah-catering-100", threshold: "$100", stale: "$150", deadline: "August 31" }
 
     // Phase 1 — today
     await run("p1-desktop", "2026-08-18T13:00:00-05:00", P1, 1200, 900)

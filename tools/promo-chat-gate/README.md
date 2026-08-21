@@ -20,7 +20,7 @@ teaser, types into the input) rather than reading the source.
       --jsx=automatic --loader:.tsx=tsx --alias:framer=./framer-shim.js \
       --define:process.env.NODE_ENV='"production"'
     cp site/catering/bundle.js site/menu/bundle.js
-    node verify.js                                  # 85 assertions
+    node verify.js                                  # 89 assertions
 
 Fonts: `site/fonts-inline.css` is a Google Fonts css2 response with every woff2
 inlined as a data: URI (curl it with a Chrome UA, then inline). Not committed —
@@ -41,6 +41,8 @@ Confirm a real rebuild with `grep <a-string-you-just-added> site/catering/bundle
 - `czg_promo_teaser_shown` reaches `dataLayer`
 - the teaser is a real button and opens the panel
 - the offer answer renders with exact terms, no refusal/escalation language
+- **the phase's end date appears in the offer answer** — phase 2 once shipped with
+  no expiry anywhere in its guest-facing copy, which makes the terms incomplete
 - **zero Worker calls for the offer question** — the load-bearing one, see below
 - no offer facts leak into the outbound transcript
 - `document.scrollingElement.scrollWidth <= viewport` with the teaser up and with
