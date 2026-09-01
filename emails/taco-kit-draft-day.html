@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!-- format-detection stops iOS Mail auto-linking "$35", "4-5", "+$7" into blue phone links.
+    <!-- format-detection stops iOS Mail auto-linking "$35", "4-5", "8oz" into blue phone links.
          This email is dense with numbers, so without it iOS paints half the copy blue. -->
     <meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
     <!-- PAYTRONIX PREVIEW TEXT. With raw HTML this is the only place to set inbox preview text,
@@ -344,11 +344,19 @@
            queso, chip bag, iced tea, tortillas in a branded wrapper. Chosen for the
            second-protein panel because the chicken bowl is the largest element in frame.
 
-   BOARD PANEL = Taco Kit_2.jpg  1920x1347  ratio 1.425  renders 600x421
-           Overhead on terrazzo with the components spaced apart: chips, beans, cheddar,
-           romaine, chicken, two pico cups, queso, forks and napkins, tortillas, two drinks.
-           Its spread-out grid literally reads as a draft board, which is why it sits under the
-           headcount ladder rather than at the top.
+   BOARD PANEL = Taco Kit_2_Football.jpg  2528x1696  ratio 1.491  renders 600x403
+           *** THIS FILE DOES NOT EXIST IN PAYTRONIX YET. UPLOAD IT UNDER EXACTLY THAT NAME. ***
+           It is Taco Kit_2 with a branded football composited in, generated from the original
+           photo. Overhead on terrazzo with the components spaced apart: chips, beans, cheddar,
+           romaine, chicken, two pico cups, queso, forks and napkins, tortillas, two drinks, plus
+           a classic brown-and-white leather football with the Crazy Bowls and Wraps wordmark printed on
+           it in green, on the counter beside them. Its spread-out
+           grid reads as a draft board, which is why it sits under the headcount ladder.
+           NOTE THE RATIO CHANGED. The composite is 1.491, not the 1.425 of the original photo,
+           so the height is 403 and not 421. If you drop the ORIGINAL Taco Kit_2 back in, change
+           the height attribute back to 421 or Word will squash it.
+           THE FOOTBALL IS A STYLING PROP, NOT MERCHANDISE. No copy anywhere offers it, and it
+           should not be described as something a guest can get.
 
    UNUSED ALTERNATE = Taco Kit_4.jpg  1536x2048  ratio 0.750
            The second vertical. Same native ratio as Taco Kit_3, so it drops into the protein
@@ -382,15 +390,18 @@
       setup feeds omnivores, vegetarians and gluten-conscious guests without anyone feeling
       short-changed. That argument replaced the weaker "no compromise pizza" joke and is now
       the emotional centre of the lead.
-   6. PRICE IS STATED AT THE POINT OF THE BUILD. The protein upcharge (+$7 and up) is now
-      printed next to the protein step rather than discovered at checkout.
+   6. PRICE EXPECTATION IS SET AT THE POINT OF THE BUILD. The protein step says plainly that
+      the protein is priced by selection, so the guest reaches the configurator expecting a
+      second number rather than being surprised by one. An earlier draft printed the actual
+      figure here; see the PROTEIN PRICES note below for why it was pulled.
 
   EXTENSIONS OF THE SAME LOGIC (my application, not observed CAVA copy):
    7. Lead copy cut roughly in half. Ingredient-forward brands lead with the food, not with a
       long setup joke.
    8. Nutrition is pointed at honestly. The menu itself says calories vary by selection, so the
       footer links to nutrition rather than implying a fixed number.
-   9. Rewards moved out of the footer-only position into a visible line.
+   9. Rewards moved out of the footer-only position into a visible band, now carrying the real
+      That's a Wrap Thursday code rather than an unsourced points claim.
    10. Order-ahead guidance for a group order, which is a catering behaviour, not a walk-in one.
    11. Dietary information is conveyed in TEXT, never colour alone (WCAG 1.4.1). The plant-based
       line reads as words, so it survives a screen reader and a greyscale print.
@@ -488,10 +499,22 @@
   data, field driveThru). WITH: South City, Rock Hill, Manchester, Olive and 141, O'Fallon,
   Lindenwood, Wentzville. Re-check if a store opens or remodels.
 
-  DELIBERATELY ABSENT: any Crazy Points earn RATE. The rewards line links to the account and
-  says nothing about multipliers, because the only place a rate has ever been stated is copy
-  written for the Family Night P.S., which is not a source. Confirm the program terms and a
-  rate can be added.
+  PROTEIN PRICES ARE STATED NOWHERE, DELIBERATELY. Earlier drafts printed "from +$7". They no
+  longer do. Two reasons. The supplied configurator data now shows Plant Based Chicken with no
+  price at all where it previously carried +$8.50, so the numbers are actively moving; and the
+  footer already says prices vary by location. Printing a figure that a store does not honour is
+  the kind of thing that produces a refund at the counter. The copy now says "priced by
+  selection" and lets the configurator be the source of truth. Do not reintroduce a number
+  unless someone confirms it is fixed chain-wide.
+
+  THAT'S A WRAP THURSDAY is a REAL offer with a REAL code, supplied 2026-09-01: buy a wrap on
+  Thursdays, get double loyalty points, code THATSAWRAP. It replaces the "Tuesdays earn 2x
+  Crazy Points" line that earlier drafts refused to run, because that one had no source and this
+  one does.
+  ITS SCOPE IS LOAD BEARING. The fine print says WRAPS. A Taco Kit is not a wrap. Putting a
+  double-points banner inside a taco kit email without saying so invites a guest to place an $84
+  kit order on a Thursday expecting double points and be told no at the counter. The band and
+  the footer both say wraps only, in plain words.
 
   SUBJECT OPTIONS:
    A. Draft day needs a food plan
@@ -581,7 +604,7 @@
                         <p style="font-size:20px; font-weight:800; letter-spacing:0.04em; color:#0D4F4F; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.3;">Starts at $35 &middot; serves 4&ndash;5</p>
                         <p class="specline" style="font-size:14px; font-weight:700; color:#2C3A2C; margin:0 0 6px; mso-line-height-rule:exactly; line-height:1.8;"><b>12</b> tortilla shells &nbsp;&middot;&nbsp; <b>1</b> warm queso &nbsp;&middot;&nbsp; <b>1</b> salsa &nbsp;&middot;&nbsp; <b>up to 4</b> drinks</p>
                         <p class="specline" style="font-size:14px; font-weight:700; color:#5f6b4c; margin:0 0 14px; mso-line-height-rule:exactly; line-height:1.8;">plus black beans, shredded lettuce, cheddar and a bag of chips</p>
-                        <p style="font-size:14px; font-weight:700; color:#2C3A2C; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Then you pick the protein, from <b style="color:#0D4F4F;">+$7</b>.</p>
+                        <p style="font-size:14px; font-weight:700; color:#2C3A2C; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Then you pick the protein. Priced by selection.</p>
                       </td>
                     </tr>
                   </table>
@@ -624,7 +647,7 @@
                       <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 12px 0 0;">
                         <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:38px; color:#A3BF1E; margin:0 0 2px; line-height:1;">1</p>
                         <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">Pick a protein</p>
-                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">Grilled or crunchy chicken, tenderloin steak, king salmon. From +$7.</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">Grilled or crunchy chicken, tenderloin steak, king salmon. Priced by selection.</p>
                       </td>
                       <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 12px;">
                         <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:38px; color:#A3BF1E; margin:0 0 2px; line-height:1;">2</p>
@@ -682,7 +705,7 @@
                    Single column, full bleed. The safest possible structure in Word. -->
               <tr>
                 <td bgcolor="#0D4F4F" style="padding:0; line-height:0; font-size:0;">
-                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-photo" style="text-decoration:none; display:block;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_2.jpg" alt="The full Taco Kit spread overhead on a terrazzo counter: tortilla chips, black beans, shredded cheddar, romaine, a bowl of grilled chicken, two cups of pico de gallo, warm queso, forks and napkins, tortillas and two iced drinks" width="600" height="421" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-photo" style="text-decoration:none; display:block;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_2_Football.jpg" alt="The full Taco Kit spread overhead on a terrazzo counter: tortilla chips, black beans, shredded cheddar, romaine, a bowl of grilled chicken, two cups of pico de gallo, warm queso, forks and napkins, tortillas and two iced drinks, with a brown leather football branded Crazy Bowls and Wraps resting on the counter beside them" width="600" height="403" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
                 </td>
               </tr>
 
@@ -719,7 +742,7 @@
               </tr>
               <tr>
                 <td class="padx" bgcolor="#0D4F4F" style="padding:18px 48px 38px;" align="center">
-                  <p style="font-size:15px; color:#BFD8D8; mso-line-height-rule:exactly; line-height:1.7; font-weight:600; margin:0 0 20px; text-align:center;">A ten-team league is two kits, about eight dollars a head with grilled chicken, and the queso, chips and drinks are already in the box. Order ahead so it is bagged and waiting when you get there.</p>
+                  <p style="font-size:15px; color:#BFD8D8; mso-line-height-rule:exactly; line-height:1.7; font-weight:600; margin:0 0 20px; text-align:center;">A ten-team league is two kits, and the queso, chips and drinks are already in the box. Order ahead so it is bagged and waiting when you get there.</p>
                   <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
                     <tr>
                       <td bgcolor="#BCD741" align="center" style="border-radius:999px; padding:16px 34px; mso-padding-alt:16px 34px;">
@@ -737,11 +760,27 @@
                 </td>
               </tr>
 
-              <!-- Rewards line, promoted out of the footer. No earn RATE is claimed anywhere,
-                   because no rate has been confirmed from a real source. -->
+              <!-- === THAT'S A WRAP THURSDAY ===
+                   A real, sourced offer, which is why it is here at all. It REPLACES the
+                   "Tuesdays earn 2x Crazy Points" line that was cut from earlier drafts,
+                   because that one had no source and this one does.
+                   SCOPING IS LOAD BEARING. The fine print says "buy a wrap on Thursdays."
+                   A Taco Kit is not a wrap, so the copy says so in plain words. Without that
+                   line a guest could reasonably read a double-points banner inside a taco kit
+                   email as applying to an $84 kit order, arrive on Thursday, and be told no.
+                   The code is live selectable text, never baked into an image, so it can be
+                   copied on a phone. -->
               <tr>
-                <td class="padx" align="center" bgcolor="#FFF6EC" style="padding:20px 40px 4px;">
-                  <p style="font-size:14px; font-weight:700; color:#42513f; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Ordering for the group? Put it on your account and the Crazy Points come with it. <a href="https://crazybowlsandwraps.myguestaccount.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=rewards" style="color:#0D4F4F; text-decoration:underline; font-weight:800;">Sign&nbsp;in&nbsp;&#8594;</a></p>
+                <td class="padx" align="center" bgcolor="#FFF6EC" style="padding:26px 40px 8px;">
+                  <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#5F7010; margin:0 0 4px; mso-line-height-rule:exactly; line-height:1.4;">Also on the schedule</p>
+                  <p class="panelBig" style="font-family:'Passion One',Arial,sans-serif; font-weight:400; font-size:36px; color:#0D4F4F; line-height:1; margin:0 0 12px;">That&rsquo;s a Wrap Thursday.</p>
+                  <p style="font-size:15px; font-weight:600; color:#42513f; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.65;">Buy a wrap on a Thursday and your loyalty points double. Wraps only, so it is a separate trip from the kit, but it is a good week to make two.</p>
+                  <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
+                    <tr>
+                      <td align="center" bgcolor="#F2F7E0" style="border-radius:8px; border:2px dashed #0D4F4F; padding:12px 26px; mso-padding-alt:12px 26px; font-size:19px; font-weight:800; letter-spacing:0.1em; color:#0D4F4F; mso-line-height-rule:exactly; line-height:1.2;">Code THATSAWRAP</td>
+                    </tr>
+                  </table>
+                  <p style="font-size:14px; font-weight:700; margin:16px 0 0;"><a href="https://crazybowlsandwraps.myguestaccount.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=rewards" style="color:#0D4F4F; text-decoration:underline;">Check your points balance &#8594;</a></p>
                 </td>
               </tr>
 
@@ -773,7 +812,7 @@
                     </tr>
                   </table>
                   <p style="font-size:13px; mso-line-height-rule:exactly; line-height:1.7; color:#96BCBC; margin:18px 0 0; text-align:center;">
-                    Crazy Bowls &amp; Wraps &middot; Taco Kit starts at $35.00 and serves 4&ndash;5. A protein selection is required and is priced separately, from $7.00. Extra Protein serves 4 and is priced separately. One salsa and up to 4 drinks are included. Calories and nutrition vary with your selections, see the <a href="https://www.crazybowlsandwraps.com/menu?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=footer-nutrition" style="color:#C0D8D8; text-decoration:underline;">full menu</a>. Prices, participation and availability vary by location. No price-altering substitutions.<br>
+                    Crazy Bowls &amp; Wraps &middot; Taco Kit starts at $35.00 and serves 4&ndash;5. A protein selection is required and is priced separately. Extra Protein serves 4 and is priced separately. One salsa and up to 4 drinks are included. That&rsquo;s a Wrap Thursday: buy a wrap on Thursdays and earn double loyalty points with code THATSAWRAP, wraps only, does not apply to the Taco Kit. Calories and nutrition vary with your selections, see the <a href="https://www.crazybowlsandwraps.com/menu?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=footer-nutrition" style="color:#C0D8D8; text-decoration:underline;">full menu</a>. Prices, participation and availability vary by location. No price-altering substitutions.<br>
                     <template:link a:style="color:#C0D8D8;text-decoration:underline;" type="unsubscribe_url">Unsubscribe</template:link>&nbsp;&nbsp;&middot;&nbsp;&nbsp;<template:link a:style="color:#C0D8D8;text-decoration:underline;" type="campaign_view_url">View in Browser</template:link>
                   </p>
                 </td>

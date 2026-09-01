@@ -31,6 +31,7 @@ let src = fs.readFileSync(SRC, "utf8")
 function withImages(h) {
     return h
         .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_1\.jpg/g, "tk1.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_2_Football\.jpg/g, "tk2fb.png")
         .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_2\.jpg/g, "tk2.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_3\.jpg/g, "tk3.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*Logo[^"']*/g, "logo.png")
