@@ -89,3 +89,28 @@ documented behaviour list, not a real Outlook render, and `Impact` is not instal
 here so the display fallback renders as Arial. It reliably catches layout collapse,
 collisions, and overflow. It does not replace a Litmus or Email on Acid run before a
 large send, and it cannot confirm exact Windows font metrics.
+
+## Two files per email
+
+`<name>.html` is the working master. It carries the documentation comments that
+explain why each Outlook fix and each copy rule exists, so the next person to
+edit it does not reintroduce a bug that already cost a send.
+
+`<name>.PASTE.html` is what actually goes into Paytronix. It is the same file
+with the documentation comments removed and nothing else changed.
+
+**The `<!--[if mso]>` blocks are not notes.** They are functional markup that the
+Word engine reads: the stylesheet that fixes the headline overlap and the serif
+fallback, and the ghost table that centres the shell. Stripping them breaks
+Outlook Classic. The strip keeps them, and the integrity check asserts all three
+survive.
+
+Regenerate the paste file after any edit to the master, then prove they are the
+same email:
+
+    node build.js ../../emails/<name>.html      && node diff.js master
+    node build.js ../../emails/<name>.PASTE.html && node diff.js paste
+
+`diff.js` captures with `reducedMotion: "reduce"`. The motion layer contains an
+infinite keyframe, so without freezing it every capture differs and the
+comparison is meaningless.
