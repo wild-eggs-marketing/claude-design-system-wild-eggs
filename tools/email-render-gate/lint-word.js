@@ -10,7 +10,10 @@
 
 const fs = require("fs")
 const src = fs.readFileSync(process.argv[2], "utf8")
-const DISPLAY = ["dispBig", "dispSub", "couponBig", "panelBig", "stepNum"]
+// EVERY display class must be listed here. A class that is not on this list is invisible to
+// both rules, which is worse than having no lint at all: it reads as a pass. When a new
+// display class is added to a template, add it here in the same commit.
+const DISPLAY = ["dispBig", "dispSub", "couponBig", "panelBig", "stepNum", "quesoWord", "quesoSub"]
 
 const fails = []
 const oks = []
