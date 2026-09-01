@@ -1,5 +1,23 @@
 # Promo Email Loop
 
+## RULE ZERO — THE HTML TXT GOES INLINE IN CHAT. ALWAYS. EVERY TIME.
+
+Every reply that delivers or revises an email MUST contain the full final HTML inline in chat, in
+one ```html fenced code block, ready to copy straight into Paytronix Source view. Not a file path.
+Not an attachment on its own. Not a summary of what changed. Not "the file is at emails/x.html."
+Not a partial or an excerpt. The whole file, in the message, in a code block.
+
+This is non-negotiable and it is not conditional on the email being finished. Delivering a draft,
+a revision, a one-line copy fix — the HTML TXT ships with it every single time. If a reply about
+an email does not contain that code block, the reply is not done, no matter how good the rest of
+it is. Attachments and screenshots are ADDITIONAL, never a substitute.
+
+Paste the PASTE build (documentation comments stripped by tools/email-render-gate/strip.js), which
+is the artifact that actually goes into Paytronix. Length is never a reason to skip it or to
+truncate it. Elle has asked for this repeatedly and every miss costs her a round trip.
+
+---
+
 Produce a paste-ready Paytronix promo email in the CBW/Wild Eggs house design system and voice,
 render-verified before the human ever reviews it. Locked 2026-08-14 after eval E1 (CHIP YEAH):
 the loop's gates caught 2 ship-blocking bugs that 4 human review cycles had missed.
@@ -80,8 +98,10 @@ Vision review of both screenshots, 6 points: (1) no clipping, (2) no image disto
 
 ## PACKAGE (always ALL of these — no exceptions)
 
-1. The verified .html file (attached).
-2. **The full HTML inline in chat as a copyable TXT code block** (Paytronix paste path).
+1. **THE FULL HTML INLINE IN CHAT, in one ```html code block.** See RULE ZERO at the top of this
+   file. This is item one because it is the only item Elle actually needs to ship the email, and
+   it is the one that keeps getting dropped. Paste the PASTE build. Never truncate it.
+2. The verified .html file (attached) — in addition to item 1, never instead of it.
 3. Both screenshots (600 + 375) as proof.
 4. Subject/preheader picks + send-time recommendation (weekday AM; deadline sends on deadline day).
 5. Unresolved questions flagged (e.g., "verify code validates at checkout with a $150 cart").
