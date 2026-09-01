@@ -132,4 +132,25 @@ word =
 
 fs.writeFileSync(path.join(OUT, "word.html"), word)
 
-console.log("built: modern.html  gmail.html  noimg.html  word.html")
+// ---------------- STYLESHEET STRIPPED ----------------
+// The failure that actually shipped. Somewhere between the paste into Paytronix and
+// Outlook Classic, the <style> block and/or the conditional comment stopped taking
+// effect, and the email fell back to its INLINE styles. Previously that meant an 84px
+// headline at line-height 0.88, which crashed into the chip above it.
+// This variant keeps ONLY what can never be stripped: the inline attributes. If the
+// email is still intact here, it is intact everywhere.
+let nostyle = modern
+    .replace(/<style[\s\S]*?<\/style>/g, "")
+    .replace(/<!--\[if mso[\s\S]*?<!\[endif\]-->/g, "")
+    .replace(/<link[^>]*fonts\.googleapis[^>]*>/g, "")
+    .replace(/<link[^>]*preconnect[^>]*>/g, "")
+fs.writeFileSync(path.join(OUT, "nostyle.html"), nostyle)
+
+// ---------------- CONDITIONAL COMMENTS STRIPPED ----------------
+// Paytronix has stripped comments on a paste before, on the Wild Eggs side. This keeps
+// the stylesheets but removes every <!--[if mso]--> block, which is what a
+// comment-stripping paste produces.
+let nocond = modern.replace(/<!--\[if mso[\s\S]*?<!\[endif\]-->/g, "")
+fs.writeFileSync(path.join(OUT, "nocond.html"), nocond)
+
+console.log("built: modern.html  gmail.html  noimg.html  word.html  nostyle.html  nocond.html")

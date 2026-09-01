@@ -189,7 +189,19 @@ async function run(label, file, width, height, opts = {}) {
         check(b.cellH >= 40, `button "${b.text}" is tap-sized (${b.cellH}px >= 40)`)
     }
 
-    // ---- 6. images keep their aspect ratio (Word ignores object-fit) ----
+    // ---- 6. display type stays inside a sane size even with no stylesheet ----
+    // Guards the fail-safe direction: the INLINE value must be one that cannot overlap.
+    if (opts.inlineOnly) {
+        const hero = g.pairs[".dispBig"]
+        if (hero) {
+            check(
+                hero.h <= 120,
+                `headline stays a sane height with no stylesheet (${Math.round(hero.h)}px <= 120)`
+            )
+        }
+    }
+
+    // ---- 7. images keep their aspect ratio (Word ignores object-fit) ----
     if (!opts.skipAspect) {
         for (const im of g.imgs) {
             if (!im.natW || !im.w) continue
@@ -245,6 +257,18 @@ async function run(label, file, width, height, opts = {}) {
 
     // --- images blocked ---
     await run("noimg-900", "noimg.html", 900, 1200)
+
+    // --- THE FAILURE THAT SHIPPED ---
+    // No stylesheet at all: only inline attributes survive. Mobile stacking and the
+    // media queries are gone by definition, so aspect drift is expected; what must hold
+    // is that nothing overlaps and every button keeps its padding.
+    await run("nostyle-900", "nostyle.html", 900, 1200, { skipAspect: true, inlineOnly: true })
+    await run("nostyle-600", "nostyle.html", 600, 1200, { skipAspect: true, inlineOnly: true })
+
+    // Conditional comments stripped, stylesheets intact: what a comment-stripping paste
+    // into Paytronix produces.
+    await run("nocond-900", "nocond.html", 900, 1200, { skipAspect: true })
+    await run("nocond-375", "nocond.html", 375, 900, { skipAspect: true })
 
     server.close()
     console.log("\n---------------------------------------------")
