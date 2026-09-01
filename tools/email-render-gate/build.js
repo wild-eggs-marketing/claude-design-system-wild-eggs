@@ -30,9 +30,9 @@ let src = fs.readFileSync(SRC, "utf8")
 // Point the REPLACE-ME tokens at local placeholders sized to the real photos.
 function withImages(h) {
     return h
-        .replace(/REPLACE-ME-HERO/g, "hero.png")
-        .replace(/REPLACE-ME-PROTEIN/g, "protein.png")
-        .replace(/REPLACE-ME-BOARD/g, "board.png")
+        .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_1\.jpg/g, "tk1.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_2\.jpg/g, "tk2.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*Taco%20Kit_3\.jpg/g, "tk3.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*Logo[^"']*/g, "logo.png")
         .replace(/https:\/\/paytronix-bee[^"']*ribbon[^"']*/gi, "ribbon.png")
 }
@@ -74,7 +74,7 @@ let gmail = modern.replace(/position\s*:\s*(absolute|fixed|relative)\s*;?/gi, ""
 fs.writeFileSync(path.join(OUT, "gmail.html"), gmail)
 
 // ---------------- NO IMAGES ----------------
-let noimg = modern.replace(/src="[^"]*\.png"/g, 'src="missing-on-purpose.png"')
+let noimg = modern.replace(/src="[^"]*\.(png|jpg)"/g, 'src="missing-on-purpose.png"')
 fs.writeFileSync(path.join(OUT, "noimg.html"), noimg)
 
 // ---------------- WORD / OUTLOOK CLASSIC ----------------

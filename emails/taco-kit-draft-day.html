@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!-- format-detection stops iOS Mail auto-linking "$35", "5pm", "4-5" into blue phone links.
+    <!-- format-detection stops iOS Mail auto-linking "$35", "4-5", "+$7" into blue phone links.
          This email is dense with numbers, so without it iOS paints half the copy blue. -->
     <meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
     <!-- PAYTRONIX PREVIEW TEXT. With raw HTML this is the only place to set inbox preview text,
@@ -13,7 +13,7 @@
          preheader div below. Never put a page-title string here ("Campaign at Brand: offer"),
          because Paytronix can surface this as visible copy at the top of the email, and preheader
          copy reads as an intentional line while a page title reads as a mistake. -->
-    <title>Build-your-own Taco Kit feeds 4 to 5. Twelve shells, warm queso, chips and drinks. From $35.</title>
+    <title>One Taco Kit serves 4 to 5. Twelve shells, warm queso, chips and drinks included. Starts at $35.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Passion+One:wght@400;700;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
     <meta name="color-scheme" content="light">
@@ -38,7 +38,7 @@
          Second, line-height below 1 makes Word clip the line box while the
          glyphs keep their full height, so tall caps bleed upward into
          whatever sits above. Never go below 100% here. */
-      .dispBig, .couponBig, .panelBig {
+      .dispBig, .couponBig, .panelBig, .stepNum {
         font-family: Impact, 'Arial Narrow', Arial, sans-serif !important;
         font-weight: normal !important;
         letter-spacing: 0 !important;
@@ -47,6 +47,7 @@
       .dispBig  { font-size:54px !important; line-height:108% !important; }
       .couponBig{ font-size:46px !important; line-height:108% !important; }
       .panelBig { font-size:32px !important; line-height:112% !important; }
+      .stepNum  { font-size:34px !important; line-height:110% !important; }
       .dispSub  { font-size:28px !important; line-height:120% !important; mso-line-height-rule:at-least !important; }
 
       /* Everything that is not display type gets a real Windows face. */
@@ -105,8 +106,8 @@
          Outlook Classic ignores @media entirely, which is exactly what we
          want: it must never see display:inline-block. In the previous send
          these classes sat in the global stylesheet, Word applied
-         display:inline-block to a div, and the "Family Night" chip rendered
-         as a full-width rectangle that the headline then crashed into.
+         display:inline-block to a div, and the chip rendered as a full-width
+         rectangle that the headline then crashed into.
          Keep every inline-block declaration inside this media block.
          ============================================================ */
       @media screen {
@@ -215,17 +216,18 @@
            padding on the copy cells adds on top of the 100%, which pushes the whole email
            wider than the phone and forces a horizontal scroll. Inherited bug from send 3.
            Keep box-sizing. */
-        .stack2 {
+        .stack2,
+        .stack3 {
           display: block !important;
           width: 100% !important;
           max-width: 100% !important;
           box-sizing: border-box !important;
         }
 
-        /* The two-column panel's own table carries a fixed width:594px for desktop. A fixed
-           length on ANY nested table becomes a min-content floor for the whole shell, so the
-           email could not shrink below 600px on a phone no matter what .w600 said. Release it
-           here. Same class of bug as a fixed px max-width on an image. */
+        /* EVERY nested table with a fixed px width must be released here. A fixed length on
+           any nested element becomes a min-content floor for the WHOLE email, and no amount of
+           width:100% on .w600 can override it. This one class pinned the shell at 600px on
+           phones. Same bug class as a fixed px max-width on an image. */
         .panelgrid {
           width: 100% !important;
           max-width: 100% !important;
@@ -235,6 +237,17 @@
            asymmetric for the side-by-side layout and read lopsided once stacked. */
         .stack2copy {
           padding: 32px 26px !important;
+        }
+
+        /* stacked steps need vertical separation they do not need side by side */
+        .stepcell {
+          padding: 16px 0 18px !important;
+          border-top: 1px solid #D9E2C4 !important;
+        }
+
+        .headcell {
+          padding: 14px 0 !important;
+          border-top: 1px solid #1F6060 !important;
         }
 
         /* Portrait panel photo. On desktop it is a fixed 260px column; stacked on a phone it
@@ -311,44 +324,78 @@
     <!-- ============================================================
   CRAZY BOWLS AND WRAPS: TACO KIT, "DRAFT DAY" (game-time send)
   Campaign: taco-kit-draft-day. Built on the Family Night shell (Direction 4, "The Family
-  Album") but REBUILT FOR OUTLOOK CLASSIC. See the OUTLOOK section below before editing.
+  Album"), REBUILT FOR OUTLOOK CLASSIC, then re-merchandised against the CAVA group-catering
+  playbook. See the OUTLOOK and CAVA sections below before editing.
   Paste into Paytronix (Source view). Comments stay ASCII-only: Paytronix mangles box-chars
   and emoji in comments into question marks.
 
   ---------------------------------------------------------------
-  IMAGES: PLACEHOLDER URLS. THESE MUST BE SWAPPED BEFORE SENDING.
+  IMAGES: LIVE PAYTRONIX URLS, MAPPED BY MEASURED ASPECT RATIO
   ---------------------------------------------------------------
-  Four taco kit photos were supplied. Three are used. Upload each to the Paytronix image
-  library and replace the matching REPLACE-ME token. Slot sizes match each photo's NATIVE
-  aspect ratio so nothing needs cropping and no object-fit is required on desktop.
+   HERO  = Taco Kit_1.jpg  1450x967  ratio 1.499  renders 600x400
+           Overhead on the branded "go for the good" wrapper: chips spilling from the bag,
+           grilled chicken, a STACK OF FLOUR TORTILLAS, halved avocado, corn salsa, queso,
+           black beans, romaine, drinks. Chosen as hero over Taco Kit_2 because the food fills
+           more of the frame (reads better at 600px), the tortilla stack is visible, which the
+           twelve-shells line depends on, and the avocado and corn salsa carry the colour.
 
-   REPLACE-ME-HERO   = the wide overhead flat lay on terrazzo: chip bag spilling left, queso
-                       with pico, black and red beans, shredded cheddar, romaine, big bowl of
-                       grilled chicken, two pico cups, forks and napkins, tortillas in a
-                       branded wrapper, two iced drinks. Native 1500x1035 (1.45:1).
-                       Renders 600x414. Hero because it is the only shot showing the ENTIRE
-                       kit at once, which is literally "the draft board."
+   PROTEIN PANEL = Taco Kit_3.jpg  1536x2048  ratio 0.750  renders 260x347
+           Vertical, window light behind: large grilled chicken bowl lower left, romaine, pico,
+           queso, chip bag, iced tea, tortillas in a branded wrapper. Chosen for the
+           second-protein panel because the chicken bowl is the largest element in frame.
 
-   REPLACE-ME-PROTEIN = the vertical shot with the big grilled chicken bowl lower left,
-                       romaine, pico, queso, chip bag and iced tea, window light behind.
-                       Native 1500x2000 (3:4). Renders 260x347 in the desktop column.
-                       Chosen for the second-protein panel because the chicken bowl is the
-                       largest single element in frame.
+   BOARD PANEL = Taco Kit_2.jpg  1920x1347  ratio 1.425  renders 600x421
+           Overhead on terrazzo with the components spaced apart: chips, beans, cheddar,
+           romaine, chicken, two pico cups, queso, forks and napkins, tortillas, two drinks.
+           Its spread-out grid literally reads as a draft board, which is why it sits under the
+           headcount ladder rather than at the top.
 
-   REPLACE-ME-BOARD  = the wide overhead on branded "go for the good" paper: chips spilling
-                       from the bag, grilled chicken, stacked flour tortillas, halved avocado,
-                       corn salsa, queso, beans, romaine, two drinks. Native 1500x1000 (3:2).
-                       Renders 600x400. Closing panel because the stacked tortillas read as
-                       "twelve shells" and the branding is visible.
+   UNUSED ALTERNATE = Taco Kit_4.jpg  1536x2048  ratio 0.750
+           The second vertical. Same native ratio as Taco Kit_3, so it drops into the protein
+           slot with no other change if you prefer that frame.
 
-   UNUSED ALTERNATE: the second vertical shot (iced tea in a branded CRAZY BOWLS cup in the
-                     foreground, chicken, pico, romaine). Interchangeable with
-                     REPLACE-ME-PROTEIN if you prefer the branded cup. Same 3:4 native ratio,
-                     so it drops in with no other change.
+  Every img carries width= and height= HTML attributes AND matching inline px, computed from
+  the MEASURED native ratio above. Outlook Classic needs the attributes. If you swap a photo,
+  recompute the height from its real dimensions or Word will distort it.
 
-  Every img carries width= and height= HTML attributes AND matching inline px. Outlook Classic
-  needs the attributes. If you swap in a photo with a different aspect ratio you MUST recompute
-  the height or Word will distort it.
+  ---------------------------------------------------------------
+  CAVA PLAYBOOK: WHAT CHANGED AND WHY
+  ---------------------------------------------------------------
+  CAVA's Group Bowl Bar is the closest analogue to this product: one tray, one protein choice,
+  everything else bundled, build-your-own at the table. Six merchandising moves borrowed from
+  how they actually sell it publicly, and six extensions of the same logic.
+
+  BORROWED (observable in CAVA's own catering merchandising):
+   1. HEADCOUNT IS THE HEADLINE SPEC. CAVA leads with "serves 10" rather than burying the
+      serving size. Serving size is now in the preheader, the spec box and a dedicated
+      three-step ladder, so nobody has to guess how many kits to buy.
+   2. THE COMPONENT STACK IS COUNTED AND NAMED. CAVA bundles "1 green, 1 grain, 2 dips,
+      6 toppings, 2 dressings, side pita." The kit contents were a comma run-on; they are now
+      a counted list with the countable things counted (12 shells, 1 queso, 1 salsa, 4 drinks).
+   3. ONE PROTEIN CHOICE, REST BUNDLED, SHOWN AS A SEQUENCE. Added an explicit numbered
+      "how the kit works" block: pick a protein, pick a salsa, pick your drinks. The email now
+      pre-walks the configurator instead of dropping the guest into it cold.
+   4. PLANT-BASED OPTIONS ARE LABELLED, NOT BURIED. CAVA labels vegan and vegetarian clearly.
+      Falafel, grilled tofu and plant based chicken were buried mid-list in a seven-item comma
+      run; they now get their own named line.
+   5. "NOBODY GETS THE COMPROMISE ORDER." CAVA's core group pitch is that one build-your-own
+      setup feeds omnivores, vegetarians and gluten-conscious guests without anyone feeling
+      short-changed. That argument replaced the weaker "no compromise pizza" joke and is now
+      the emotional centre of the lead.
+   6. PRICE IS STATED AT THE POINT OF THE BUILD. The protein upcharge (+$7 and up) is now
+      printed next to the protein step rather than discovered at checkout.
+
+  EXTENSIONS OF THE SAME LOGIC (my application, not observed CAVA copy):
+   7. Lead copy cut roughly in half. Ingredient-forward brands lead with the food, not with a
+      long setup joke.
+   8. Nutrition is pointed at honestly. The menu itself says calories vary by selection, so the
+      footer links to nutrition rather than implying a fixed number.
+   9. Rewards moved out of the footer-only position into a visible line.
+   10. Order-ahead guidance for a group order, which is a catering behaviour, not a walk-in one.
+   11. Dietary information is conveyed in TEXT, never colour alone (WCAG 1.4.1). The plant-based
+      line reads as words, so it survives a screen reader and a greyscale print.
+   12. Every claim in the merchandising blocks is checkable against the live configurator. No
+      invented counts, no invented lead times, no invented calorie figures.
 
   ---------------------------------------------------------------
   OUTLOOK CLASSIC: THE FIVE FAILURES IN THE LAST SEND, AND THE FIXES
@@ -369,41 +416,36 @@
 
   2. DISPLAY TYPE FELL BACK TO A SERIF. Windows font substitution takes the first name in the
      stack, fails to find "Passion One", and maps it through its own substitution table to a
-     default serif without ever reaching 'Arial Narrow' or Arial. The screenshots show a
-     high-contrast serif where the condensed display face should be.
-     FIX: the mso stylesheet names Impact, a font always present on Windows and the closest
-     match to Passion One (condensed, heavy, built for caps), with Arial Narrow then Arial
-     behind it.
+     default serif without ever reaching 'Arial Narrow' or Arial.
+     FIX: the mso stylesheet names Impact, always present on Windows and the closest match to
+     Passion One (condensed, heavy, built for caps), with Arial Narrow then Arial behind it.
 
   3. PADDING ON THE <a> INSIDE A BUTTON. Word does not apply padding to inline elements. The
      screenshots show "Build yours" as a cramped rectangle with the label touching the edges.
-     FIX: padding now lives on the <td>, with mso-padding-alt alongside, and the anchor is
+     FIX: padding lives on the <td>, with mso-padding-alt alongside, and the anchor is
      display:block with zero padding.
 
-  4. THE SHELL BLEW PAST 600px. The two-column panels used width="46%" / width="54%" with
-     images at width:100%. Word cannot resolve a percentage image inside a percentage cell and
-     falls back toward the image's NATIVE width. In the screenshots the shell is roughly 870px
-     and the panel photo is about 400px instead of 276px.
-     FIX: the one remaining two-column panel uses fixed pixel widths (260 + 334) and the image
-     carries fixed px plus width/height HTML attributes. No percentage anywhere in that row.
-     The other panel is single column, full bleed. mso-table-lspace/rspace are zeroed because
-     Word's default table gutters were adding to the overflow.
+  4. THE SHELL BLEW PAST 600px (roughly 870px in the screenshots). The two-column panels used
+     width="46%" / width="54%" with images at width:100%. Word cannot resolve a percentage
+     image inside a percentage cell and falls back toward the image's NATIVE width.
+     FIX: fixed pixel columns everywhere, images with fixed px plus width/height attributes,
+     no percentage in any multi-column row, and mso-table-lspace/rspace zeroed.
 
   5. display:inline-block LEAKED INTO WORD. The motion classes lived in the global stylesheet,
-     so Word applied display:inline-block to the chip div and rendered it as a full-width
-     rectangle instead of a pill.
+     so Word applied display:inline-block to the chip div and rendered it as a full-width bar.
      FIX: the entire motion layer is wrapped in @media screen, which Outlook Classic never
      reads, and the chip is now a real table cell rather than a styled div.
 
-  Also handled: leading-zero decimals throughout (0.88 not .88) because Word's CSS parser is
-  unreliable on bare-dot values; an mso conditional ghost table centres the shell because Word
-  ignores margin:0 auto. Conditional comments fail safe: if Paytronix strips comments, BOTH
-  halves disappear together and the layout is merely un-centred, never broken. That is
-  different from the mso-hide:all + VML button pattern, which fails to an EMPTY pill when
-  comments are stripped, which is why the buttons here still avoid mso-hide entirely.
+  MIN-CONTENT FLOOR, fixed here and worth backporting to the Family Night template: a FIXED
+  length anywhere in the tree becomes a min-content floor for the whole email that no
+  width:100% on the shell can release. max-width:600px on the hero and width:594px on the
+  panel table pinned it at 600px on phones, and width:360px on the ribbon was the previously
+  unexplained ~340px floor behind the 320px sideways scroll on sends 3 to 5. Every fixed-width
+  nested table now carries .panelgrid, which releases it in the media query, and images use
+  percentage max-widths. 320px is clean.
 
   ACCEPTED OUTLOOK DEGRADATION (visual only, nothing breaks):
-   - border-radius is ignored, so pills and the offer box render as clean rectangles.
+   - border-radius is ignored, so pills and the spec box render as clean rectangles.
    - the CSS animations do not run. They are Apple Mail only by design and the first frame is
      the finished state, so a static render is the intended fallback.
 
@@ -411,14 +453,15 @@
   PRODUCT FACTS (from the live ordering configurator, supplied 2026-09-01)
   ---------------------------------------------------------------
   Taco Kit base $35.00, serves 4-5. Includes 12 tortilla shells, beans, shredded lettuce,
-  cheddar cheese, bagged chips, warm queso. Salsa: one is included, either (2) 8oz cups at no
+  cheddar cheese, bagged chips, warm queso. Salsa: one included, either (2) 8oz cups at no
   charge or a pint. Drinks: choose up to 4, included.
   A PROTEIN SELECTION IS REQUIRED and is priced on top: grilled chicken, falafel and tofu are
   +$7.00, crunchy chicken and plant based chicken +$8.50, tenderloin steak and king salmon
-  +$9.99. So the cheapest kit anyone can actually order WITH meat is $42.00, not $35.00. The
-  copy therefore never implies $35 buys a finished kit: $35 appears only as "starts at," the
-  per-head math is quoted on a real $42 configuration, and the footer discloses that protein
-  is required and priced separately.
+  +$9.99. So the cheapest kit anyone can actually order WITH a protein is $42.00, not $35.00.
+  The copy therefore never implies $35 buys a finished kit: $35 appears only as "starts at,"
+  the protein upcharge is printed next to the protein step, the per-head math is quoted on a
+  real $42 configuration, and the footer discloses that protein is required and priced
+  separately.
 
   EXTRA PROTEIN (serves 4) is a separate add-on. On three proteins the second one genuinely
   costs LESS than the first: grilled chicken $7.00 then $6.00, falafel $7.00 then $4.00, tofu
@@ -430,7 +473,11 @@
   NO SALSA UPSELL ANYWHERE IN THIS EMAIL, DELIBERATELY. The configurator prices a Pint of
   Salsa at +$5.99 while (2) 8oz cups are included at no charge. Those are the same 16 ounces.
   Until that is confirmed as a genuinely different product rather than a pricing
-  misconfiguration, promoting the pint would be selling identical volume for $5.99.
+  misconfiguration, promoting the pint would be selling identical volume for $5.99. The build
+  step therefore says the two cups are included and stops there.
+
+  NO CALORIE OR ALLERGEN FIGURE IS STATED. The menu says calories, protein and carbs all vary
+  by selection, so the footer links to the menu for nutrition rather than inventing a number.
 
   TIMING: NFL Week 1 opens Wednesday September 9 2026, moved off the usual Thursday for the
   international slate. Peak fantasy draft window is Labor Day weekend, September 5-7, with
@@ -441,18 +488,18 @@
   data, field driveThru). WITH: South City, Rock Hill, Manchester, Olive and 141, O'Fallon,
   Lindenwood, Wentzville. Re-check if a store opens or remodels.
 
-  DELIBERATELY ABSENT: the "Tuesdays earn 2x Crazy Points" line. It would be the strongest
-  same-day urgency driver available, but the only place it has ever been stated is copy
-  written for the Family Night P.S., which is not a source. Confirm it is a live program and
-  it can be added to the pink strip.
+  DELIBERATELY ABSENT: any Crazy Points earn RATE. The rewards line links to the account and
+  says nothing about multipliers, because the only place a rate has ever been stated is copy
+  written for the Family Night P.S., which is not a source. Confirm the program terms and a
+  rate can be added.
 
   SUBJECT OPTIONS:
    A. Draft day needs a food plan
    B. Twelve shells. Twelve managers.
-   C. Your draft party's first-round pick
+   C. Nobody drafts the compromise order
   PREHEADER OPTIONS (whichever you pick must ALSO replace the title tag copy, word for word):
-   A. Build-your-own Taco Kit feeds 4 to 5. Twelve shells, warm queso, chips and drinks. From $35.
-   B. Twelve shells, warm queso and chips. One kit feeds five managers. Starts at $35.
+   A. One Taco Kit serves 4 to 5. Twelve shells, warm queso, chips and drinks included. Starts at $35.
+   B. Twelve shells, warm queso and chips. One kit per five managers. Starts at $35.
 ============================================================ -->
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#E4E7E1" style="background:#E4E7E1;">
@@ -466,7 +513,7 @@
           <div class="w600" style="width:600px; max-width:100%; margin:0 auto; font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;">
 
             <!-- Preheader (hidden inbox preview) -->
-            <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; overflow:hidden; color:#E4E7E1;">Build-your-own Taco Kit feeds 4 to 5. Twelve shells, warm queso, chips and drinks. From $35.</div>
+            <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; overflow:hidden; color:#E4E7E1;">One Taco Kit serves 4 to 5. Twelve shells, warm queso, chips and drinks included. Starts at $35.</div>
             <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; overflow:hidden; color:#E4E7E1;">&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
 
             <table role="presentation" class="w600" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:100%; background:#FFF6EC; border:3px solid #0D4F4F;">
@@ -485,10 +532,10 @@
                 </td>
               </tr>
 
-              <!-- === HERO: the whole kit, overhead. Native 1500x1035 renders 600x414. === -->
+              <!-- === HERO: Taco Kit_1, native 1450x967, renders 600x400 === -->
               <tr>
                 <td bgcolor="#0D4F4F" style="padding:0; line-height:0; font-size:0;">
-                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=hero" style="text-decoration:none; display:block;"><img class="heroimg" src="REPLACE-ME-HERO" alt="The whole Taco Kit laid out overhead: tortilla chips spilling from the bag, warm queso, beans, shredded cheddar, romaine, a bowl of grilled chicken, pico, tortillas and two iced drinks" width="600" height="414" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=hero" style="text-decoration:none; display:block;"><img class="heroimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_1.jpg" alt="A Taco Kit laid out on branded Crazy Bowls and Wraps paper: tortilla chips spilling from the bag, a bowl of sliced grilled chicken, a stack of flour tortillas, halved avocado, corn salsa, warm queso, black beans, shredded lettuce and two drinks" width="600" height="400" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
                 </td>
               </tr>
 
@@ -508,16 +555,22 @@
                 </td>
               </tr>
 
-              <!-- === THE LEAD === -->
+              <!-- === THE LEAD ===
+                   Cut roughly in half against the first draft. The closing line is the CAVA
+                   group argument: one build-your-own setup means nobody gets the compromise
+                   order. That is a stronger reason to buy than the joke it replaced. -->
               <tr>
                 <td class="padx" bgcolor="#FFF2E6" style="padding:28px 58px 34px;">
-                  <p style="font-size:17px; color:#2C3A2C; mso-line-height-rule:exactly; line-height:1.75; font-weight:600; margin:0 0 14px;">Hey <template:insert field="first_name">there</template:insert>, somewhere this weekend a group chat is going to spend forty minutes arguing about draft order and roughly ninety seconds on food. That is how you end up with a bag of pretzels and a bowl of regret.</p>
-                  <p style="font-size:17px; color:#42513f; mso-line-height-rule:exactly; line-height:1.75; font-weight:600; margin:0 0 14px;">Here is the fix. The <b style="color:#0D4F4F;">Build-Your-Own Taco Kit</b> lands with twelve tortilla shells, beans, shredded lettuce, cheddar, chips and warm queso, and everybody at the table drafts their own. No compromise pizza. Nobody picking things off.</p>
+                  <p style="font-size:17px; color:#2C3A2C; mso-line-height-rule:exactly; line-height:1.75; font-weight:600; margin:0 0 14px;">Hey <template:insert field="first_name">there</template:insert>, the draft takes four hours. Deciding what to eat should not take forty minutes of it.</p>
+                  <p style="font-size:17px; color:#42513f; mso-line-height-rule:exactly; line-height:1.75; font-weight:600; margin:0 0 14px;">One <b style="color:#0D4F4F;">Taco Kit</b> lands with twelve tortilla shells, warm queso, chips and everything else, and every manager builds their own. The vegetarian, the one who hates onions and the guy who eats only chicken all get exactly what they want off the same board. Nobody gets the compromise order.</p>
                   <p style="font-size:17px; color:#42513f; mso-line-height-rule:exactly; line-height:1.75; font-weight:600; margin:0;">Twelve shells. A twelve-team league. We are not saying that was on purpose.</p>
                 </td>
               </tr>
 
-              <!-- === THE SPEC BOX === -->
+              <!-- === THE SPEC BOX ===
+                   Contents are now a COUNTED, named stack rather than a comma run-on, which is
+                   how CAVA bundles the Group Bowl Bar ("1 green, 1 grain, 2 dips, 6 toppings").
+                   Countable things are counted so the value is legible at a glance. -->
               <tr>
                 <td class="padx" bgcolor="#ffffff" style="padding:34px 48px 8px;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F2F7E0" style="background:#F2F7E0; border:2px dashed #0D4F4F; border-radius:18px;">
@@ -525,9 +578,10 @@
                       <td class="padxs" align="center" style="padding:28px 30px;">
                         <p style="font-size:13px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#BC3C96; margin:0 0 10px; mso-line-height-rule:exactly; line-height:1.3;">The board</p>
                         <p class="couponBig" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:52px; line-height:1; color:#0D4F4F; margin:0 0 8px;">Taco Kit</p>
-                        <p style="font-size:20px; font-weight:800; letter-spacing:0.04em; color:#0D4F4F; margin:0 0 14px; mso-line-height-rule:exactly; line-height:1.3;">Starts at $35 &middot; feeds 4&ndash;5</p>
-                        <p class="specline" style="font-size:14px; font-weight:700; color:#5f6b4c; margin:0 0 12px; mso-line-height-rule:exactly; line-height:1.7;">12 tortilla shells &middot; beans &middot; shredded lettuce &middot; cheddar &middot; bagged chips &middot; warm queso &middot; salsa &middot; up to 4 drinks</p>
-                        <p style="font-size:14px; font-weight:700; color:#2C3A2C; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Then draft your protein: grilled chicken, crunchy chicken, tenderloin steak, king salmon, falafel, tofu or plant based chicken.</p>
+                        <p style="font-size:20px; font-weight:800; letter-spacing:0.04em; color:#0D4F4F; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.3;">Starts at $35 &middot; serves 4&ndash;5</p>
+                        <p class="specline" style="font-size:14px; font-weight:700; color:#2C3A2C; margin:0 0 6px; mso-line-height-rule:exactly; line-height:1.8;"><b>12</b> tortilla shells &nbsp;&middot;&nbsp; <b>1</b> warm queso &nbsp;&middot;&nbsp; <b>1</b> salsa &nbsp;&middot;&nbsp; <b>up to 4</b> drinks</p>
+                        <p class="specline" style="font-size:14px; font-weight:700; color:#5f6b4c; margin:0 0 14px; mso-line-height-rule:exactly; line-height:1.8;">plus black beans, shredded lettuce, cheddar and a bag of chips</p>
+                        <p style="font-size:14px; font-weight:700; color:#2C3A2C; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Then you pick the protein, from <b style="color:#0D4F4F;">+$7</b>.</p>
                       </td>
                     </tr>
                   </table>
@@ -539,7 +593,7 @@
                    elements, which is what collapsed the buttons in Outlook Classic.
                    No mso-hide and no VML twin, so a comment-stripped paste still renders. -->
               <tr>
-                <td class="padx" align="center" bgcolor="#ffffff" style="padding:28px 40px 40px;">
+                <td class="padx" align="center" bgcolor="#ffffff" style="padding:26px 40px 34px;">
                   <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
                     <tr>
                       <td align="center" bgcolor="#0D4F4F" style="border-radius:999px; border:2px solid #A3BF1E; padding:18px 46px; mso-padding-alt:18px 46px;">
@@ -550,16 +604,62 @@
                 </td>
               </tr>
 
-              <!-- === ADD-ON PANEL 1: the second protein ===
+              <!-- === HOW THE KIT WORKS: three numbered steps ===
+                   Borrowed from how CAVA sells the Group Bowl Bar: one protein choice, the rest
+                   bundled, shown as a sequence. This pre-walks the configurator so the guest
+                   arrives having already decided, and it prints the protein upcharge here
+                   rather than letting it surface at checkout.
+                   Fixed px columns, 166 x 3 = 498. No percentages: that is what blew the shell
+                   apart in Word. Numerals rather than circled numbers, because border-radius is
+                   ignored by Word and a circle would render as a square. -->
+              <tr>
+                <td class="padx" bgcolor="#ffffff" style="padding:0 48px 10px;">
+                  <p style="font-size:13px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#BC3C96; margin:0 0 4px; text-align:center; mso-line-height-rule:exactly; line-height:1.3;">How the kit works</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="padx" bgcolor="#ffffff" style="padding:8px 48px 34px;">
+                  <table role="presentation" class="panelgrid" width="498" cellpadding="0" cellspacing="0" border="0" style="width:498px; max-width:100%;">
+                    <tr>
+                      <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 12px 0 0;">
+                        <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:38px; color:#A3BF1E; margin:0 0 2px; line-height:1;">1</p>
+                        <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">Pick a protein</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">Grilled or crunchy chicken, tenderloin steak, king salmon. From +$7.</p>
+                      </td>
+                      <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 12px;">
+                        <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:38px; color:#A3BF1E; margin:0 0 2px; line-height:1;">2</p>
+                        <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">Pick a salsa</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">Two 8oz cups come with the kit at no extra charge.</p>
+                      </td>
+                      <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 0 0 12px;">
+                        <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:38px; color:#A3BF1E; margin:0 0 2px; line-height:1;">3</p>
+                        <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">Pick your drinks</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">Up to four, included. Fountain, tea, horchata or a craft soda.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Plant-based options stated as their own line rather than buried mid-list.
+                   Conveyed in TEXT, never colour alone, so it survives a screen reader and a
+                   greyscale print (WCAG 1.4.1). No allergen or gluten claim is made, because
+                   the Worker owns allergen data and the menu publishes no kit-level figures. -->
+              <tr>
+                <td class="padx" bgcolor="#EDF3D8" style="padding:16px 48px;">
+                  <p style="font-size:14px; font-weight:700; color:#40501F; margin:0; text-align:center; mso-line-height-rule:exactly; line-height:1.6;">Feeding a vegetarian? <b style="color:#0D4F4F;">Falafel, grilled tofu and plant based chicken</b> are all on the protein list, same kit, same board.</p>
+                </td>
+              </tr>
+
+              <!-- === ADD-ON PANEL: the second protein ===
                    Fixed pixel columns, 260 + 334 = 594 inside the 3px border. No percentages
-                   and no percentage images anywhere in this row: that combination is what blew
-                   the shell past 600px in Word. -->
+                   and no percentage images anywhere in this row. -->
               <tr>
                 <td bgcolor="#F2F7E0" style="padding:0;">
                   <table role="presentation" class="panelgrid" width="594" cellpadding="0" cellspacing="0" border="0" style="width:594px; max-width:100%;">
                     <tr>
                       <td class="stack2" width="260" valign="middle" style="width:260px; padding:0; line-height:0; font-size:0;">
-                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=protein-photo" style="text-decoration:none;"><img class="tallimg" src="REPLACE-ME-PROTEIN" alt="A large bowl of sliced grilled chicken beside romaine, pico de gallo, warm queso, a bag of tortilla chips and an iced tea" width="260" height="347" style="display:block; width:260px; height:347px; border:0; color:#0D4F4F; font-size:13px;"></a>
+                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=protein-photo" style="text-decoration:none;"><img class="tallimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_3.jpg" alt="A large bowl of sliced grilled chicken beside romaine, pico de gallo, warm queso, a bag of tortilla chips and an iced tea on a wooden board" width="260" height="347" style="display:block; width:260px; height:347px; border:0; color:#0D4F4F; font-size:13px;"></a>
                       </td>
                       <td class="stack2 stack2copy" width="334" valign="middle" style="width:334px; padding:38px 34px 38px 26px;">
                         <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#5F7010; margin:0; mso-line-height-rule:exactly; line-height:1.4;">Bench depth wins leagues</p>
@@ -578,24 +678,52 @@
                 </td>
               </tr>
 
-              <!-- === ADD-ON PANEL 2: more than one kit ===
-                   Single column, full bleed photo above the copy. The safest possible structure
-                   in Word, and it gives the food the width it deserves. Native 1500x1000
-                   renders 600x400. -->
+              <!-- === BOARD PANEL: Taco Kit_2, native 1920x1347, renders 600x421 ===
+                   Single column, full bleed. The safest possible structure in Word. -->
               <tr>
                 <td bgcolor="#0D4F4F" style="padding:0; line-height:0; font-size:0;">
-                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-photo" style="text-decoration:none; display:block;"><img src="REPLACE-ME-BOARD" alt="A Taco Kit spread on branded Crazy Bowls and Wraps paper: chips spilling from the bag, grilled chicken, a stack of flour tortillas, avocado, corn salsa, queso, beans and romaine" width="600" height="400" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-photo" style="text-decoration:none; display:block;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_2.jpg" alt="The full Taco Kit spread overhead on a terrazzo counter: tortilla chips, black beans, shredded cheddar, romaine, a bowl of grilled chicken, two cups of pico de gallo, warm queso, forks and napkins, tortillas and two iced drinks" width="600" height="421" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                </td>
+              </tr>
+
+              <!-- === HEADCOUNT LADDER ===
+                   CAVA leads its Group Bowl Bar with "serves 10" rather than making the buyer
+                   work it out. Doing the arithmetic FOR the guest is the single highest-value
+                   merchandising move available here, because it converts one kit into two or
+                   three without a discount. Fixed px, 166 x 3 = 498. -->
+              <tr>
+                <td class="padx" bgcolor="#0D4F4F" style="padding:34px 48px 6px;">
+                  <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#A9C46B; margin:0; text-align:center; mso-line-height-rule:exactly; line-height:1.4;">Do the math once, not at the door</p>
+                  <p class="panelBig" style="font-family:'Passion One',Arial,sans-serif; font-weight:400; font-size:40px; color:#F2F7E0; line-height:1; margin:8px 0 0; text-align:center;">How many kits?</p>
                 </td>
               </tr>
               <tr>
-                <td class="padx" bgcolor="#0D4F4F" style="padding:34px 46px 40px;">
-                  <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#A9C46B; margin:0; mso-line-height-rule:exactly; line-height:1.4;">Ten-team league? Do the math.</p>
-                  <p class="panelBig" style="font-family:'Passion One',Arial,sans-serif; font-weight:400; font-size:40px; color:#F2F7E0; line-height:1; margin:8px 0 12px;">One kit per five managers.</p>
-                  <p style="font-size:15px; color:#BFD8D8; mso-line-height-rule:exactly; line-height:1.7; font-weight:600; margin:0 0 20px;">A kit feeds four to five. If your league runs ten deep that is two kits, about eight dollars a head with grilled chicken, and the queso, chips and drinks are already in the box. Less than the wings you were going to over-order at halftime.</p>
-                  <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="left" style="border-collapse:separate;">
+                <td class="padx" bgcolor="#0D4F4F" style="padding:20px 48px 4px;">
+                  <table role="presentation" class="panelgrid" width="498" cellpadding="0" cellspacing="0" border="0" style="width:498px; max-width:100%;">
                     <tr>
-                      <td bgcolor="#BCD741" align="center" style="border-radius:999px; padding:14px 30px; mso-padding-alt:14px 30px;">
-                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-cta" style="display:block; color:#0D4F4F; font-weight:800; font-size:15px; text-decoration:none; mso-line-height-rule:exactly; line-height:1.1;">Feed the whole league &#8594;</a>
+                      <td class="stack3 headcell" width="166" valign="top" align="center" style="width:166px; padding:0 10px 0 0;">
+                        <p style="font-size:15px; font-weight:800; color:#BFD8D8; margin:0 0 4px; mso-line-height-rule:exactly; line-height:1.4;">4 to 5 people</p>
+                        <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:34px; color:#BCD741; margin:0; line-height:1.05;">1 kit</p>
+                      </td>
+                      <td class="stack3 headcell" width="166" valign="top" align="center" style="width:166px; padding:0 10px;">
+                        <p style="font-size:15px; font-weight:800; color:#BFD8D8; margin:0 0 4px; mso-line-height-rule:exactly; line-height:1.4;">8 to 10 people</p>
+                        <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:34px; color:#BCD741; margin:0; line-height:1.05;">2 kits</p>
+                      </td>
+                      <td class="stack3 headcell" width="166" valign="top" align="center" style="width:166px; padding:0 0 0 10px;">
+                        <p style="font-size:15px; font-weight:800; color:#BFD8D8; margin:0 0 4px; mso-line-height-rule:exactly; line-height:1.4;">12 and up</p>
+                        <p class="stepNum" style="font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:400; font-size:34px; color:#BCD741; margin:0; line-height:1.05;">3 kits</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="padx" bgcolor="#0D4F4F" style="padding:18px 48px 38px;" align="center">
+                  <p style="font-size:15px; color:#BFD8D8; mso-line-height-rule:exactly; line-height:1.7; font-weight:600; margin:0 0 20px; text-align:center;">A ten-team league is two kits, about eight dollars a head with grilled chicken, and the queso, chips and drinks are already in the box. Order ahead so it is bagged and waiting when you get there.</p>
+                  <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
+                    <tr>
+                      <td bgcolor="#BCD741" align="center" style="border-radius:999px; padding:16px 34px; mso-padding-alt:16px 34px;">
+                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=headcount-cta" style="display:block; color:#0D4F4F; font-weight:800; font-size:16px; text-decoration:none; mso-line-height-rule:exactly; line-height:1.1;">Feed the whole league &#8594;</a>
                       </td>
                     </tr>
                   </table>
@@ -609,9 +737,17 @@
                 </td>
               </tr>
 
+              <!-- Rewards line, promoted out of the footer. No earn RATE is claimed anywhere,
+                   because no rate has been confirmed from a real source. -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#FFF6EC" style="padding:20px 40px 4px;">
+                  <p style="font-size:14px; font-weight:700; color:#42513f; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Ordering for the group? Put it on your account and the Crazy Points come with it. <a href="https://crazybowlsandwraps.myguestaccount.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=rewards" style="color:#0D4F4F; text-decoration:underline; font-weight:800;">Sign&nbsp;in&nbsp;&#8594;</a></p>
+                </td>
+              </tr>
+
               <!-- ribbon + sign-off -->
               <tr>
-                <td class="padx" align="center" bgcolor="#FFF6EC" style="padding:34px 40px 30px;">
+                <td class="padx" align="center" bgcolor="#FFF6EC" style="padding:22px 40px 30px;">
                   <a href="https://www.crazybowlsandwraps.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=ribbon" style="text-decoration:none;"><img class="ribbonimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Every%20is%20crazy%20about%20something%20ribbon.png" alt="Everyone&rsquo;s crazy about something" width="360" style="display:block; margin:0 auto 14px; width:360px; max-width:100%; height:auto; border:0;"></a>
                   <p style="font-family:'Passion One',Arial,sans-serif; font-weight:400; font-size:34px; mso-line-height-rule:at-least; line-height:1.1; color:#0D4F4F; margin:0;">Go for the good.</p>
                   <p style="font-size:14px; font-weight:800; margin:16px 0 0;"><a href="https://www.instagram.com/crazybowlsandwraps/?hl=en&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=instagram" style="color:#5F7010; text-decoration:none;">@crazybowlsandwraps &middot; tag your draft board</a></p>
@@ -637,7 +773,7 @@
                     </tr>
                   </table>
                   <p style="font-size:13px; mso-line-height-rule:exactly; line-height:1.7; color:#96BCBC; margin:18px 0 0; text-align:center;">
-                    Crazy Bowls &amp; Wraps &middot; Taco Kit starts at $35.00 and serves 4&ndash;5. A protein selection is required and is priced separately, from $7.00. Extra Protein serves 4 and is priced separately. One salsa is included. Up to 4 drinks included. Prices, participation and availability vary by location. No price-altering substitutions.<br>
+                    Crazy Bowls &amp; Wraps &middot; Taco Kit starts at $35.00 and serves 4&ndash;5. A protein selection is required and is priced separately, from $7.00. Extra Protein serves 4 and is priced separately. One salsa and up to 4 drinks are included. Calories and nutrition vary with your selections, see the <a href="https://www.crazybowlsandwraps.com/menu?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=footer-nutrition" style="color:#C0D8D8; text-decoration:underline;">full menu</a>. Prices, participation and availability vary by location. No price-altering substitutions.<br>
                     <template:link a:style="color:#C0D8D8;text-decoration:underline;" type="unsubscribe_url">Unsubscribe</template:link>&nbsp;&nbsp;&middot;&nbsp;&nbsp;<template:link a:style="color:#C0D8D8;text-decoration:underline;" type="campaign_view_url">View in Browser</template:link>
                   </p>
                 </td>

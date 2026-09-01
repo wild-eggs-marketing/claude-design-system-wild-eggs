@@ -83,6 +83,19 @@ async function geom(page) {
             })
         })
 
+        // Step numerals and headcount figures must clear their own labels too.
+        document.querySelectorAll(".stepNum").forEach((n) => {
+            const nx = n.nextElementSibling
+            const pv = n.previousElementSibling
+            if (nx) out.eyebrowPairs.push({
+                head: "stepNum " + n.innerText.trim().slice(0, 8),
+                eyebrowBottom: pv ? pv.getBoundingClientRect().bottom : n.getBoundingClientRect().top,
+                headTop: n.getBoundingClientRect().top,
+                headBottom: n.getBoundingClientRect().bottom,
+                nextTop: nx.getBoundingClientRect().top,
+            })
+        })
+
         // Panel eyebrow -> panel headline collisions.
         document.querySelectorAll(".panelBig").forEach((h) => {
             const prev = h.previousElementSibling
@@ -180,7 +193,7 @@ async function run(label, file, width, height, opts = {}) {
     if (!opts.skipAspect) {
         for (const im of g.imgs) {
             if (!im.natW || !im.w) continue
-            if (/logo|ribbon/.test(im.src)) continue
+            if (/logo|ribbon|missing/.test(im.src)) continue
             const natRatio = im.natW / im.natH
             const renderRatio = im.w / im.h
             const drift = Math.abs(natRatio - renderRatio) / natRatio
