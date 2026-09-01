@@ -201,6 +201,16 @@ async function run(label, file, width, height, opts = {}) {
                 drift < 0.06,
                 `${im.src} is not distorted (native ${natRatio.toFixed(2)} vs rendered ${renderRatio.toFixed(2)})`
             )
+            // Oversized uploads are invisible in every preview and only cost the guest
+            // mobile data. 2x is right for retina; past 3x it is pure waste. The protein
+            // photo shipped at 5.9x its slot before this check existed.
+            if (width >= 700) {
+                const over = im.natW / im.w
+                check(
+                    over <= 3.05,
+                    `${im.src} is not oversized (${im.natW}px natural into a ${im.w}px slot, ${over.toFixed(1)}x)`
+                )
+            }
         }
     }
 
