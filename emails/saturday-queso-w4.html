@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- format-detection stops iOS Mail auto-linking "$20" and "No. 4" into blue phone links. -->
+    <meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
+    <!-- PAYTRONIX PREVIEW TEXT. With raw HTML this is the only place to set inbox preview text,
+         so it must be filled. Word for word the same as the hidden preheader div below. Never a
+         page-title string: Paytronix can surface this as visible copy at the top of the email,
+         and preheader copy reads as intentional while a page title reads as a mistake. -->
+    <title>Free queso and chips with any $20 order, every Saturday. Say it out loud or use code SAYQUESO.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Passion+One:wght@400;700;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+
+    <!--[if mso]>
+    <style type="text/css">
+      /* Belt and braces only. Nothing depends on this block surviving the paste any more.
+         The inline styles already carry Word-safe values. See the OUTLOOK note in the body. */
+      .quesoWord, .couponBig, .panelBig, .stepNum {
+        font-family: Impact, 'Arial Narrow', Arial, sans-serif !important;
+        font-weight: normal !important;
+        letter-spacing: 0 !important;
+        mso-line-height-rule: at-least !important;
+      }
+      td, p, a, div, span, h1 { font-family: Arial, Helvetica, sans-serif !important; }
+      .frn { font-family: Georgia, 'Times New Roman', serif !important; }
+      table { mso-table-lspace:0pt !important; mso-table-rspace:0pt !important; }
+    </style>
+    <![endif]-->
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #E9EBE4;
+      }
+
+      img {
+        border: 0;
+        line-height: 100%;
+        -ms-interpolation-mode: bicubic;
+      }
+
+      a {
+        color: #0D4F4F;
+      }
+
+      table {
+        border-collapse: collapse;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+
+      /* border-collapse:collapse makes renderers ignore border-radius on a <td>, which paints a
+         square border around a rounded fill. Any rounded+bordered cell must opt back out. */
+      .pillcell {
+        border-collapse: separate !important;
+      }
+
+      h1 {
+        margin: 0;
+        padding: 0;
+        font-weight: inherit;
+      }
+
+      .frn {
+        font-family: 'Fraunces', Georgia, serif;
+      }
+
+      /* ============================================================
+         MOTION LAYER plus the DISPLAY TYPE UPGRADE. Both live inside
+         @media screen, which Outlook Classic never reads.
+
+         Two reasons this block is structured this way, both learned the
+         hard way on the Taco Kit send:
+
+         1. Word must never see display:inline-block. When those
+            declarations sat in the global stylesheet, Word applied
+            inline-block to a chip div and rendered it as a full-width bar
+            that the headline then crashed into.
+
+         2. THE INLINE STYLES CARRY THE WORD-SAFE SIZES. These rules scale
+            them UP for clients with a real layout engine. Never the other
+            way round. The Taco Kit shipped with the dramatic size inline
+            and the safe size in a conditional comment, the conditional
+            comment did not survive the pipeline, and the headline landed
+            on top of the chip in Outlook. Any client that drops this
+            stylesheet now degrades to smaller type, never to broken type.
+         ============================================================ */
+      @media screen {
+        .m-word {
+          animation: wordIn 1s cubic-bezier(0.2, 1.3, 0.4, 1) 0.25s backwards;
+          display: inline-block;
+        }
+
+        /* transform only, never opacity 0: the first frame must read as finished */
+        @keyframes wordIn {
+          from {
+            transform: translateY(26px) scale(0.94);
+          }
+
+          to {
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .m-sub {
+          animation: subIn 0.9s ease-out 0.7s backwards;
+          display: inline-block;
+        }
+
+        @keyframes subIn {
+          from {
+            transform: translateY(12px);
+          }
+
+          to {
+            transform: translateY(0);
+          }
+        }
+
+        .m-tag {
+          animation: tagRock 4s ease-in-out infinite;
+        }
+
+        @keyframes tagRock {
+
+          0%,
+          100% {
+            transform: rotate(-1.5deg);
+          }
+
+          50% {
+            transform: rotate(1deg) translateY(-2px);
+          }
+        }
+
+        .m-arrow {
+          display: inline-block;
+          animation: nudge 1.6s ease-in-out infinite;
+        }
+
+        @keyframes nudge {
+
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+
+          50% {
+            transform: translateX(5px);
+          }
+        }
+
+        /* the upgrade */
+        .quesoWord {
+          font-size: 104px;
+          line-height: 0.9;
+          letter-spacing: 0.01em;
+        }
+
+        .quesoSub {
+          font-size: 21px;
+        }
+
+        .couponBig {
+          font-size: 44px;
+          line-height: 1;
+        }
+
+        .panelBig {
+          font-size: 38px;
+          line-height: 1;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+        }
+      }
+
+      @media only screen and (max-width:620px) {
+
+        /* .w600 forces the 600px shells to full width. max-width:100% alone CANNOT shrink a
+           fixed-width table, so the shell would render 600px wide inside a 375px phone. */
+        .w600 {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .quesoWord {
+          font-size: 64px !important;
+        }
+
+        .quesoSub {
+          font-size: 18px !important;
+        }
+
+        .couponBig {
+          font-size: 38px !important;
+        }
+
+        .panelBig {
+          font-size: 32px !important;
+        }
+
+        /* box-sizing is REQUIRED: width:100% plus the inline horizontal padding on stacked
+           copy cells adds ON TOP of the 100% and forces a horizontal scroll. */
+        .stack2,
+        .stack3 {
+          display: block !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        /* EVERY nested table with a fixed px width must be released here. A fixed length on any
+           nested element becomes a min-content floor for the WHOLE email that no width:100% on
+           the shell can override. This one class is what unpinned 320px on the Taco Kit. */
+        .panelgrid {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .stack2copy {
+          padding: 32px 26px !important;
+        }
+
+        .stepcell {
+          padding: 16px 0 18px !important;
+          border-top: 1px solid #D9E2C4 !important;
+        }
+
+        /* Portrait panel photo goes full width when stacked, so cap the height. object-fit is
+           safe HERE and only here: this rule lives in a media query Word never reads. */
+        .stack2 img.tallimg {
+          width: 100% !important;
+          height: 380px !important;
+          object-fit: cover !important;
+        }
+
+        .padx {
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+        }
+
+        .padxs {
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+        }
+      }
+
+      @media only screen and (max-width:400px) {
+        .padx {
+          padding-left: 16px !important;
+          padding-right: 16px !important;
+        }
+
+        .padxs {
+          padding-left: 14px !important;
+          padding-right: 14px !important;
+        }
+
+        .footnav {
+          letter-spacing: 0.02em !important;
+          font-size: 12px !important;
+        }
+
+        .quesoWord {
+          font-size: 48px !important;
+        }
+
+        .quesoSub {
+          font-size: 16px !important;
+        }
+
+        .couponBig {
+          font-size: 32px !important;
+        }
+
+        .panelBig {
+          font-size: 28px !important;
+        }
+
+        .specline {
+          font-size: 13px !important;
+          letter-spacing: 0 !important;
+        }
+
+        /* A fixed px width on an image is a min-content floor for the whole shell. Keep under 300. */
+        .ribbonimg {
+          width: 260px !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body style="margin:0; padding:0; background:#E9EBE4;">
+    <!-- ============================================================
+  CRAZY BOWLS AND WRAPS: NACHO AVERAGE SATURDAY, WEEK 4
+  Campaign: nacho-average-saturday-w4. Send Saturday.
+  Direction 3 "The Menu Board": one colossal word, specimen restraint, lime ground with the
+  magenta accent that distinguishes the Saturday programme from the teal weekday sends.
+  Paste into Paytronix (Source view). Comments stay ASCII-only: Paytronix mangles box-chars
+  and emoji in comments into question marks.
+
+  ---------------------------------------------------------------
+  THE OFFER, taken verbatim from the week 3 send's own footer
+  ---------------------------------------------------------------
+  Free regular queso and chips with any $20+ pre-tax order, Saturdays only. One per order.
+  Dine-in, pickup and app. Not stackable with other offers. Code SAYQUESO online, or mention
+  it in store.
+
+  TWO CONTRADICTIONS IN THE WEEK 3 SEND, BOTH RESOLVED CONSERVATIVELY HERE:
+
+  1. DELIVERY. Week 3 body copy said the queso rides free "whether that is pickup, delivery,
+     or dine-in." Its own footer said "Dine-in, pickup and app." Those disagree, and delivery
+     is the more generous of the two. This send follows the FOOTER and never mentions delivery.
+     If delivery does qualify, the footer needs updating, not the body.
+
+  2. THURSDAY. Week 3's cross-promo strip said "Thursdays the craft drink rides free." The
+     brand separately confirmed That's a Wrap Thursday, double loyalty points, code
+     THATSAWRAP. Those are two different Thursday offers. Rather than guess which is live,
+     this send promotes only the Saturday offer and the confirmed Thursday points. The craft
+     drink line is NOT repeated. Confirm which is current before any future cross-promo.
+
+  ---------------------------------------------------------------
+  IMAGES: BOTH NEED UPLOADING BEFORE SEND
+  ---------------------------------------------------------------
+   HERO = opt_Queso_hero.jpg  1200x800  ratio 1.5  renders 600x400  (109KB)
+          A landscape crop of the existing queso macro, upscaled 1.44x. Real product
+          photography, not generated. Below the 2x retina ideal, so it will be a touch soft on
+          a high-density phone. Accepted because it is the only asset in the library that shows
+          the offer and nothing but the offer.
+
+   PANEL = opt_Queso_panel.jpg  520x693  ratio 0.75  renders 260x347  (71KB, exactly 2x)
+          Taco Kit_4, which has never been sent. The Saturday table: chips in the bag, iced tea
+          in a branded cup, the spread on a board.
+
+  HERO SWAP PENDING. The intended hero is the in-store photo of the guest walking out with a
+  Crazy Bowls bag, with the two-tone branded football composited into his free hand. That photo
+  is NOT in the Paytronix library yet. Everything under NEW CBW<n>.jpg was checked (31, 40, 65
+  and 93 exist; none is that frame). Upload it and the composite can be generated and dropped
+  into the hero slot as a one line change: swap the src to opt_Saturday_football_hero.jpg and
+  set width="600" height="400". Nothing else in this file moves.
+
+  ASSETS CONFIRMED PRESENT AND UNUSED, both 1920x2880:
+   NEW CBW65.jpg  a chip going into a bowl of PICO, with a beautiful bowl of tortilla chips
+                  beside it. The dip in frame is pico, not queso, so it is not a stand-in for
+                  the hero. A portrait crop of just the chips bowl is a strong asset though.
+   NEW CBW93.jpg  a team member handing a bag across the counter, crispy treats in the case.
+   NEW CBW31.jpg  a bowl close-up, steak and black beans. NEW CBW40.jpg a family at the
+                  menu board, landscape.
+
+  THE PHOTOGRAPHY GAP, and it is the biggest single lever on this whole programme:
+  there is no photo of a chip coming out of the queso. The offer is "queso AND chips" and
+  neither library asset shows both cleanly. The tight macro has no chips in frame at all. The
+  wider platter shot includes egg rolls, hummus and other dips that are NOT part of the offer,
+  which is why it is not used here even though week 3 ran it as the hero. One phone photo of a
+  chip mid-pull, shot in landscape, would carry every Saturday send from now on.
+
+  ---------------------------------------------------------------
+  OUTLOOK CLASSIC: THE SHELL THIS INHERITS
+  ---------------------------------------------------------------
+  Every fix from the Taco Kit send is carried over. Do not reintroduce any of these.
+
+  1. FAIL-SAFE DIRECTION. Inline styles carry Word-safe sizes and line-heights. @media screen
+     scales them up. Never the reverse. The Taco Kit shipped with the dramatic size inline and
+     the safe size in a conditional comment, that comment did not take effect in Outlook, and
+     "DRAFT DAY." rendered on top of the chip above it. WEEK 3 OF THIS PROGRAMME HAS THE SAME
+     BUG: "SCOOP." is 140px at line-height 0.85 inline, which is 21px of glyph bleed in Word.
+  2. NO LINE-HEIGHT BELOW 1 ON ANY INLINE DISPLAY STYLE. Word treats it as an exact line box
+     and the glyphs bleed upward out of it.
+  3. NO PADDING ON AN ANCHOR. Word does not apply padding to inline elements, so the button
+     collapses to the height of its text. Padding goes on the td, with mso-padding-alt.
+  4. NO PERCENTAGE COLUMN WIDTHS with percentage images. Word cannot resolve them and falls
+     back toward the image's native width, which blew the Taco Kit shell to roughly 870px.
+     Week 3 uses width="46%" and width="54%" with width:100% images. Fixed px here.
+  5. NO mso-hide:all AND NO VML TWIN. Week 3 wraps its button in a VML roundrect plus the
+     if-not-mso reveal pattern. If a paste strips comments, that pattern leaves an empty
+     coloured pill. The buttons here are plain anchors in coloured cells and render either way.
+     NOTE TO WHOEVER EDITS THIS FILE: never type a comment delimiter inside these notes. An
+     earlier draft spelled that VML pattern out literally, the nested close-comment ended the
+     comment early, and roughly forty lines of notes rendered as visible body text.
+  6. NO FIXED-LENGTH max-width ANYWHERE. A fixed length on a nested element is a min-content
+     floor for the whole email. Percentages contribute zero.
+  7. Leading zeros on every decimal. Word's CSS parser is unreliable on bare-dot values.
+  8. The motion layer lives inside @media screen so Word never sees display:inline-block.
+
+  ---------------------------------------------------------------
+  SEND HISTORY, so the angle stays fresh
+  ---------------------------------------------------------------
+   week 3 = "SCOOP." with the queso-files conceit, Exhibit G, evidence and verdict framing.
+   week 4 = THIS ONE: "SAY QUESO." The code is also the instruction. It turns a promo code into
+            a photo prompt, which is the one thing this programme has that no discount can buy:
+            a reason for guests to point a camera at the table and tag it.
+
+  SATURDAY IS THE FOOTBALL DAY HERE. St. Louis has no NFL team, so college football Saturday
+  is the real one. That is stated once, lightly, and never names a school or a game, because
+  no schedule has been confirmed by anyone with the schedule in front of them.
+
+  SUBJECT OPTIONS:
+   A. Say queso. No, out loud.
+   B. Saturday No. 4. The queso still costs nothing.
+   C. The only day double-dipping is a house rule
+  PREHEADER OPTIONS (whichever you pick must ALSO replace the title tag copy, word for word):
+   A. Free queso and chips with any $20 order, every Saturday. Say it out loud or use code SAYQUESO.
+   B. Hit $20 on a Saturday and the queso and chips are on us. Code SAYQUESO.
+============================================================ -->
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#E9EBE4" style="background:#E9EBE4;">
+      <tr>
+        <td align="center" style="padding:0;">
+
+          <!--[if mso | IE]>
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td width="600" align="center">
+          <![endif]-->
+
+          <div class="w600" style="width:600px; max-width:100%; margin:0 auto; font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;">
+
+            <!-- Preheader (hidden inbox preview) -->
+            <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; overflow:hidden; color:#E9EBE4;">Free queso and chips with any $20 order, every Saturday. Say it out loud or use code SAYQUESO.</div>
+            <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; overflow:hidden; color:#E9EBE4;">&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+
+            <table role="presentation" class="w600" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:100%; background:#F2F7E0; border:3px solid #0D4F4F;">
+
+              <!-- top bar. Carries an order link so there is a tap target above the fold. -->
+              <tr>
+                <td align="center" bgcolor="#0D4F4F" style="padding:11px 24px; font-size:13px; color:#C0D8D8; letter-spacing:0.02em; mso-line-height-rule:exactly; line-height:1.4;">
+                  Saturday No.&nbsp;4. &nbsp;<a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=topbar-cta" style="color:#BCD741; text-decoration:underline; font-weight:800;">Order now &#8594;</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;<template:link a:style="color:#A9C46B;text-decoration:underline;font-weight:700;" type="campaign_view_url">View in browser</template:link>
+                </td>
+              </tr>
+
+              <!-- logo -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#F2F7E0" style="padding:24px 40px 18px;">
+                  <a href="https://www.crazybowlsandwraps.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=logo" style="text-decoration:none;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Crazy%20Bowls%20%26%20Wraps%20Logo%201%20%282%29.png" alt="Crazy Bowls &amp; Wraps" width="210" style="display:block; margin:0 auto; width:210px; max-width:100%; height:auto; border:0;"></a>
+                </td>
+              </tr>
+
+              <!-- === HERO: the queso itself. Native 1200x800, renders 600x400. === -->
+              <tr>
+                <td bgcolor="#0D4F4F" style="padding:0; line-height:0; font-size:0;">
+                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=hero" style="text-decoration:none; display:block;"><img class="heroimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/opt_Queso_hero.jpg" alt="A bowl of warm white queso topped with fresh pico de gallo, chopped tomato, red onion and cilantro" width="600" height="400" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                </td>
+              </tr>
+
+              <!-- === THE WORD ===
+                   Its own row. The gap below it comes from row padding, not from a margin on
+                   the heading, because Word can drop margins on block elements inside a cell. -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#F2F7E0" style="padding:50px 40px 0;">
+                  <h1 class="m-word quesoWord" style="margin:0; font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:900; font-size:54px; line-height:1.06; color:#DA2D65; letter-spacing:0;">SAY QUESO.</h1>
+                </td>
+              </tr>
+              <tr>
+                <td class="padx" align="center" bgcolor="#F2F7E0" style="padding:14px 40px 0;">
+                  <p class="m-sub frn quesoSub" style="margin:0; font-style:italic; font-weight:600; font-size:17px; line-height:1.35; color:#5a6a58;">It is the code. It is also the instruction.</p>
+                </td>
+              </tr>
+
+              <!-- === THE LEAD === -->
+              <tr>
+                <td class="padx" bgcolor="#F2F7E0" style="padding:26px 58px 30px;">
+                  <p style="font-size:17px; color:#42513f; mso-line-height-rule:exactly; line-height:1.7; font-weight:600; margin:0 0 14px;">Hey <template:insert field="first_name">there</template:insert>, four Saturdays running now. Hit <b style="color:#0D4F4F;">$20</b> and the warm <b style="color:#0D4F4F;">queso and chips</b> land on the table for nothing.</p>
+                  <p style="font-size:17px; color:#42513f; mso-line-height-rule:exactly; line-height:1.7; font-weight:600; margin:0;">Then somebody will hold up a loaded chip and somebody else will reach for a phone. That part is not in the terms. It just happens.</p>
+                </td>
+              </tr>
+
+              <!-- === THE OFFER BOX === -->
+              <tr>
+                <td class="padx" bgcolor="#ffffff" style="padding:34px 48px 8px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F2F7E0" style="background:#F2F7E0; border:2px dashed #0D4F4F; border-radius:18px;">
+                    <tr>
+                      <td class="padxs" align="center" style="padding:28px 30px;">
+                        <p style="font-size:13px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#BC3C96; margin:0 0 10px; mso-line-height-rule:exactly; line-height:1.3;">Every Saturday</p>
+                        <p class="couponBig" style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:36px; line-height:1.08; color:#0D4F4F; margin:0 0 10px;">Free queso &amp; chips</p>
+                        <p style="font-size:19px; font-weight:800; letter-spacing:0.03em; color:#0D4F4F; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.35;">with any $20 order</p>
+                        <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
+                          <tr>
+                            <td class="m-tag" align="center" bgcolor="#DA2D65" style="border-radius:12px; padding:12px 26px; mso-padding-alt:12px 26px; font-size:16px; font-weight:800; letter-spacing:0.1em; color:#ffffff; mso-line-height-rule:exactly; line-height:1.2;">code: SAYQUESO</td>
+                          </tr>
+                        </table>
+                        <p class="specline" style="font-size:14px; font-weight:700; color:#5f6b4c; margin:16px 0 0; mso-line-height-rule:exactly; line-height:1.6;">Online, or just say it out loud at the counter. We will not make it weird.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- === PRIMARY CTA ===
+                   Padding on the TD, never on the anchor. No mso-hide and no VML twin, so a
+                   comment-stripped paste still renders a real button. -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#ffffff" style="padding:26px 40px 32px;">
+                  <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
+                    <tr>
+                      <td align="center" bgcolor="#0D4F4F" style="border-radius:999px; border:2px solid #A3BF1E; padding:18px 46px; mso-padding-alt:18px 46px;">
+                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=primary-cta" style="display:block; font-size:17px; font-weight:800; letter-spacing:0.02em; color:#F2F7E0; text-decoration:none; mso-line-height-rule:exactly; line-height:1.1;">Get to twenty <span class="m-arrow">&#8594;</span></a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- === WHAT $20 LOOKS LIKE ===
+                   The threshold is the whole mechanic and nobody wants to do arithmetic in an
+                   inbox. Three concrete combinations remove the guesswork. No prices are
+                   stated, because prices vary by location and are actively moving.
+                   Fixed px columns, 166 x 3 = 498. No percentages anywhere in this row. -->
+              <tr>
+                <td class="padx" bgcolor="#ffffff" style="padding:0 48px 10px;">
+                  <p style="font-size:13px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:#BC3C96; margin:0 0 4px; text-align:center; mso-line-height-rule:exactly; line-height:1.3;">What twenty looks like</p>
+                </td>
+              </tr>
+              <tr>
+                <td class="padx" bgcolor="#ffffff" style="padding:8px 48px 32px;">
+                  <table role="presentation" class="panelgrid" width="498" cellpadding="0" cellspacing="0" border="0" style="width:498px; max-width:100%;">
+                    <tr>
+                      <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 12px 0 0;">
+                        <p class="stepNum" style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:34px; color:#A3BF1E; margin:0 0 2px; line-height:1.1;">Two</p>
+                        <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">bowls and a drink</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">The usual Saturday order, and you are already there.</p>
+                      </td>
+                      <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 12px;">
+                        <p class="stepNum" style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:34px; color:#A3BF1E; margin:0 0 2px; line-height:1.1;">Three</p>
+                        <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">wraps for the couch</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">Split it three ways and nobody is doing maths.</p>
+                      </td>
+                      <td class="stack3 stepcell" width="166" valign="top" style="width:166px; padding:0 0 0 12px;">
+                        <p class="stepNum" style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:34px; color:#A3BF1E; margin:0 0 2px; line-height:1.1;">One</p>
+                        <p style="font-size:15px; font-weight:800; color:#0D4F4F; margin:0 0 5px; mso-line-height-rule:exactly; line-height:1.35;">Taco Kit, easily</p>
+                        <p style="font-size:13px; font-weight:600; color:#5f6b4c; margin:0; mso-line-height-rule:exactly; line-height:1.55;">It starts at $35, so the queso comes along for the ride.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- the one rule nobody enforces -->
+              <tr>
+                <td class="padx" bgcolor="#EDF3D8" style="padding:16px 48px;">
+                  <p style="font-size:15px; font-weight:700; color:#40501F; margin:0; text-align:center; mso-line-height-rule:exactly; line-height:1.6;">Saturday is also the one day <b style="color:#0D4F4F;">double dipping</b> is a house rule rather than a federal matter.</p>
+                </td>
+              </tr>
+
+              <!-- === THE TABLE PANEL ===
+                   Fixed pixel columns, 260 + 334 = 594 inside the 3px border. -->
+              <tr>
+                <td bgcolor="#0D4F4F" style="padding:0;">
+                  <table role="presentation" class="panelgrid" width="594" cellpadding="0" cellspacing="0" border="0" style="width:594px; max-width:100%;">
+                    <tr>
+                      <td class="stack2" width="260" valign="middle" style="width:260px; padding:0; line-height:0; font-size:0;">
+                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=table-photo" style="text-decoration:none;"><img class="tallimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/opt_Queso_panel.jpg" alt="A Saturday spread on a wooden board: a bag of tortilla chips, an iced tea in a branded Crazy Bowls and Wraps cup, sliced grilled chicken, pico de gallo, shredded cheddar and romaine" width="260" height="347" style="display:block; width:260px; height:347px; border:0; color:#F2F7E0; font-size:13px;"></a>
+                      </td>
+                      <td class="stack2 stack2copy" width="334" valign="middle" style="width:334px; padding:38px 34px 38px 26px;">
+                        <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#A9C46B; margin:0; mso-line-height-rule:exactly; line-height:1.4;">Saturday is the football day here</p>
+                        <p class="panelBig" style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:32px; color:#F2F7E0; line-height:1.12; margin:8px 0 12px;">No home team. Every game.</p>
+                        <p style="font-size:15px; color:#BFD8D8; mso-line-height-rule:exactly; line-height:1.65; font-weight:600; margin:0 0 18px;">Nobody in this town watches the same one, which is why the food should not have a side either. Order ahead, get it home before kickoff, and let the queso do the talking.</p>
+                        <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="left" style="border-collapse:separate;">
+                          <tr>
+                            <td bgcolor="#BCD741" align="center" style="border-radius:999px; padding:13px 28px; mso-padding-alt:13px 28px;">
+                              <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=table-cta" style="display:block; color:#0D4F4F; font-weight:800; font-size:15px; text-decoration:none; mso-line-height-rule:exactly; line-height:1.1;">Order to-go &#8594;</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- === SAY QUESO, LITERALLY ===
+                   The delight engine. The code is already a photo prompt, so the email asks
+                   for the photo. Costs nothing, and it is the only thing this programme has
+                   that a discount cannot buy. -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#FAD7E4" style="padding:28px 40px 26px;">
+                  <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#B02350; margin:0 0 6px; mso-line-height-rule:exactly; line-height:1.4;">One more thing</p>
+                  <p class="panelBig" style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:32px; color:#0D4F4F; line-height:1.12; margin:0 0 10px;">Then actually say it.</p>
+                  <p style="font-size:15px; font-weight:600; color:#4A2030; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.65;">Hold up the chip. Somebody says say queso. Tag us and we will put the best one at the top of next Saturday&rsquo;s email.</p>
+                  <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
+                    <tr>
+                      <td bgcolor="#0D4F4F" align="center" style="border-radius:999px; padding:13px 30px; mso-padding-alt:13px 30px;">
+                        <a href="https://www.instagram.com/crazybowlsandwraps/?hl=en&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=ugc-cta" style="display:block; color:#F2F7E0; font-weight:800; font-size:15px; text-decoration:none; mso-line-height-rule:exactly; line-height:1.1;">Tag @crazybowlsandwraps &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- rewards. Only the confirmed Thursday mechanic is named. -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#F2F7E0" style="padding:22px 40px 4px;">
+                  <p style="font-size:14px; font-weight:700; color:#42513f; margin:0; mso-line-height-rule:exactly; line-height:1.6;">Put it on your account and the points come with it. Order on a Thursday with code <b style="color:#0D4F4F;">THATSAWRAP</b> and they double. <a href="https://crazybowlsandwraps.myguestaccount.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=rewards" style="color:#0D4F4F; text-decoration:underline; font-weight:800;">Sign&nbsp;in&nbsp;&#8594;</a></p>
+                </td>
+              </tr>
+
+              <!-- ribbon + sign-off -->
+              <tr>
+                <td class="padx" align="center" bgcolor="#F2F7E0" style="padding:22px 40px 28px;">
+                  <a href="https://www.crazybowlsandwraps.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=ribbon" style="text-decoration:none;"><img class="ribbonimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Every%20is%20crazy%20about%20something%20ribbon.png" alt="Everyone&rsquo;s crazy about something" width="360" style="display:block; margin:0 auto 14px; width:360px; max-width:100%; height:auto; border:0;"></a>
+                  <p style="font-family:'Passion One',Impact,'Arial Narrow',Arial,sans-serif; font-weight:400; font-size:32px; mso-line-height-rule:at-least; line-height:1.1; color:#0D4F4F; margin:0;">Go for the good.</p>
+                </td>
+              </tr>
+
+              <!-- footer -->
+              <tr>
+                <td class="padx" bgcolor="#0D4F4F" style="padding:38px 40px 36px;">
+                  <p style="font-size:13px; font-weight:800; letter-spacing:0.28em; text-transform:uppercase; color:#A9C46B; margin:0 0 22px; text-align:center; mso-line-height-rule:exactly; line-height:1.4;">#GoForTheGood</p>
+                  <p class="footnav" style="font-size:13px; letter-spacing:0.1em; color:#fff; margin:0 0 14px; text-align:center; mso-line-height-rule:exactly; line-height:1.8;">
+                    <a href="https://www.crazybowlsandwraps.com/locations?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=footer-locations" style="color:#fff; text-decoration:none; font-weight:800;">LOCATIONS</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;
+                    <a href="https://crazybowlsandwraps.myguestaccount.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=footer-account" style="color:#fff; text-decoration:none; font-weight:800;">MY ACCOUNT</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;
+                    <a href="https://www.crazybowlsandwraps.com/menu?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=footer-menu" style="color:#fff; text-decoration:none; font-weight:800;">MENU</a>
+                  </p>
+                  <p style="font-size:13px; color:#C0D8D8; margin:0 0 20px; text-align:center; mso-line-height-rule:exactly; line-height:1.6;">
+                    <a href="https://www.instagram.com/crazybowlsandwraps/?hl=en&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=footer-instagram" style="color:#C0D8D8; text-decoration:none; font-weight:700;">Instagram</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;
+                    <a href="https://www.facebook.com/crazybowlsandwraps/?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=nacho-average-saturday-w4&amp;utm_content=footer-facebook" style="color:#C0D8D8; text-decoration:none; font-weight:700;">Facebook</a>
+                  </p>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="border-top:1px solid #1F6060; font-size:0; line-height:0;">&nbsp;</td>
+                    </tr>
+                  </table>
+                  <p style="font-size:13px; mso-line-height-rule:exactly; line-height:1.7; color:#96BCBC; margin:18px 0 0; text-align:center;">
+                    Crazy Bowls &amp; Wraps &middot; Free regular queso &amp; chips with any $20+ pre-tax order, Saturdays only. One per order. Dine-in, pickup &amp; app. Not stackable with other offers. Code SAYQUESO online, or mention it in store. Prices, participation and availability vary by location.<br>
+                    <template:link a:style="color:#C0D8D8;text-decoration:underline;" type="unsubscribe_url">Unsubscribe</template:link>&nbsp;&nbsp;&middot;&nbsp;&nbsp;<template:link a:style="color:#C0D8D8;text-decoration:underline;" type="campaign_view_url">View in Browser</template:link>
+                  </p>
+                  <p style="font-size:12px; color:#5E8C8C; margin:16px 0 0; text-align:center; mso-line-height-rule:exactly; line-height:1.6;">Scrolled this far? The queso travels better than you think. Ask for the lid.</p>
+                </td>
+              </tr>
+
+            </table>
+
+          </div>
+
+          <!--[if mso | IE]>
+          </td></tr></table>
+          <![endif]-->
+
+        </td>
+      </tr>
+    </table>
+  </body>
+
+</html>

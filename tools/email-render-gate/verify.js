@@ -45,6 +45,7 @@ function serve() {
 const OVERLAP_PAIRS = [
     ["the chip bar", ".m-chip", "the hero headline", ".dispBig"],
     ["the hero headline", ".dispBig", "the hero subhead", ".dispSub"],
+    ["the colossal word", ".quesoWord", "its subhead", ".quesoSub"],
 ]
 
 async function geom(page) {
@@ -65,7 +66,7 @@ async function geom(page) {
         const shell = document.querySelector("table.w600")
         if (shell) out.shell = r(shell)
 
-        for (const sel of [".m-chip", ".dispBig", ".dispSub"]) {
+        for (const sel of [".m-chip", ".dispBig", ".dispSub", ".quesoWord", ".quesoSub"]) {
             const el = document.querySelector(sel)
             if (el) out.pairs[sel] = r(el)
         }
@@ -84,7 +85,7 @@ async function geom(page) {
         })
 
         // Step numerals and headcount figures must clear their own labels too.
-        document.querySelectorAll(".stepNum").forEach((n) => {
+        document.querySelectorAll('.stepNum').forEach((n) => {
             const nx = n.nextElementSibling
             const pv = n.previousElementSibling
             if (nx) out.eyebrowPairs.push({
@@ -192,7 +193,7 @@ async function run(label, file, width, height, opts = {}) {
     // ---- 6. display type stays inside a sane size even with no stylesheet ----
     // Guards the fail-safe direction: the INLINE value must be one that cannot overlap.
     if (opts.inlineOnly) {
-        const hero = g.pairs[".dispBig"]
+        const hero = g.pairs[".dispBig"] || g.pairs[".quesoWord"]
         if (hero) {
             check(
                 hero.h <= 120,

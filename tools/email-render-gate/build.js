@@ -30,6 +30,8 @@ let src = fs.readFileSync(SRC, "utf8")
 // Point the REPLACE-ME tokens at local placeholders sized to the real photos.
 function withImages(h) {
     return h
+        .replace(/https:\/\/paytronix-bee[^"']*opt_Queso_hero\.jpg/g, "opt_Queso_hero.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*opt_Queso_panel\.jpg/g, "opt_Queso_panel.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*opt_TacoKit_1_hero\.jpg/g, "opt_TacoKit_1_hero.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*opt_TacoKit_2_Football\.jpg/g, "opt_TacoKit_2_Football.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*opt_TacoKit_3_protein\.jpg/g, "opt_TacoKit_3_protein.jpg")
