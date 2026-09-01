@@ -332,39 +332,37 @@
   ---------------------------------------------------------------
   IMAGES: LIVE PAYTRONIX URLS, MAPPED BY MEASURED ASPECT RATIO
   ---------------------------------------------------------------
-   HERO  = Taco Kit_1.jpg  1450x967  ratio 1.499  renders 600x400
-           Overhead on the branded "go for the good" wrapper: chips spilling from the bag,
-           grilled chicken, a STACK OF FLOUR TORTILLAS, halved avocado, corn salsa, queso,
-           black beans, romaine, drinks. Chosen as hero over Taco Kit_2 because the food fills
-           more of the frame (reads better at 600px), the tortilla stack is visible, which the
-           twelve-shells line depends on, and the avocado and corn salsa carry the colour.
+  All three are the OPTIMISED uploads, delivered at 2x their rendered slot: sharp on a retina
+  phone, and roughly a twentieth of the payload the raw files carried. Verified live 200s.
 
-   PROTEIN PANEL = Taco Kit_3.jpg  1536x2048  ratio 0.750  renders 260x347
-           Vertical, window light behind: large grilled chicken bowl lower left, romaine, pico,
-           queso, chip bag, iced tea, tortillas in a branded wrapper. Chosen for the
-           second-protein panel because the chicken bowl is the largest element in frame.
-
-   BOARD PANEL = Taco Kit_2_Football.jpg  2528x1696  ratio 1.491  renders 600x403
-           *** THIS FILE DOES NOT EXIST IN PAYTRONIX YET. UPLOAD IT UNDER EXACTLY THAT NAME. ***
-           It is Taco Kit_2 with a branded football composited in, generated from the original
-           photo. Overhead on terrazzo with the components spaced apart: chips, beans, cheddar,
-           romaine, chicken, two pico cups, queso, forks and napkins, tortillas, two drinks, plus
-           a two-tone football, one half white and one half brown leather, carrying the real Crazy Bowls
-           and Wraps logo in its true lime and teal, on the counter beside them. Its spread-out
-           grid reads as a draft board, which is why it sits under the headcount ladder.
-           NOTE THE RATIO CHANGED. The composite is 1.491, not the 1.425 of the original photo,
-           so the height is 403 and not 421. If you drop the ORIGINAL Taco Kit_2 back in, change
-           the height attribute back to 421 or Word will squash it.
+   HERO = opt_TacoKit_2_Football.jpg  1200x805  ratio 1.4907  renders 600x403  (268KB, 2.0x)
+           The football shot, promoted to the top so the game-time cue lands before any copy.
+           Overhead on terrazzo with the components spaced apart: chips, beans, cheddar, romaine,
+           chicken, two pico cups, queso, forks and napkins, tortillas, two drinks, plus a
+           two-tone football, one half white and one half brown leather, carrying the real Crazy
+           Bowls and Wraps logo in its true lime and teal.
+           The logo sits on the WHITE half deliberately. Deep teal on brown leather measured
+           around 2.5:1 and read as a smudge at the 600px this email actually renders; on white
+           the mark carries its true brand colours and stays legible.
            THE FOOTBALL IS A STYLING PROP, NOT MERCHANDISE. No copy anywhere offers it, and it
            should not be described as something a guest can get.
 
-   UNUSED ALTERNATE = Taco Kit_4.jpg  1536x2048  ratio 0.750
-           The second vertical. Same native ratio as Taco Kit_3, so it drops into the protein
-           slot with no other change if you prefer that frame.
+   PROTEIN PANEL = opt_TacoKit_3_protein.jpg  520x693  ratio 0.7504  renders 260x347  (74KB, 2.0x)
+           Vertical, window light behind: large grilled chicken bowl lower left, romaine, pico,
+           queso, chip bag, iced tea, tortillas in a branded wrapper. Chosen for the
+           second-protein panel because the chicken bowl is the largest element in frame.
+           This one shipped at 5.9x its slot before it was optimised, 802KB into a 260px column.
 
-  Every img carries width= and height= HTML attributes AND matching inline px, computed from
-  the MEASURED native ratio above. Outlook Classic needs the attributes. If you swap a photo,
-  recompute the height from its real dimensions or Word will distort it.
+   CLOSING PANEL = opt_TacoKit_1_hero.jpg  1200x800  ratio 1.5000  renders 600x400  (189KB, 2.0x)
+           Overhead on the branded "go for the good" wrapper: chips spilling from the bag,
+           grilled chicken, a STACK OF FLOUR TORTILLAS, halved avocado, corn salsa, queso, black
+           beans, romaine, drinks. It closes the email under the headcount ladder, where the
+           visible tortilla stack backs up the twelve-shells line.
+
+  Every img carries width= and height= HTML attributes AND matching inline px, computed from the
+  MEASURED native ratio above. Outlook Classic needs the attributes. If you swap a photo,
+  recompute the height from its real dimensions or Word will distort it. The gate now fails any
+  image over 3x its rendered slot.
 
   ---------------------------------------------------------------
   CAVA PLAYBOOK: WHAT CHANGED AND WHY
@@ -490,10 +488,12 @@
   NO CALORIE OR ALLERGEN FIGURE IS STATED. The menu says calories, protein and carbs all vary
   by selection, so the footer links to the menu for nutrition rather than inventing a number.
 
-  TIMING: NFL Week 1 opens Wednesday September 9 2026, moved off the usual Thursday for the
-  international slate. Peak fantasy draft window is Labor Day weekend, September 5-7, with
-  stragglers on the 8th. This send goes Tuesday September 1, 4 to 6 days ahead of the weekend
-  a group order actually gets planned.
+  TIMING: this send goes Tuesday September 1, ahead of the Labor Day weekend when most fantasy
+  drafts actually happen and when a group order gets planned. NO KICKOFF DATE APPEARS IN
+  GUEST-FACING COPY, by instruction. An earlier draft put a specific kickoff date in the chip
+  above the headline; it was pulled. Do not put a schedule date back in unless someone with the
+  schedule in front of them confirms it. The copy works dateless, and a wrong date in a chip is
+  the first thing a football fan will notice.
 
   DRIVE-THRU COUNT: 7 of 15, same verified figure as the Family Night sends (live /locations
   data, field driveThru). WITH: South City, Rock Hill, Manchester, Olive and 141, O'Fallon,
@@ -507,14 +507,15 @@
   selection" and lets the configurator be the source of truth. Do not reintroduce a number
   unless someone confirms it is fixed chain-wide.
 
-  THAT'S A WRAP THURSDAY is a REAL offer with a REAL code, supplied 2026-09-01: buy a wrap on
-  Thursdays, get double loyalty points, code THATSAWRAP. It replaces the "Tuesdays earn 2x
+  THAT'S A WRAP THURSDAY is a REAL offer with a REAL code, supplied 2026-09-01: order on a
+  Thursday with code THATSAWRAP and loyalty points double. It replaces the "Tuesdays earn 2x
   Crazy Points" line that earlier drafts refused to run, because that one had no source and this
   one does.
-  ITS SCOPE IS LOAD BEARING. The fine print says WRAPS. A Taco Kit is not a wrap. Putting a
-  double-points banner inside a taco kit email without saying so invites a guest to place an $84
-  kit order on a Thursday expecting double points and be told no at the counter. The band and
-  the footer both say wraps only, in plain words.
+  SCOPE, CONFIRMED BY THE BRAND 2026-09-01: the double points apply to the ORDER, not only to
+  wraps. The programme is named after wraps and the printed fine print reads "buy a wrap on
+  Thursdays," which an earlier draft read literally and scoped down to wraps only. That was
+  wrong. The Taco Kit earns double points too, so the band now says so explicitly and points at
+  a Thursday draft night as the reason to pick that day. Do not re-narrow this to wraps.
 
   SUBJECT OPTIONS:
    A. Draft day needs a food plan
@@ -558,7 +559,7 @@
               <!-- === HERO: Taco Kit_1, native 1450x967, renders 600x400 === -->
               <tr>
                 <td bgcolor="#0D4F4F" style="padding:0; line-height:0; font-size:0;">
-                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=hero" style="text-decoration:none; display:block;"><img class="heroimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_1.jpg" alt="A Taco Kit laid out on branded Crazy Bowls and Wraps paper: tortilla chips spilling from the bag, a bowl of sliced grilled chicken, a stack of flour tortillas, halved avocado, corn salsa, warm queso, black beans, shredded lettuce and two drinks" width="600" height="400" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=hero" style="text-decoration:none; display:block;"><img class="heroimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/opt_TacoKit_2_Football.jpg" alt="The full Taco Kit spread overhead on a terrazzo counter: tortilla chips, black beans, shredded cheddar, romaine, a bowl of grilled chicken, two cups of pico de gallo, warm queso, forks and napkins, tortillas and two iced drinks, with a two-tone white and brown leather football carrying the Crazy Bowls and Wraps logo resting on the counter beside them" width="600" height="403" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
                 </td>
               </tr>
 
@@ -570,7 +571,7 @@
                 <td class="padx" align="center" bgcolor="#FFF2E6" style="padding:40px 40px 4px;">
                   <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
                     <tr>
-                      <td class="m-chip" bgcolor="#0D4F4F" align="center" style="border-radius:999px; padding:10px 22px; mso-padding-alt:10px 22px; font-size:13px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#F2F7E0; mso-line-height-rule:exactly; line-height:1.2;">Draft season &middot; kickoff Wed Sept 9</td>
+                      <td class="m-chip" bgcolor="#0D4F4F" align="center" style="border-radius:999px; padding:10px 22px; mso-padding-alt:10px 22px; font-size:13px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase; color:#F2F7E0; mso-line-height-rule:exactly; line-height:1.2;">Draft season is here</td>
                     </tr>
                   </table>
                   <h1 class="m-head dispBig" style="margin:22px 0 0; font-family:'Passion One','Arial Narrow',Arial,sans-serif; font-weight:900; font-size:84px; line-height:0.88; color:#0D4F4F; letter-spacing:-0.01em;">DRAFT DAY.</h1>
@@ -682,7 +683,7 @@
                   <table role="presentation" class="panelgrid" width="594" cellpadding="0" cellspacing="0" border="0" style="width:594px; max-width:100%;">
                     <tr>
                       <td class="stack2" width="260" valign="middle" style="width:260px; padding:0; line-height:0; font-size:0;">
-                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=protein-photo" style="text-decoration:none;"><img class="tallimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_3.jpg" alt="A large bowl of sliced grilled chicken beside romaine, pico de gallo, warm queso, a bag of tortilla chips and an iced tea on a wooden board" width="260" height="347" style="display:block; width:260px; height:347px; border:0; color:#0D4F4F; font-size:13px;"></a>
+                        <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=protein-photo" style="text-decoration:none;"><img class="tallimg" src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/opt_TacoKit_3_protein.jpg" alt="A large bowl of sliced grilled chicken beside romaine, pico de gallo, warm queso, a bag of tortilla chips and an iced tea on a wooden board" width="260" height="347" style="display:block; width:260px; height:347px; border:0; color:#0D4F4F; font-size:13px;"></a>
                       </td>
                       <td class="stack2 stack2copy" width="334" valign="middle" style="width:334px; padding:38px 34px 38px 26px;">
                         <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#5F7010; margin:0; mso-line-height-rule:exactly; line-height:1.4;">Bench depth wins leagues</p>
@@ -705,7 +706,7 @@
                    Single column, full bleed. The safest possible structure in Word. -->
               <tr>
                 <td bgcolor="#0D4F4F" style="padding:0; line-height:0; font-size:0;">
-                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-photo" style="text-decoration:none; display:block;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Taco%20Kit_2_Football.jpg" alt="The full Taco Kit spread overhead on a terrazzo counter: tortilla chips, black beans, shredded cheddar, romaine, a bowl of grilled chicken, two cups of pico de gallo, warm queso, forks and napkins, tortillas and two iced drinks, with a two-tone white and brown leather football carrying the Crazy Bowls and Wraps logo resting on the counter beside them" width="600" height="403" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
+                  <a href="https://crazybowlsandwraps.orderexperience.net/locations?catering_only=false&amp;utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=board-photo" style="text-decoration:none; display:block;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/opt_TacoKit_1_hero.jpg" alt="A Taco Kit laid out on branded Crazy Bowls and Wraps paper: tortilla chips spilling from the bag, a bowl of sliced grilled chicken, a stack of flour tortillas, halved avocado, corn salsa, warm queso, black beans, shredded lettuce and two drinks" width="600" height="400" style="display:block; width:100%; max-width:100%; height:auto; border:0; margin:0 auto; color:#F2F7E0; font-size:13px;"></a>
                 </td>
               </tr>
 
@@ -774,7 +775,7 @@
                 <td class="padx" align="center" bgcolor="#FFF6EC" style="padding:26px 40px 8px;">
                   <p class="frn" style="font-style:italic; font-weight:600; font-size:16px; color:#5F7010; margin:0 0 4px; mso-line-height-rule:exactly; line-height:1.4;">Also on the schedule</p>
                   <p class="panelBig" style="font-family:'Passion One',Arial,sans-serif; font-weight:400; font-size:36px; color:#0D4F4F; line-height:1; margin:0 0 12px;">That&rsquo;s a Wrap Thursday.</p>
-                  <p style="font-size:15px; font-weight:600; color:#42513f; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.65;">Buy a wrap on a Thursday and your loyalty points double. Wraps only, so it is a separate trip from the kit, but it is a good week to make two.</p>
+                  <p style="font-size:15px; font-weight:600; color:#42513f; margin:0 0 16px; mso-line-height-rule:exactly; line-height:1.65;">Order on a Thursday with the code below and your loyalty points double. That includes the Taco Kit. If your league drafts Thursday night, the food pays you back.</p>
                   <table role="presentation" class="pillcell" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate; margin:0 auto;">
                     <tr>
                       <td align="center" bgcolor="#F2F7E0" style="border-radius:8px; border:2px dashed #0D4F4F; padding:12px 26px; mso-padding-alt:12px 26px; font-size:19px; font-weight:800; letter-spacing:0.1em; color:#0D4F4F; mso-line-height-rule:exactly; line-height:1.2;">Code THATSAWRAP</td>
@@ -812,7 +813,7 @@
                     </tr>
                   </table>
                   <p style="font-size:13px; mso-line-height-rule:exactly; line-height:1.7; color:#96BCBC; margin:18px 0 0; text-align:center;">
-                    Crazy Bowls &amp; Wraps &middot; Taco Kit starts at $35.00 and serves 4&ndash;5. A protein selection is required and is priced separately. Extra Protein serves 4 and is priced separately. One salsa and up to 4 drinks are included. That&rsquo;s a Wrap Thursday: buy a wrap on Thursdays and earn double loyalty points with code THATSAWRAP, wraps only, does not apply to the Taco Kit. Calories and nutrition vary with your selections, see the <a href="https://www.crazybowlsandwraps.com/menu?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=footer-nutrition" style="color:#C0D8D8; text-decoration:underline;">full menu</a>. Prices, participation and availability vary by location. No price-altering substitutions.<br>
+                    Crazy Bowls &amp; Wraps &middot; Taco Kit starts at $35.00 and serves 4&ndash;5. A protein selection is required and is priced separately. Extra Protein serves 4 and is priced separately. One salsa and up to 4 drinks are included. That&rsquo;s a Wrap Thursday: order on Thursdays with code THATSAWRAP and earn double loyalty points. Calories and nutrition vary with your selections, see the <a href="https://www.crazybowlsandwraps.com/menu?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=taco-kit-draft-day&amp;utm_content=footer-nutrition" style="color:#C0D8D8; text-decoration:underline;">full menu</a>. Prices, participation and availability vary by location. No price-altering substitutions.<br>
                     <template:link a:style="color:#C0D8D8;text-decoration:underline;" type="unsubscribe_url">Unsubscribe</template:link>&nbsp;&nbsp;&middot;&nbsp;&nbsp;<template:link a:style="color:#C0D8D8;text-decoration:underline;" type="campaign_view_url">View in Browser</template:link>
                   </p>
                 </td>
