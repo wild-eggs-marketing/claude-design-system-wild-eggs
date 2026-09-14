@@ -54,6 +54,7 @@ function withImages(h) {
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*726854ad[^"']*/g, "we_chip2.jpg")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*6e339e92[^"']*/g, "we_portrait.jpg")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*9e1693d1[^"']*/g, "we_waffle.jpg")
+        .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*b00dcca8[^"']*/g, "we_waffle_hero.jpg")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*c53fde98[^"']*/g, "we_fb.png")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*605da7fb[^"']*/g, "we_ig.png")
         .replace(/https:\/\/paytronix-bee[^"']*ribbon[^"']*/gi, "ribbon.png")
