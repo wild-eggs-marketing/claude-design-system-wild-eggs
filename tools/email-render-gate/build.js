@@ -40,6 +40,12 @@ function withImages(h) {
         .replace(/https:\/\/paytronix-bee[^"']*Logo[^"']*/g, "logo.png")
         .replace(/https:\/\/paytronix-bee[^"']*10\.55\.02[^"']*/g, "tt_sw.png")
         .replace(/https:\/\/paytronix-bee[^"']*All%20Drinks_1\.png/g, "tt_lineup.png")
+        // Saturday queso sends + Family Night. Mapped by the distinctive part of the
+        // screenshot filename, because the real names carry a NARROW NO-BREAK SPACE (U+202F)
+        // before AM/PM that survives as %E2%80%AF in the URL.
+        .replace(/https:\/\/paytronix-bee[^"']*3\.56\.33[^"']*/g, "sat_pull.png")
+        .replace(/https:\/\/paytronix-bee[^"']*8\.46\.28[^"']*/g, "fn_drivethru.png")
+        .replace(/https:\/\/paytronix-bee[^"']*Family%20Night_2\.jpg/g, "fn_kid.jpg")
         // Wild Eggs (Mailjet CDN). Mapped by asset UUID to local files of the real dimensions,
         // so the geometry assertions measure the same pixels the send will.
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*adb58b99[^"']*/g, "we_logo.png")

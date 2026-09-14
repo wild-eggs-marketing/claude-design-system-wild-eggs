@@ -5,3 +5,12 @@ tools/promo-chat-gate/site/**/bundle.js
 tools/promo-chat-gate/site/fonts-inline.css
 tools/promo-chat-gate/shot-*.png
 tools/promo-chat-gate/CraziologistChat-promo.tsx
+
+# email-render-gate: everything below is local setup or generated output.
+# site/ holds placeholder images that must match the REAL photo dimensions, so it is
+# rebuilt per machine (see the Run section of the gate README) rather than committed.
+tools/email-render-gate/node_modules/
+tools/email-render-gate/package*.json
+tools/email-render-gate/site/
+tools/email-render-gate/shot-*.png
+tools/email-render-gate/diff-*.png
