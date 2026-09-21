@@ -87,6 +87,19 @@ async function geom(page) {
                 cellH: Math.round(cell.getBoundingClientRect().height),
                 cellW: Math.round(cell.getBoundingClientRect().width),
                 textH: Math.round(a.getBoundingClientRect().height),
+                // A bulletproof button may carry its padding on the ANCHOR
+                // (display:block + padding) with padding:0 on the cell, which is just
+                // as real a button. Measure the anchor's own vertical padding so the
+                // assertion below accepts either construction.
+                aPadV: Math.round(
+                    parseFloat(getComputedStyle(a).paddingTop) +
+                    parseFloat(getComputedStyle(a).paddingBottom)
+                ),
+                lineH: Math.round(
+                    a.getBoundingClientRect().height -
+                    parseFloat(getComputedStyle(a).paddingTop) -
+                    parseFloat(getComputedStyle(a).paddingBottom)
+                ),
             })
         })
 
@@ -189,9 +202,14 @@ async function run(label, file, width, height, opts = {}) {
 
     // ---- 5. every CTA is a real button, not collapsed text ----
     for (const b of g.buttons) {
+        // Padding may live on the CELL (cell taller than its anchor) or on the ANCHOR
+        // (display:block + padding, cell at padding:0). Both ship a real button. What
+        // must never happen is BOTH being flat, which is what a dropped padding
+        // declaration looks like and what this rule was written to catch.
+        const padded = b.cellH >= b.textH + 12 || b.aPadV >= 12
         check(
-            b.cellH >= b.textH + 12,
-            `button "${b.text}" keeps its padding (cell ${b.cellH}px vs text ${b.textH}px)`
+            padded,
+            `button "${b.text}" keeps its padding (cell ${b.cellH}px, anchor padding ${b.aPadV}px, text ${b.lineH}px)`
         )
         check(b.cellH >= 40, `button "${b.text}" is tap-sized (${b.cellH}px >= 40)`)
     }

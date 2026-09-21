@@ -89,6 +89,24 @@ for (const x of tags) {
     )
 }
 
+// RULE 3: every button hidden from Outlook must have a VML twin.
+// The bulletproof pattern hides the HTML button from Word with `<!--[if !mso]><!-->` and
+// draws a <v:roundrect> inside `<!--[if mso]>` instead. That is correct and it is why the
+// render gate sees no button in the Word variant - so nothing else can check it. If the
+// VML half is missing, or is outnumbered by the hidden half, Outlook Classic shows NO
+// button at all: not a broken one, an absent one. Chromium cannot see this.
+const hidden = (src.match(/<!--\[if !mso\]><!-->/g) || []).length
+const vml = (src.match(/<v:roundrect/g) || []).length
+if (hidden || vml) {
+    t(
+        vml >= hidden,
+        `${hidden} button(s) hidden from Outlook, ${vml} VML twin(s) to draw them` +
+            (vml >= hidden
+                ? `  -> every hidden button has an Outlook fallback`
+                : `  -> ${hidden - vml} button(s) would be INVISIBLE in Outlook Classic`)
+    )
+}
+
 console.log(`\n${process.argv[2]}`)
 for (const o of oks) console.log("  PASS  " + o)
 for (const f of fails) console.log("  FAIL  " + f)

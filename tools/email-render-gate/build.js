@@ -55,6 +55,13 @@ function withImages(h) {
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*6e339e92[^"']*/g, "we_portrait.jpg")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*9e1693d1[^"']*/g, "we_waffle.jpg")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*b00dcca8[^"']*/g, "we_waffle_hero.jpg")
+        // Fall LTO 2026. The hero is a GIF; the local stand-in is its FIRST FRAME as PNG at
+        // the same 600x600, which is what the geometry assertions need. Frame zero is also
+        // exactly what Outlook Classic renders, so this is the honest thing to measure.
+        .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*d2e4eeda[^"']*/g, "we_fall_hero.png")
+        .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*6da51a40[^"']*/g, "we_fall_lineup.jpg")
+        .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*62567030[^"']*/g, "we_fall_mimosa.png")
+        .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*efd51abf[^"']*/g, "we_fall_latte.png")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*c53fde98[^"']*/g, "we_fb.png")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*605da7fb[^"']*/g, "we_ig.png")
         .replace(/https:\/\/paytronix-bee[^"']*ribbon[^"']*/gi, "ribbon.png")
@@ -107,6 +114,14 @@ let word = modern
 //    exactly what Word sees: the mso stylesheet and the ghost table.
 word = word.replace(/<!--\[if mso\]>([\s\S]*?)<!\[endif\]-->/g, "$1")
 word = word.replace(/<!--\[if mso \| IE\]>([\s\S]*?)<!\[endif\]-->/g, "$1")
+
+// 2b. The OTHER half of the bulletproof-button pattern. Content wrapped in the
+//     downlevel-REVEALED form `<!--[if !mso]><!--> ... <!--<![endif]-->` is markup every
+//     other client sees and Outlook does NOT. Leaving it in meant word.html rendered BOTH
+//     the VML button and the HTML one, and the geometry assertions measured the HTML
+//     anchor Word would never draw - reporting a collapsed 19px button that no Outlook
+//     user could ever see. Remove it so the simulation matches what Word actually gets.
+word = word.replace(/<!--\[if !mso\]><!-->[\s\S]*?<!--<!\[endif\]-->/g, "")
 
 // 3. No webfonts.
 word = word.replace(/<link[^>]*fonts\.googleapis[^>]*>/g, "")

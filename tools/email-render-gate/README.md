@@ -125,6 +125,29 @@ real rendered size, which can then overflow its cell: this template needed
 140px → 124px at the same time, because "QUESO." measures 553px inside a 520px
 cell at 140px. Re-measure after adding it.
 
+## Bulletproof buttons: the pattern the gate now understands
+
+A CTA can carry its padding in either of two places, and both ship a real button:
+
+- on the **cell** — the `<td>` is taller than its anchor; or
+- on the **anchor** — `display:block` plus padding, with `padding:0` on the cell.
+
+`verify.js` accepts either and still fails when NEITHER has padding, which is what a
+dropped padding declaration actually looks like.
+
+The VML variant needs more care. The standard pattern hides the HTML button from Word with
+`<!--[if !mso]><!-->` and draws a `<v:roundrect>` inside `<!--[if mso]>` instead. Two
+consequences:
+
+1. `build.js` removes the `[if !mso]` content from the **word** variant, because Outlook
+   genuinely does not render it. Before this, `word.html` contained both buttons and the
+   geometry assertions measured the HTML anchor Word never draws, reporting a collapsed
+   19px button no Outlook user could see.
+2. Chromium cannot render VML, so nothing in the render gate can check the Outlook button.
+   `lint-word.js` therefore counts them: every `[if !mso]`-hidden button must have a
+   `<v:roundrect>` twin. If the VML half goes missing, Outlook Classic shows no button at
+   all — not a broken one, an absent one.
+
 ## The orphan gate — `orphans.js`
 
     node orphans.js ../../emails/<file>.html
