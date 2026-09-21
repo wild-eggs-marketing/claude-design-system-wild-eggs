@@ -59,6 +59,7 @@ function withImages(h) {
         // the same 600x600, which is what the geometry assertions need. Frame zero is also
         // exactly what Outlook Classic renders, so this is the honest thing to measure.
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*d2e4eeda[^"']*/g, "we_fall_hero.png")
+        .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*daacba8d[^"']*/g, "we_e1_hero.png")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*6da51a40[^"']*/g, "we_fall_lineup.jpg")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*62567030[^"']*/g, "we_fall_mimosa.png")
         .replace(/https:\/\/0nlz6\.mjt\.lu[^"']*efd51abf[^"']*/g, "we_fall_latte.png")

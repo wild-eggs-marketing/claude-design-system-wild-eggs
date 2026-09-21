@@ -107,6 +107,36 @@ if (hidden || vml) {
     )
 }
 
+// RULE 4: no documentation comment may terminate early.
+// An HTML comment ends at the FIRST "-->" it contains. Writing the downlevel-revealed
+// conditional opener inside a note ends the note there and dumps the rest of it into the
+// email as visible copy - internal engineering prose, in a customer's inbox. Every comment
+// in this file is followed by markup, so the first non-space character after a comment
+// closes must be "<". Anything else is leaked prose.
+{
+    const leaks = []
+    const re2 = /<!--/g
+    let mm
+    while ((mm = re2.exec(src))) {
+        const start = mm.index
+        if (src.slice(start, start + 8).includes("[if")) continue   // conditional, not a note
+        const end = src.indexOf("-->", start)
+        if (end === -1) continue
+        const after = src.slice(end + 3).replace(/^\s+/, "")
+        if (after && after[0] !== "<") {
+            leaks.push(`"${after.slice(0, 44).replace(/\s+/g, " ")}..."`)
+        }
+        re2.lastIndex = end + 3
+    }
+    t(
+        leaks.length === 0,
+        `no documentation comment terminates early` +
+            (leaks.length
+                ? `  -> ${leaks.length} comment(s) leak prose into the email: ${leaks.join(", ")}`
+                : `  -> every comment is followed by markup`)
+    )
+}
+
 console.log(`\n${process.argv[2]}`)
 for (const o of oks) console.log("  PASS  " + o)
 for (const f of fails) console.log("  FAIL  " + f)
