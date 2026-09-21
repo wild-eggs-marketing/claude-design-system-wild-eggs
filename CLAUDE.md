@@ -69,3 +69,16 @@ re-derive its fine print. Elle owns the offer; the email applies it.
 Every check in `tools/email-render-gate/` must be proven to FAIL on known-bad input before its
 pass is worth anything. A lint that is blind to a class reads as a pass, which is worse than no
 lint. When a template adds a display class, add it to `lint-word.js` in the same commit.
+
+## The weekly cross-promo strip is retired
+
+The pink P.S. band — "Tuesdays 2x Crazy Points, Thursdays the craft drink rides free, Saturdays
+it's queso" — comes out of Family Night send 7 and does not go into any send after it. The weekly
+program is being replaced by the bowl games promo.
+
+- Do not carry it forward when building a new send from an older file. Templates are copied
+  forward, which is exactly how a retired block survives its own retirement.
+- Finished sends that already shipped with it stay as they are. This is a rule about what goes
+  out next, not a reason to edit a send that is done.
+- When the bowl games promo lands it gets its own block, written for it. Do not reuse this strip
+  with the copy swapped: its three-day rhythm is the old program's shape.
