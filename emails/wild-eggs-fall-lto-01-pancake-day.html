@@ -66,7 +66,7 @@
   ---------------------------------------------------------------
   ASSETS, MEASURED OFF THE REAL FILES
   ---------------------------------------------------------------
-  hero GIF  600x600, 27 frames, 1.18MB. Frame zero must read as a finished plate:
+  hero GIF  600x600 (play-once build, loop extension stripped), 27 frames, 1.18MB. Frame zero must read as a finished plate:
             Outlook Classic renders frame zero and never advances.
   lineup    700x1050 (2:3), placed 540x810. 1.3x its slot.
   mimosa    500x500, placed 250x250. 2.0x.
@@ -85,7 +85,15 @@
   SUBJECT A (recommended): Tomorrow, pie counts as breakfast
   SUBJECT B (control):     The pumpkin pancakes land tomorrow
   SUBJECT C:               Not pumpkin spice. Pumpkin pie.
-  PREHEADER (all, and identical to the title tag):
+  PREVIEW TEXT goes in TOAST'S DEDICATED PREVIEW FIELD, not in the title tag. Toast has that
+  field, Paytronix did not, which is why every earlier file in this repo carries preheader copy
+  in <title>. Here <title> is a real page title: it is what the view-in-browser page shows in
+  the tab and what a screen reader announces on load (WCAG 2.4.2), and a marketing sentence
+  makes a poor one. The hidden preheader div below stays and MUST be kept identical to whatever
+  is typed into the Toast field, so the two can never disagree in a client that falls back to
+  body text.
+
+  PASTE THIS INTO TOAST'S PREVIEW FIELD (identical to the hidden preheader div):
     Real pumpkin, salted caramel and candied pecans. On the griddle tomorrow, $13.49.
 -->
 <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -100,7 +108,7 @@
      draft put a page-title string here ("It's Pumpkin Pie Pancake day", which is the
      SUBJECT) while the preheader said something else, so subject and preview competed for
      the same slot. Subject carries the hook; this carries the plate. -->
-<title>Real pumpkin, salted caramel and candied pecans. On the griddle tomorrow, $13.49.</title>
+<title>Pumpkin Pie Pancakes are back | Wild Eggs</title>
 <!--[if mso]>
 <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
 <![endif]-->
@@ -245,7 +253,7 @@
   <!-- HERO GIF · 600x600. Frame zero is the finished plate: Outlook Classic renders frame
        zero and never advances, and Gmail holds it too. -->
   <tr><td bgcolor="#1e1a14" style="background:#1e1a14;font-size:0;line-height:0">
-    <a href="https://www.wildeggs.com/menu/fall-lto?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-hero" aria-label="See the fall menu" style="text-decoration:none;display:block"><img class="simg" src="https://0nlz6.mjt.lu/img2/0nlz6/daacba8d-0bb1-434f-93df-93acb6de3ce4/content" width="600" height="600" alt="Pumpkin Pie Pancakes under salted caramel, candied pecans and whipped cream" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:20px;line-height:1.4;color:#fffcf0;background:#1e1a14"></a>
+    <a href="https://www.wildeggs.com/menu/fall-lto?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-hero" aria-label="See the fall menu" style="text-decoration:none;display:block"><img class="simg" src="https://0nlz6.mjt.lu/img2/0nlz6/d5fe96db-e732-4426-88ce-ab671417a254/content" width="600" height="600" alt="Pumpkin Pie Pancakes under salted caramel, candied pecans and whipped cream" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:20px;line-height:1.4;color:#fffcf0;background:#1e1a14"></a>
   </td></tr>
 
   <!-- pill · TOMORROW. This email sends the day before the pancakes arrive. -->

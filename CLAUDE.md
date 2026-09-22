@@ -46,11 +46,21 @@ because Word never reads a media query. That only works if the class rule wins, 
   `node measure.js` and re-run the gate. Thursday needed `line-height` 0.92 → 1 the moment the
   upgrade started winning.
 
-## Emails: the preheader matches the `<title>` tag word for word
+## Emails: preview text — check which ESP you are sending from
 
-Paytronix takes inbox preview text from `<title>`. It must carry the PREHEADER COPY, identical to
-the hidden preheader div, never a page-title string — Paytronix can surface `<title>` as visible
-copy at the top of the email, where a page title reads as a mistake.
+**Paytronix** has no preview-text field and takes inbox preview from `<title>`. In a Paytronix
+send, `<title>` must carry the PREHEADER COPY, identical to the hidden preheader div, never a
+page-title string — Paytronix can surface `<title>` as visible copy at the top of the email,
+where a page title reads as a mistake.
+
+**Toast** has a dedicated preview-text field. In a Toast send, put the preview copy in that
+field and let `<title>` be a real page title: it is what the view-in-browser page shows in the
+tab and what a screen reader announces on load (WCAG 2.4.2 Page Titled), and a marketing
+sentence makes a poor one.
+
+Either way the hidden preheader div stays, and it must match whatever the ESP will actually
+show, so the two can never disagree in a client that falls back to body text. Every Wild Eggs
+and CBW file written before 2026-09-22 assumed Paytronix; check before reusing one on Toast.
 
 ## Don't edit a send that is already finished
 
