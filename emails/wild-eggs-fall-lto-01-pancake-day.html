@@ -123,7 +123,11 @@
      sit at 13px in a muted tone so they read as the footnote they are instead of taking a
      body-copy slot from the food. Both pairings are contrast-checked: 7.2:1 on ivory and
      5.5:1 on the yellow panel, so "smaller" never means "unreadable". */
-  .fine{font-size:13px !important;line-height:1.5 !important}
+  .fine{font-size:13px !important;line-height:1.5 !important;font-weight:400 !important}
+  /* FOCUS. Webmail and the view-in-browser page are real browsers, so keyboard users get a
+     focus ring. The UA default is a thin dark outline that vanishes on the teal button.
+     Word ignores :focus entirely, so this cannot reach Outlook Classic. */
+  a:focus{outline:3px solid #d14e2e !important;outline-offset:3px !important}
 
   /* MOTION · @media screen so Word-based Outlook never parses it. Transform-only:
      frame zero must read, because Gmail and Outlook render frame zero forever. */
@@ -137,7 +141,10 @@
     /* DISPLAY TYPE UPGRADE. !important is load bearing: an inline font-size beats a class
        rule, media query or not, without it, and the upgrade silently loses everywhere. */
     .h1  {font-size:48px!important;line-height:1.06!important}
-    .num {font-size:60px!important;line-height:1!important}
+    /* .num was 60px, larger than the H1. The single biggest line in the email was the one
+       carrying no product, no price and no date. The offer heading now sits BELOW the
+       product name in the scale. */
+    .num {font-size:44px!important;line-height:1.05!important}
   }
   @media (prefers-reduced-motion: reduce){ *, *::before, *::after {animation:none !important} }
 
@@ -147,7 +154,7 @@
     .pad{padding-left:24px!important;padding-right:24px!important}
     .h1{font-size:33px!important;line-height:1.14!important}
     .h2{font-size:27px!important}
-    .num{font-size:44px!important}
+    .num{font-size:36px!important}
     .pgrid{width:100%!important;max-width:100%!important}
     .navtable{width:100%!important}
     .navtable tr{display:block!important;text-align:center!important}
@@ -159,13 +166,16 @@
     .navlink{font-size:15px!important}
     .btncell a{padding-left:22px!important;padding-right:22px!important}
     .stack{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:0 0 18px!important}
+    /* The 20px gutter cell is a .stack too, so on mobile it became an EMPTY 18px-tall block
+       between the drink photo and its own copy. It has no content; collapse it. */
+    .spacer{display:none!important}
     .stackimg{width:100%!important;max-width:100%!important;height:auto!important;margin:0 auto!important}
     .price{font-size:17px!important}
   }
   @media only screen and (max-width:400px){
     .pad{padding-left:16px!important;padding-right:16px!important}
     .h1{font-size:29px!important}
-    .num{font-size:38px!important}
+    .num{font-size:31px!important}
   }
 
   /* Outlook.com and Gmail dark modes re-map light backgrounds: the cream card goes grey
@@ -178,6 +188,11 @@
     .bg-yellow,.bg-yellow td{ background:#ffc637 !important }
     .t-refuge { color:#2f5c64 !important }
     .t-cast   { color:#1e1a14 !important }
+    /* The yellow GROUND is pinned above, so its text must be pinned too. Pinning one and not
+       the other is worse than pinning neither: the client lightens the type against a
+       background that did not move, and the pair drops below 4.5:1. */
+    .t-spice  { color:#8a3a18 !important }
+    .t-olive  { color:#5c4a12 !important }
   }
   [data-ogsc] .bg-ivory, [data-ogsc] .bg-ivory td { background:#fffcf0 !important }
   [data-ogsc] .bg-sand,  [data-ogsc] .bg-sand td  { background:#efe7d7 !important }
@@ -185,6 +200,8 @@
   [data-ogsc] .bg-yellow,[data-ogsc] .bg-yellow td{ background:#ffc637 !important }
   [data-ogsc] .t-refuge { color:#2f5c64 !important }
   [data-ogsc] .t-cast   { color:#1e1a14 !important }
+  [data-ogsc] .t-spice  { color:#8a3a18 !important }
+  [data-ogsc] .t-olive  { color:#5c4a12 !important }
 </style>
 <!--[if mso]>
 <style>
@@ -228,7 +245,7 @@
   <!-- HERO GIF · 600x600. Frame zero is the finished plate: Outlook Classic renders frame
        zero and never advances, and Gmail holds it too. -->
   <tr><td bgcolor="#1e1a14" style="background:#1e1a14;font-size:0;line-height:0">
-    <a href="https://www.wildeggs.com/menu/fall-lto?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-hero" style="text-decoration:none;display:block"><img class="simg" src="https://0nlz6.mjt.lu/img2/0nlz6/daacba8d-0bb1-434f-93df-93acb6de3ce4/content" width="600" height="600" alt="Pumpkin Pie Pancakes under salted caramel, candied pecans and whipped cream" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:20px;line-height:1.4;color:#fffcf0;background:#1e1a14"></a>
+    <a href="https://www.wildeggs.com/menu/fall-lto?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-hero" aria-label="See the fall menu" style="text-decoration:none;display:block"><img class="simg" src="https://0nlz6.mjt.lu/img2/0nlz6/daacba8d-0bb1-434f-93df-93acb6de3ce4/content" width="600" height="600" alt="Pumpkin Pie Pancakes under salted caramel, candied pecans and whipped cream" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:20px;line-height:1.4;color:#fffcf0;background:#1e1a14"></a>
   </td></tr>
 
   <!-- pill · TOMORROW. This email sends the day before the pancakes arrive. -->
@@ -266,7 +283,7 @@
   <!-- THE PLATE · on pale gold. The primary CTA points at the MENU, not at ordering: on
        send day the pancakes are not orderable yet. -->
   <tr><td align="center" class="pad bg-gold" bgcolor="#fff3d6" style="background:#fff3d6;padding:40px 44px 44px">
-    <div class="num" style="font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:54px;mso-line-height-rule:at-least;line-height:1.04;color:#d14e2e;letter-spacing:-1px">Fall starts<br>on a plate.</div>
+    <h2 class="num" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:40px;mso-line-height-rule:at-least;line-height:1.08;color:#d14e2e;letter-spacing:-1px">Fall starts<br>on a plate.</h2>
     <table role="presentation" class="pgrid" width="410" cellpadding="0" cellspacing="0" border="0" align="center" style="width:410px;max-width:410px;margin:18px auto 0"><tr>
       <td align="center" style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:17px;mso-line-height-rule:exactly;line-height:1.6;color:#4a4339"><b style="color:#ba4126">$13.49</b>, from open&nbsp;tomorrow.</td>
     </tr></table>
@@ -293,7 +310,7 @@
   <tr><td bgcolor="#1b6e8c" style="background:#1b6e8c;padding:24px 30px 0">
     <table role="presentation" width="100%" bgcolor="#fffcf0" cellpadding="0" cellspacing="0" border="0" style="background:#fffcf0;border-radius:20px">
       <tr><td style="padding:0">
-        <a href="https://www.wildeggs.com/menu/fall-lto?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-lineup-photo" style="text-decoration:none"><img class="simg" src="https://0nlz6.mjt.lu/img2/0nlz6/6da51a40-350a-4fba-969e-c5522dfd5082/content" width="540" height="810" alt="A Wild Eggs server carrying a plate of Pumpkin Pie Pancakes to a table" style="display:block;border:0;width:540px;max-width:100%;height:auto;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:15px;color:#1e1a14;background:#1e1a14"></a>
+        <a href="https://www.wildeggs.com/menu/fall-lto?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-lineup-photo" aria-label="See the fall menu" style="text-decoration:none"><img class="simg" src="https://0nlz6.mjt.lu/img2/0nlz6/6da51a40-350a-4fba-969e-c5522dfd5082/content" width="540" height="810" alt="A Wild Eggs server carrying a plate of Pumpkin Pie Pancakes to a table" style="display:block;border:0;width:540px;max-width:100%;height:auto;border-radius:20px 20px 0 0;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:15px;color:#1e1a14;background:#1e1a14"></a>
       </td></tr>
       <tr><td align="center" style="padding:16px 22px 0">
         <span style="font-family:'Fraunces', Georgia, serif;font-weight:800;font-size:15px;letter-spacing:2.4px;text-transform:uppercase;color:#ba4126">On the menu from tomorrow</span>
@@ -311,7 +328,7 @@
         </table>
       </td></tr>
       <tr><td align="center" style="padding:14px 26px 0">
-        <div class="fine" style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:13px;mso-line-height-rule:exactly;line-height:1.5;color:#5c544a">Same pancakes, same price. Shared kitchen, so not suitable for coeliac&nbsp;disease.</div>
+        <div class="fine" style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:400;font-size:13px;mso-line-height-rule:exactly;line-height:1.5;color:#5c544a">Same pancakes, same price. Shared kitchen, so not suitable for coeliac&nbsp;disease.</div>
       </td></tr>
       <tr><td align="center" style="padding:18px 26px 24px">
     <!--[if mso]>
@@ -333,7 +350,7 @@
 
   <!-- REVIEW · on pale gold, so the white card actually reads as a card. -->
   <tr><td class="pad bg-gold" align="center" bgcolor="#fff3d6" style="background:#fff3d6;padding:44px 34px 46px">
-    <div class="t-refuge" style="font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:26px;letter-spacing:2.2px;color:#2f5c64;text-transform:uppercase;mso-line-height-rule:at-least;line-height:1.2;padding-bottom:22px">The flock agrees</div>
+    <h2 class="t-refuge" style="margin:0 0 22px;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:26px;letter-spacing:2.2px;color:#2f5c64;text-transform:uppercase;mso-line-height-rule:at-least;line-height:1.2">The flock agrees</h2>
     <table role="presentation" width="440" bgcolor="#fffcf0" cellpadding="0" cellspacing="0" border="0" align="center" style="width:100%;max-width:440px;background:#fffcf0;border-radius:18px">
       <tr><td style="padding:24px 28px 22px">
         <div style="font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:34px;mso-line-height-rule:at-least;line-height:1;color:#2596be" aria-hidden="true">&ldquo;</div>
@@ -351,10 +368,7 @@
   <!-- THE DRINKS · their own block, with the availability caveat stated ONCE, up front,
        before either drink is named. They are not sold at every location. -->
   <tr><td class="pad bg-yellow" align="center" bgcolor="#ffc637" style="background:#ffc637;padding:40px 34px 10px">
-    <div class="t-cast" style="font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:30px;letter-spacing:1.6px;color:#1e1a14;text-transform:uppercase;mso-line-height-rule:at-least;line-height:1.14">Want a drink with that?</div>
-    <table role="presentation" class="pgrid" width="430" cellpadding="0" cellspacing="0" border="0" align="center" style="width:430px;max-width:430px;margin:10px auto 0"><tr>
-      <td align="center" class="fine" style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:13px;mso-line-height-rule:exactly;line-height:1.5;color:#5c4a12">Not poured at every&nbsp;location.</td>
-    </tr></table>
+    <h2 class="t-cast" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:30px;letter-spacing:1.6px;color:#1e1a14;text-transform:uppercase;mso-line-height-rule:at-least;line-height:1.14">Want a drink with that?</h2>
   </td></tr>
 
   <tr><td class="pad bg-yellow" bgcolor="#ffc637" style="background:#ffc637;padding:26px 34px 8px">
@@ -362,25 +376,35 @@
       <td class="stack" width="260" valign="middle" style="padding:0">
         <img class="stackimg" src="https://0nlz6.mjt.lu/img2/0nlz6/62567030-9623-40ac-b941-cf3e3aa62d28/content" width="250" height="250" alt="Caramel Apple Spice Mimosa with a cinnamon-sugar rim" style="display:block;border:0;width:250px;height:250px;border-radius:125px 125px 22px 22px;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:15px;color:#1e1a14;background:#fff3d6">
       </td>
-      <td class="stack" width="20" style="font-size:0;line-height:0">&nbsp;</td>
+      <td class="stack spacer" width="20" style="font-size:0;line-height:0">&nbsp;</td>
       <td class="stack" valign="middle" style="padding:0">
-        <div style="font-family:'Fraunces', Georgia, serif;font-weight:800;font-size:15px;letter-spacing:2.4px;text-transform:uppercase;color:#8a3a18;mso-line-height-rule:exactly;line-height:1.35;padding-bottom:8px">Caramel Apple Spice Mimosa</div>
-        <h2 class="h2 t-cast" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:28px;mso-line-height-rule:at-least;line-height:1.12;color:#1e1a14">The rim is the point.</h2>
-        <div style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:17px;mso-line-height-rule:exactly;line-height:1.55;color:#5c4a12;padding-top:12px">Sparkling wine, spiced apple, caramel, cinnamon-sugar rim. <b style="color:#8a3a18">$9.99</b>, 21+.</div>
+        <div style="font-family:'Fraunces', Georgia, serif;font-weight:800;font-size:15px;letter-spacing:2.4px;text-transform:uppercase;color:#8a3a18;mso-line-height-rule:exactly;line-height:1.35;padding-bottom:8px" class="t-spice">Caramel Apple Spice Mimosa</div>
+        <h3 class="h2 t-cast" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:28px;mso-line-height-rule:at-least;line-height:1.12;color:#1e1a14">The rim is the point.</h3>
+        <div style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:17px;mso-line-height-rule:exactly;line-height:1.55;color:#5c4a12;padding-top:12px" class="t-olive">Sparkling wine, spiced apple, caramel, cinnamon-sugar rim. <b style="color:#8a3a18">$9.99</b>, 21+.</div>
       </td>
     </tr></table>
   </td></tr>
 
-  <tr><td class="pad bg-yellow" bgcolor="#ffc637" style="background:#ffc637;padding:8px 34px 34px">
+  <tr><td class="pad bg-yellow" bgcolor="#ffc637" style="background:#ffc637;padding:8px 34px 18px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
       <td class="stack" valign="middle" style="padding:0 20px 0 0">
-        <div style="font-family:'Fraunces', Georgia, serif;font-weight:800;font-size:15px;letter-spacing:2.4px;text-transform:uppercase;color:#8a3a18;mso-line-height-rule:exactly;line-height:1.35;padding-bottom:8px">The Wild Pumpkin Latte</div>
-        <h2 class="h2 t-cast" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:28px;mso-line-height-rule:at-least;line-height:1.12;color:#1e1a14">Fall, in a mug.</h2>
-        <div style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:17px;mso-line-height-rule:exactly;line-height:1.55;color:#5c4a12;padding-top:12px">Espresso, pumpkin spice, whipped cream. <b style="color:#8a3a18">$7.99</b>. Spiked <b style="color:#8a3a18">$10.99</b>, 21+.</div>
+        <div style="font-family:'Fraunces', Georgia, serif;font-weight:800;font-size:15px;letter-spacing:2.4px;text-transform:uppercase;color:#8a3a18;mso-line-height-rule:exactly;line-height:1.35;padding-bottom:8px" class="t-spice">The Wild Pumpkin Latte</div>
+        <h3 class="h2 t-cast" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:28px;mso-line-height-rule:at-least;line-height:1.12;color:#1e1a14">Fall, in a mug.</h3>
+        <div style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:17px;mso-line-height-rule:exactly;line-height:1.55;color:#5c4a12;padding-top:12px" class="t-olive">Espresso, pumpkin spice, whipped cream. <b style="color:#8a3a18">$7.99</b>. Spiked <b style="color:#8a3a18">$10.99</b>, 21+.</div>
       </td>
       <td class="stack" width="260">
         <img class="stackimg" src="https://0nlz6.mjt.lu/img2/0nlz6/efd51abf-150f-48e5-b761-2e20ea766bac/content" width="250" height="250" alt="The Wild Pumpkin latte, topped with whipped cream and cinnamon" style="display:block;border:0;width:250px;height:250px;border-radius:125px 125px 22px 22px;font-family:'Hedvig Letters Serif', Georgia, serif;font-size:15px;color:#1e1a14;background:#fffcf0">
       </td>
+    </tr></table>
+  </td></tr>
+
+  <!-- DRINKS: FOOT OF BLOCK. The availability caveat lives here, not in the deck slot under
+       the heading, where it was the first thing the reader met after the question. A section
+       that asks a question now has somewhere to go: a text link rather than a third button,
+       because the pancakes own the buttons and these drinks are not poured everywhere. -->
+  <tr><td class="pad bg-yellow" align="center" bgcolor="#ffc637" style="background:#ffc637;padding:0 34px 34px">
+    <table role="presentation" class="pgrid" width="430" cellpadding="0" cellspacing="0" border="0" align="center" style="width:430px;max-width:430px;margin:0 auto"><tr>
+      <td align="center" class="fine t-olive" style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:400;font-size:13px;mso-line-height-rule:exactly;line-height:1.5;color:#5c4a12">Not poured at every location. <a href="https://www.wildeggs.com/locations?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-drinks-locations" style="color:#8a3a18;font-weight:700;text-decoration:underline"><span style="color:#8a3a18;text-decoration:underline">Check&nbsp;yours&nbsp;&rarr;</span></a></td>
     </tr></table>
   </td></tr>
 
@@ -393,7 +417,7 @@
 
   <!-- sign-off -->
   <tr><td align="center" class="pad bg-ivory" bgcolor="#fffcf0" style="background:#fffcf0;padding:34px 40px 10px">
-    <div class="t-refuge" style="font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:40px;mso-line-height-rule:at-least;line-height:1.05;color:#2f5c64;letter-spacing:.5px;text-transform:uppercase">Get cracking.</div>
+    <h2 class="t-refuge" style="margin:0;font-family:'Fraunces', Georgia, serif;font-weight:900;font-size:40px;mso-line-height-rule:at-least;line-height:1.05;color:#2f5c64;letter-spacing:.5px;text-transform:uppercase">Get cracking.</h2>
     <div style="font-family:'Fraunces', Georgia, serif;font-style:italic;font-weight:700;font-size:19px;color:#ba4126;padding-top:12px;mso-line-height-rule:exactly;line-height:1.4">Mornings taste better wild.</div>
     <div style="font-family:'Fraunces', Georgia, serif;font-size:15px;letter-spacing:3px;text-transform:uppercase;color:#5c544a;padding-top:12px;mso-line-height-rule:exactly;line-height:1.5">EST. 2007 &nbsp;&middot;&nbsp; LOUISVILLE BORN</div>
     <div style="font-family:'Hedvig Letters Serif', Georgia, serif;font-weight:700;font-size:17px;mso-line-height-rule:exactly;line-height:1.6;color:#4a4339;padding-top:20px">Open daily by 7&#8203;:00 AM. <a href="https://www.wildeggs.com/locations?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-signoff-locations" style="display:inline-block;padding:11px 0;color:#2f5c64;font-weight:700;text-decoration:underline"><span style="color:#2f5c64;text-decoration:underline">Find yours</span></a></div>
@@ -412,9 +436,9 @@
   <tr><td align="center" bgcolor="#2f5c64" style="background:#2f5c64;padding:14px 40px 0">
     <table role="presentation" class="navtable" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto"><tr>
       <td class="navcell" align="center" style="padding:0 10px"><a class="navlink" href="https://www.wildeggs.com/menu?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-footer-menu" style="display:inline-block;padding:12px 2px;text-decoration:none;font-family:'Fraunces', Georgia, serif;font-weight:700;font-size:15px;letter-spacing:2.2px;color:#fff7e3;text-transform:uppercase;mso-line-height-rule:exactly;line-height:1.5"><span style="color:#fff7e3;text-decoration:none">MENU</span></a></td>
-      <td class="navsep" align="center" style="font-family:'Fraunces', Georgia, serif;color:#5b838a;font-size:15px;mso-line-height-rule:exactly;line-height:1.5">&bull;</td>
+      <td class="navsep" aria-hidden="true" align="center" style="font-family:'Fraunces', Georgia, serif;color:#5b838a;font-size:15px;mso-line-height-rule:exactly;line-height:1.5">&bull;</td>
       <td class="navcell" align="center" style="padding:0 10px"><a class="navlink" href="https://www.wildeggs.com/locations?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-footer-locations" style="display:inline-block;padding:12px 2px;text-decoration:none;font-family:'Fraunces', Georgia, serif;font-weight:700;font-size:15px;letter-spacing:2.2px;color:#fff7e3;text-transform:uppercase;mso-line-height-rule:exactly;line-height:1.5"><span style="color:#fff7e3;text-decoration:none">LOCATIONS</span></a></td>
-      <td class="navsep" align="center" style="font-family:'Fraunces', Georgia, serif;color:#5b838a;font-size:15px;mso-line-height-rule:exactly;line-height:1.5">&bull;</td>
+      <td class="navsep" aria-hidden="true" align="center" style="font-family:'Fraunces', Georgia, serif;color:#5b838a;font-size:15px;mso-line-height-rule:exactly;line-height:1.5">&bull;</td>
       <td class="navcell" align="center" style="padding:0 10px"><a class="navlink" href="https://www.wildeggs.com/rewards?utm_source=toast&amp;utm_medium=email&amp;utm_campaign=fall_lto_2026&amp;utm_content=e1-footer-rewards" style="display:inline-block;padding:12px 2px;text-decoration:none;font-family:'Fraunces', Georgia, serif;font-weight:700;font-size:15px;letter-spacing:2.2px;color:#ffc637;text-transform:uppercase;mso-line-height-rule:exactly;line-height:1.5"><span style="color:#ffc637;text-decoration:none">REWARDS</span></a></td>
     </tr></table>
   </td></tr>
