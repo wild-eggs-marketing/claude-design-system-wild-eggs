@@ -92,3 +92,40 @@ program is being replaced by the bowl games promo.
   out next, not a reason to edit a send that is done.
 - When the bowl games promo lands it gets its own block, written for it. Do not reuse this strip
   with the copy swapped: its three-day rhythm is the old program's shape.
+
+## Toast rebuilds the email. Conditional comments do not survive it.
+
+Measured against the campaign Toast actually sent on 2026-09-22, by diffing its output
+against the file that was pasted in. Toast's campaign builder does NOT paste raw HTML: it
+parses the source into its own block model and re-emits the email through MJML (fingerprints
+in the sent output: `mj-outlook-group-fix`, `mj-column`, `[if lte mso 11]`).
+
+**Destroyed, every time:**
+- Every conditional comment. 4 `<v:roundrect>` in, 0 out. The `[if mso]` font stylesheet and
+  the ghost table go with them. This is not a sanitizer a sender can dodge by re-pasting —
+  it is how the builder works. "Paste it again and grep for roundrect" was advice that could
+  never have worked, and it was given twice.
+- `<title>`: Toast replaces it with the campaign subject line.
+
+**Appended, every time:** `font-weight:normal` at the END of every heading element's inline
+style. It lands last in the declaration block, so it beats an earlier `font-weight:900` and
+the headline renders at 400. Eight headings in, eight injections out. Non-heading elements
+are untouched, which is why `<div>` display lines kept their weight while the `<h2>`s did not.
+
+**Survives:** the `<style>` block, classes, aria attributes, inline styles, `white-space`
+spans, `[data-ogsc]` rules.
+
+**Therefore, for any Toast send:**
+- Headings carry `font-weight:900 !important` AND wrap their text in a span that carries the
+  weight itself. `!important` handles Toast; the span means the defence does not depend on
+  `!important` surviving the Word engine, where support is inconsistent.
+- Buttons put their padding on the CELL via `mso-padding-alt`, never only on the anchor.
+  With the VML twin gone there is nothing else holding the box open in Outlook Classic.
+- Do not spend effort on `<title>`; Toast overwrites it.
+- `node check.js` runs a `toast` stage that models all of this. It is scoped to
+  `data-brand="wild-eggs"` and skips CBW, because Paytronix's behaviour has NOT been
+  measured. Do not extend it to CBW on the assumption that the two behave alike.
+
+The gate models the Word engine and six clients and modelled ZERO ESPs until now. Every
+defect that reached an inbox in this campaign happened downstream of the gate. "Green across
+every client" means green *before the ESP touches it*; say that, or say nothing.

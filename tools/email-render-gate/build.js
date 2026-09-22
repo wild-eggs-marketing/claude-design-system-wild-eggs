@@ -174,6 +174,51 @@ word =
 
 fs.writeFileSync(path.join(OUT, "word.html"), word)
 
+// ---------------- TOAST ROUND-TRIP ----------------
+// MEASURED, not assumed, against the campaign Toast actually sent on 2026-09-22
+// (view URL, 44KB, MJML fingerprints: mj-outlook-group-fix, mj-column, [if lte mso 11]).
+//
+// Toast's campaign builder does NOT paste raw HTML. It parses the source into its own
+// block model and re-emits the email through MJML. Two consequences, both verified by
+// diffing the sent output against the file that was pasted:
+//
+//   1. EVERY conditional comment is destroyed. 4 v:roundrect -> 0, the mso font
+//      stylesheet gone, the ghost table gone. This is not a sanitizer the sender can
+//      avoid by re-pasting; it is how the builder works. Telling anyone to "paste it
+//      again and check for roundrect" was advice that could never have worked.
+//   2. font-weight:normal is APPENDED to the inline style of every heading element.
+//      8 headings in, 8 injections out. It lands last in the same declaration block,
+//      so it beats an earlier font-weight:900 and the headline renders at 400.
+//      Elements that are not h1-h6 are untouched.
+//
+// What survives, also measured: the <style> block, classes, aria attributes, inline
+// styles, white-space:nowrap spans, data-ogsc rules.
+function toastTransform(h) {
+    // Conditional content is dropped; the [if !mso] HTML becomes visible to EVERYONE,
+    // including Word, because the VML twin that used to hide behind it is gone.
+    h = h.replace(/<!--\[if !mso\]><!-->/g, "").replace(/<!--<!\[endif\]-->/g, "")
+    h = h.replace(/<!--\[if[^\]]*\]>[\s\S]*?<!\[endif\]-->/g, "")
+    // The heading normalisation.
+    h = h.replace(/<(h[1-6])\b([^>]*?)style="([^"]*)"/gi, (m, tag, pre, style) =>
+        `<${tag}${pre}style="${style};font-weight:normal"`)
+    return h
+}
+
+fs.writeFileSync(path.join(OUT, "toast.html"), toastTransform(modern))
+
+// The variant that matters most and never existed: what an Outlook Classic reader sees
+// when the email went out through Toast. Toast first, then the Word engine on top.
+let toastword = toastTransform(modern)
+toastword = toastword.replace(/<link[^>]*fonts\.googleapis[^>]*>/g, "")
+toastword = toastword.replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "")
+toastword = toastword.replace(/display\s*:\s*inline-block\s*;?/gi, "")
+toastword = toastword.replace(/<a\b([^>]*)style="([^"]*)"/gi, (m, pre, style) =>
+    `<a${pre}style="${style.replace(/(^|;)\s*padding[^;]*/gi, "")}"`)
+toastword = toastword.replace(/border-radius\s*:[^;"]*;?/gi, "")
+toastword = toastword.replace(/max-width\s*:[^;"]*;?/gi, "")
+toastword = toastword.replace(/animation\s*:[^;"]*;?/gi, "")
+fs.writeFileSync(path.join(OUT, "toastword.html"), toastword)
+
 // ---------------- STYLESHEET STRIPPED ----------------
 // The failure that actually shipped. Somewhere between the paste into Paytronix and
 // Outlook Classic, the <style> block and/or the conditional comment stopped taking

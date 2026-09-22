@@ -41,6 +41,7 @@ ok = run("verify  — geometry: overflow, shell width, collisions, buttons, aspe
 ok = run("upgrade — the @media screen display upgrade actually wins", ["upgrade.js", src], { quiet: true }) && ok
 ok = run("orphans — no centred block ends on a runt last line", ["orphans.js", src], { quiet: true }) && ok
 ok = run("lint    — source rules Chromium cannot see", ["lint-word.js", src], { quiet: true }) && ok
+ok = run("toast   — survives the ESP round-trip: heading weight, buttons without VML", ["toast.js"], { quiet: true }) && ok
 
 // The paste build is what actually goes into Paytronix, so it is not optional and it is not
 // a copy step: regenerate it here and prove it renders identically to the master.
