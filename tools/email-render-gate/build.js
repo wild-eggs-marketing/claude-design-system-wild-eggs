@@ -37,6 +37,18 @@ function withImages(h) {
         .replace(/https:\/\/paytronix-bee[^"']*opt_TacoKit_1_hero\.jpg/g, "opt_TacoKit_1_hero.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*opt_TacoKit_2_Football\.jpg/g, "opt_TacoKit_2_Football.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*opt_TacoKit_3_protein\.jpg/g, "opt_TacoKit_3_protein.jpg")
+        // Bowl Games. MUST come before the generic Logo rule below, which would otherwise
+        // swallow Logo-horizontal-on-dark.png and measure it as the round CBW mark — a
+        // completely different aspect ratio, so every geometry assertion around the top bar
+        // would be checking the wrong box.
+        .replace(/https:\/\/paytronix-bee[^"']*Logo-horizontal-on-dark\.png/g, "bg_logo.png")
+        .replace(/https:\/\/paytronix-bee[^"']*Bowl%20Games%20Featured%20Image\.png/g, "bg_hero.png")
+        .replace(/https:\/\/paytronix-bee[^"']*Chip-Teriyaki\.jpg/g, "bg_chip.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*card-01-the-closer\.jpg/g, "bg_card1.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*card-02-double-protein\.jpg/g, "bg_card2.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*card-03-the-regular\.jpg/g, "bg_card3.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*card-04-green-zone\.jpg/g, "bg_card4.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*card-05-special-teams\.jpg/g, "bg_card5.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*Logo[^"']*/g, "logo.png")
         .replace(/https:\/\/paytronix-bee[^"']*10\.55\.02[^"']*/g, "tt_sw.png")
         .replace(/https:\/\/paytronix-bee[^"']*All%20Drinks_1\.png/g, "tt_lineup.png")
