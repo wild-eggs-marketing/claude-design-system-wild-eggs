@@ -74,6 +74,25 @@ When an offer is carried over from a previous send, carry it verbatim: same thre
 same terms, same channels. Do not rescope it, do not add hedges about whether it applies, do not
 re-derive its fine print. Elle owns the offer; the email applies it.
 
+## Catering orders DO earn Crazy Points. They always have.
+
+Confirmed by Elle, 2026-09-23. This is a standing brand fact, not a campaign detail.
+
+- **Never write copy stating or implying that catering does not earn points.** The Labor Day
+  catering send shipped "Catering orders don't earn Crazy Points." in its legal block. That line
+  was wrong when it went out. That file is not in this repo — it lives wherever Elle keeps sent
+  Paytronix campaigns — so the risk is a human pasting it back in as a reference. If a pasted
+  reference file carries that line, delete it before building anything from it.
+- **Never frame catering earning as new.** No "now earns", no "finally", no "from here on".
+  It has always been true; most guests simply never knew, which is a marketing failure and not
+  a program change. Write awareness copy, not announcement copy.
+- **The catering earn RATE is still unconfirmed.** The core menu is $1 = 1 point, 200 points =
+  a free meal. Nobody has said whether catering earns at that same rate. Do not state a catering
+  rate, and do not do arithmetic that depends on one — "you're $150 of catering from a free meal"
+  is the strongest line available and it stays unwritten until someone confirms the rate.
+- Points are attached at order time. An order placed without a Crazy Points account on it cannot
+  earn, and points cannot be added afterwards. That part is safe to state.
+
 ## Build gates before trusting them
 
 Every check in `tools/email-render-gate/` must be proven to FAIL on known-bad input before its
