@@ -43,6 +43,7 @@ function withImages(h) {
         // would be checking the wrong box.
         .replace(/https:\/\/paytronix-bee[^"']*Logo-horizontal-on-dark\.png/g, "bg_logo.png")
         .replace(/https:\/\/paytronix-bee[^"']*Bowl%20Games%20Featured%20Image\.png/g, "bg_hero.png")
+        .replace(/https:\/\/paytronix-bee[^"']*image-1789582460776\.jpg/g, "bg3_hero.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*Chip-Teriyaki\.jpg/g, "bg_chip.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-01-the-closer\.jpg/g, "bg_card1.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-02-double-protein\.jpg/g, "bg_card2.jpg")

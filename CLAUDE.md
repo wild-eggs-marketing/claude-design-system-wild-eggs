@@ -93,6 +93,33 @@ Confirmed by Elle, 2026-09-23. This is a standing brand fact, not a campaign det
 - Points are attached at order time. An order placed without a Crazy Points account on it cannot
   earn, and points cannot be added afterwards. That part is safe to state.
 
+## Bowl Games: what the five cards pay
+
+Supplied by Elle 2026-09-24. Standing campaign fact - before this, four sends said "every card
+carries a reward" and named none of them, which is an IOU written by the party who owes it.
+
+| Card | Earned by | Pays |
+|---|---|---|
+| THE CLOSER | entree plus a paid drink | chips and queso |
+| DOUBLE PROTEIN | a second protein, or a High Protein or Jerk bowl | a crispy treat |
+| THE REGULAR | any entree on its own | a regular drink |
+| GREEN ZONE | skip the protein, or tofu or falafel | edamame |
+| SPECIAL TEAMS | a paid side, starter, topping or dessert | a cheese quesadilla |
+
+Hold all five and a regular **bowl OR WRAP** is on us. Say "bowl or wrap", never "the entree" -
+a wrap-ordering guest cannot tell whether a wrap qualifies from "entree".
+
+Season runs **September 20 - November 14, 2026**. Both verified: Sept 20 is a Sunday, Nov 14 is
+a Saturday, coherent with a board that locks Saturday night.
+
+**Taco Kit:** weekly, per store, to the guest with the MOST VERIFIED SCANS that week. First kit
+awarded at the **Saturday October 3, 2026** lock. Deterministic - a published rule applied to a
+count - so no chance, no lottery, no free entry route needed, but the criteria MUST be
+disclosed. The September 26 lock awards no kit.
+
+Still unnamed: "a crispy treat" is a category where the other four are things. Ask for the menu
+name.
+
 ## Emails are read late. No claim may decay after send day.
 
 An email sits in an inbox, gets forwarded, gets opened from a promotions tab on a Saturday.
