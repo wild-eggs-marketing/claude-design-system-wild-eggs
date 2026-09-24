@@ -48,6 +48,7 @@ function withImages(h) {
         // match on that rather than on a literal paren.
         .replace(/https:\/\/paytronix-bee[^"']*Bowl%20Games%20Featured%20Image%20%282%29\.png/g, "bg3_hero_v2.png")
         .replace(/https:\/\/paytronix-bee[^"']*Chip-Teriyaki\.jpg/g, "bg_chip.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*board-hero-mock\.jpg/g, "bg4_board.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-01-the-closer\.jpg/g, "bg_card1.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-02-double-protein\.jpg/g, "bg_card2.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-03-the-regular\.jpg/g, "bg_card3.jpg")

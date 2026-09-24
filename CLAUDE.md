@@ -113,9 +113,15 @@ Season runs **September 20 - November 14, 2026**. Both verified: Sept 20 is a Su
 a Saturday, coherent with a board that locks Saturday night.
 
 **Taco Kit:** weekly, per store, to the guest with the MOST VERIFIED SCANS that week. First kit
-awarded at the **Saturday October 3, 2026** lock. Deterministic - a published rule applied to a
-count - so no chance, no lottery, no free entry route needed, but the criteria MUST be
-disclosed. The September 26 lock awards no kit.
+awarded at the **Saturday October 3, 2026** lock. **Ties go to whoever got there first**
+(Elle, 2026-09-24 - this was an open question across three sends and is now answered; a tie at
+three scans across fifteen stores is a weekly event, not an edge case). Deterministic - a
+published rule applied to a count - so no chance, no lottery, no free entry route needed, but
+the criteria MUST be disclosed. The September 26 lock awards no kit.
+
+Say **"most verified scans"**, not "most verified receipts". The board's own column header reads
+SCANS, and one receipt can be re-scanned or fail verification, so the two are not the same
+object.
 
 Still unnamed: "a crispy treat" is a category where the other four are things. Ask for the menu
 name.

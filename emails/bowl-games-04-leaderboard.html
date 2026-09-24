@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<!--
+  CRAZY BOWLS AND WRAPS · BOWL GAMES · send 4, the leaderboard
+  Campaign: bowl-games-promo. PAYTRONIX. Paste the .PASTE.html into Source view.
+
+  NET-NEW FILE. Fourth campaign in the series: 01 season opener, 02 the weekly Taco Kit
+  (Monday Sept 28), 03 what the five cards pay (Friday Sept 25), 04 this one.
+
+  SEND DATE NOT SUPPLIED. Every temporal claim in this file is therefore written with an
+  EXPLICIT DATE and no reader-relative phrasing, so it is correct whichever day it goes out.
+  Do NOT copy send 02's "this Saturday" into this file: that phrasing is only true from a
+  Monday September 28 send, and it would resolve to the wrong Saturday from any other date.
+
+  ===============================================================
+  THIS SEND ANSWERS THE TIEBREAK, WHICH WAS OPEN ACROSS THREE SENDS
+  ===============================================================
+  Elle, 2026-09-24: "ties to whoever got there first."
+
+  That matters more than it looks. A tie at three scans, across fifteen stores, in a single
+  week, is a weekly event rather than an edge case, and an undisclosed tiebreak in a contest
+  with a real prize is exactly the kind of gap that produces a complaint nobody can answer.
+  It is now stated in the legal block and recorded in CLAUDE.md as a standing campaign fact.
+
+  ===============================================================
+  WHAT WAS CHANGED FROM THE DRAFT ELLE SUPPLIED - 12 ITEMS
+  ===============================================================
+
+  1. <title> NOW CARRIES THE PREHEADER COPY. Paytronix has no preview-text field, takes inbox
+     preview from <title>, and can surface it as VISIBLE copy at the top of the email. The
+     draft had <title> "Bowl Games: your store is on the board" against a preheader reading
+     "Every verified receipt is a point for the store printed on it." Two different sentences,
+     so the inbox preview and the body would have disagreed. The draft's <title> survives as
+     the recommended SUBJECT, which is a separate field in the Paytronix UI.
+
+  2. "FROM WEEK TWO" REMOVED, both instances, replaced with the actual date. "Week two" means
+     nothing to a reader in October and reads as "not yet" to a reader in September. The first
+     Taco Kit is awarded at the SATURDAY OCTOBER 3, 2026 lock.
+
+  3. "MOST VERIFIED RECEIPTS" -> "MOST VERIFIED SCANS", three places. The board's own column
+     header in the hero image reads SCANS, and the two are not the same object: a receipt can
+     be scanned twice or fail verification. The legal block already said "verified receipt
+     scans", so the body was the outlier.
+
+  4. THE HERO IS A SAMPLE BOARD, AND THE ALT TEXT NOW SAYS SO. The image carries a "SAMPLE"
+     badge, which is the right call - it shows real store names (Sunset Hills, O'Fallon,
+     Edwardsville, Rock Hill, Manchester) against invented scan counts. But that badge is
+     pixels: with images blocked, which is the Outlook default and common in corporate
+     clients, a guest gets only the alt text, and the old alt did not carry the word sample.
+     The body now says "a sample board" too, because a fabricated standing with real store
+     names is worth labelling in text as well as in art.
+
+  5. THE LEGAL BLOCK: 200 WORDS -> ~125, by triage rather than trimming.
+     - "free to play" out. A "free" claim on top of a purchase requirement is the FTC Free
+       Goods fact pattern (16 CFR 251). It reads "Purchase required."
+     - "The card you get is decided by fixed rules" out; stated once as "Your order decides
+       which Huddle card a receipt earns."
+     - THE END DATE IS IN: November 14, 2026. Verified as a Saturday, coherent with a board
+       that locks Saturday night, so the season ends on a lock day.
+     - THE TACO KIT IS GOVERNED, INCLUDING THE TIEBREAK. Elle confirmed the winner is the
+       guest with the most verified scans at that store - deterministic, a published rule
+       applied to a count. No chance means no lottery in Missouri (Mo. Rev. Stat. 572.010) or
+       Illinois (720 ILCS 5/28-2(b)) despite the purchase requirement, so no free entry route
+       is required; what IS required is disclosed criteria, and those now include how a tie
+       resolves.
+     - The collect-all-five prize is governed too. It is the campaign's headline promise and
+       it was ungoverned in every send before this one.
+
+  6. THE AI DISCLOSURE MOVED NEXT TO CHIP, where the synthetic voice is. FTC disclosure
+     doctrine is built on PROXIMITY and it was sitting ~140 words below the "Hear the call"
+     button in footer-sized grey. It reads "computer-generated announcer - synthetic voice";
+     "not a real person" was rejected because a costumed mascot is also not a real person, so
+     it fails to disclose the thing being disclosed.
+
+  7. THE TERMS LINE UNDER THE CTA WAS ALSO WRONG FOR THIS EMAIL. "One pull per receipt.
+     Rewards load to your Crazy Points account the next day and are good for 30 days." is
+     card copy, and this send is about the board; it also made a set of limitations the last
+     thing read before the click. Replaced with the paper-receipt requirement and the recovery
+     path for a receipt that will not scan.
+
+  8. "Email a photo with your first name" -> the email on your Crazy Points account, plus the
+     14-day deadline the terms impose. A first name cannot identify an account, and a guest
+     emailing on day 16 was out without being told.
+
+  9. SEMANTICS. "One guest per store, from week two." was a 40px styled <p> doing a heading's
+     job (WCAG 1.3.1) and is now an <h2>; h2 added to the [if mso] font stack so Word styles
+     it too. Outline reads h1 "Fifteen stores. One board." -> h2 "One guest per store, every
+     week."
+
+  10. ACCESSIBILITY. Focus ring added - the UA default outline vanishes on the pink button and
+     view-in-browser is a real browser (WCAG 2.4.7). prefers-reduced-motion added. Every image
+     declares a height matching its source ratio, because Word obeys height, ignores
+     max-width, and otherwise lays an image out at intrinsic size and stretches it.
+
+  11. DEAD CSS REMOVED. The draft carried .fivecell rules and a 578px breakpoint copied
+     forward from the five-card send. There are no cards in this email. Copied-forward CSS for
+     elements that do not exist is how a retired block survives its own retirement.
+
+  12. ORPHAN BINDING. The gate now checks left-aligned display type at 18px and up, not just
+     centred blocks. Tails are bound with &nbsp; rather than reworded, because rewording moves
+     the break to a different width while binding holds at every width.
+
+  ===============================================================
+  ASSETS, MEASURED OFF THE REAL FILES
+  ===============================================================
+  board-hero-mock.jpg         1200x900  (1.333)  placed 600x450  116 KB
+  Logo-horizontal-on-dark.png 1300x450  (2.889)  placed 240x83   111 KB
+  Chip-Teriyaki.jpg            440x489  (0.900)  placed 230x256   48 KB
+
+  THE BOARD HERO IS THE BEST-SPECIFIED ASSET IN THIS CAMPAIGN and worth saying so: a true 2x
+  source, 116 KB, and only 450px tall at 600 wide. The other heroes are 745 tall and one is
+  1.4 MB. This is the first Bowl Games send where the headline clears the fold on a phone.
+
+  SECOND ASSET NOTE: Chip-Teriyaki.jpg has "LIVE" and "ON AIR" baked into it, roughly 20px
+  above and larger than the caption that says he is computer-generated. The disclosure is
+  placed there FOR proximity and the artwork contradicts it. Not lottery-grade - "LIVE" is
+  broadcast set dressing for a character - but it is the single word most directly at odds
+  with the only disclosure in the email. Re-export without LIVE. The instructional copy baked
+  into that same image is carried in its alt text here, because with images off it vanishes
+  and it was never available to a screen reader at all (WCAG 1.1.1).
+
+  ===============================================================
+  FACTS, AND WHERE EACH ONE COMES FROM
+  ===============================================================
+  Ties go to whoever got there first. Elle, 2026-09-24. NEW.
+  Taco Kit winner = most verified scans at that store, that week. Elle, 2026-09-24.
+  First kit awarded Saturday October 3, 2026. Elle, 2026-09-24, confirmed twice.
+  Season runs September 20 - November 14, 2026. Elle, 2026-09-24. Sept 20 is a Sunday and
+      Nov 14 is a Saturday; both verified against the calendar.
+  One kit per person for the season. Consistent across sends 02 and 03.
+  Hold all five cards = a regular bowl or wrap. Say "bowl or wrap", never "the entree".
+  Fifteen stores. Consistent across the campaign.
+  Catering receipts play. Consistent with the standing brand fact that catering orders earn
+      Crazy Points (CLAUDE.md). Nothing here implies otherwise.
+  NO CARD REWARD VALUE IS STATED HERE. Send 03 names them; this send is about the board.
+
+  ===============================================================
+  STILL OPEN
+  ===============================================================
+  1. DO ALL FIFTEEN STORES PARTICIPATE? The body says "Fifteen stores. One board." and the
+     hero says "15 STORES", while the legal says "participating". Either the hedge is
+     meaningless or the body overpromises to a guest whose store is not in it. This has been
+     open across three sends now and the hero image makes it louder, because the mock names
+     five specific stores.
+  2. "A crispy treat" (DOUBLE PROTEIN, send 03) is still a category where the other four
+     rewards are things.
+  3. THE POSTAL ADDRESS reads Louisville, KY on a Missouri/Illinois promotion. CAN-SPAM wants
+     the SENDER's valid address and does not require it in the state where the promo runs, so
+     this is probably correct as the parent entity's. Left exactly as supplied.
+  4. THIRD-PARTY DELIVERY vs a PRINTED PAPER RECEIPT. The terms allow delivery orders but
+     many never produce a paper receipt.
+
+  SUBJECT A (as supplied):  Bowl Games: your store is on the board
+  SUBJECT B (recommended):  Your store is fighting for a Taco Kit
+  SUBJECT C:                One receipt, one point, one board
+  PREHEADER, identical to <title> because Paytronix takes preview from <title>:
+    Every verified scan is a point for your store.
+-->
+<html lang="en" data-brand="crazy-bowls" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Stops iOS/Gmail auto-linking dates, "15" and the address into blue tappable text. -->
+    <meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
+    <meta name="x-apple-disable-message-reformatting">
+    <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+    <!-- PAYTRONIX PREVIEW TEXT. Paytronix has no preview field, takes inbox preview from
+         <title>, and can surface it as visible copy at the top of the email. This therefore
+         carries PREHEADER COPY, word for word identical to the hidden div in the body, and
+         never a page-title string. The subject line is a separate field in the Paytronix UI. -->
+    <title>Every verified scan is a point for your store.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&amp;display=swap" rel="stylesheet">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <!--[if mso]>
+<style type="text/css">
+  td,p,a,div,span,h1,h2{font-family:Arial,Helvetica,sans-serif !important;}
+  .dispBig{font-size:40px !important;line-height:106% !important;}
+  .dispSub{font-size:19px !important;line-height:122% !important;}
+  table{mso-table-lspace:0pt !important;mso-table-rspace:0pt !important;}
+</style>
+<![endif]-->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #F5EEE3;
+      }
+
+      img {
+        border: 0;
+        line-height: 100%;
+        -ms-interpolation-mode: bicubic;
+      }
+
+      table {
+        border-collapse: collapse;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+
+      h1, h2 {
+        margin: 0;
+        padding: 0;
+        font-weight: inherit;
+      }
+
+      a {
+        color: #123A14;
+      }
+
+      /* FOCUS. Webmail and the view-in-browser page are real browsers, and the UA default
+         outline vanishes against the pink button. Word ignores :focus, so this cannot reach
+         Outlook Classic. */
+      a:focus {
+        outline: 3px solid #123A14 !important;
+        outline-offset: 3px !important;
+      }
+
+      @media screen {
+        .burst {
+          display: inline-block;
+          transform: rotate(-4deg);
+        }
+
+        /* DISPLAY UPGRADE. !important is load bearing: an inline font-size beats a class
+           rule, media query or not, and without it the upgrade silently loses everywhere
+           while nothing looks broken. */
+        .dispBig {
+          font-size: 54px !important;
+          line-height: 1.02 !important;
+          letter-spacing: -.01em !important;
+        }
+
+        .dispSub {
+          font-size: 20px !important;
+          line-height: 1.4 !important;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+
+      @media only screen and (max-width:620px) {
+        .w600 {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .padx {
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+        }
+
+        .dispBig {
+          font-size: 36px !important;
+        }
+
+        .dispSub {
+          font-size: 18px !important;
+        }
+
+        .lockup {
+          width: 200px !important;
+        }
+
+        .btntbl {
+          width: 100% !important;
+        }
+
+        .btn a {
+          text-align: center !important;
+        }
+
+        .fine {
+          font-size: 13px !important;
+        }
+      }
+
+      @media only screen and (max-width:520px) {
+
+        /* Chip block stacks: image on top, full width, text keeps its side padding */
+        .stack {
+          display: block !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        .stackimg {
+          padding: 20px 20px 0 !important;
+        }
+
+        .stackimg img {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .stacktxt {
+          padding: 16px 20px 22px !important;
+        }
+      }
+
+      @media only screen and (max-width:400px) {
+        .padx {
+          padding-left: 18px !important;
+          padding-right: 18px !important;
+        }
+
+        .dispBig {
+          font-size: 31px !important;
+        }
+
+        .lockup {
+          width: 170px !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body style="margin:0;padding:0;background:#F5EEE3;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F5EEE3" style="background:#F5EEE3;">
+      <tr>
+        <td align="center" style="padding:0;">
+          <!--[if mso | IE]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td width="600" align="center"><![endif]-->
+          <div class="w600" style="width:600px;max-width:100%;margin:0 auto;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;">
+
+            <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;overflow:hidden;color:#F5EEE3;">Every verified scan is a point for your store.</div>
+            <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;overflow:hidden;color:#F5EEE3;">&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+
+            <table role="presentation" class="w600" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#FFFFFF;">
+
+              <tr>
+                <td class="padx" bgcolor="#1F2328" style="padding:18px 40px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="left" style="font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;"><a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=lockup"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Logo-horizontal-on-dark.png" class="lockup" alt="Bowl Games, presented by Crazy Bowls &amp; Wraps" width="240" height="83" style="display:block;width:240px;max-width:100%;height:auto;"></a></td>
+                      <td align="right" style="font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:12px;color:#B7C0B7;font-weight:600;vertical-align:middle;">
+                        <a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=topbar" style="color:#BCD741;text-decoration:underline;font-weight:800;">Open the game</a><br>
+                        <template:link a:style="color:#B7C0B7;text-decoration:underline;" type="campaign_view_url">View in browser</template:link>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td bgcolor="#FFFFFF" style="padding:0;line-height:0;font-size:0;">
+                  <a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=hero" style="text-decoration:none;display:block;"><img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/board-hero-mock.jpg" width="600" height="450" alt="A sample Bowl Games leaderboard, marked SAMPLE, showing this week's top five of fifteen stores ranked by scans, and a link to see all fifteen." style="display:block;width:100%;max-width:100%;height:auto;border:0;"></a>
+                </td>
+              </tr>
+              <tr>
+                <td class="padx" bgcolor="#FFFFFF" style="padding:0 40px;line-height:0;font-size:0;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right" style="margin-top:-22px;">
+                    <tr>
+                      <td class="burst" align="center" bgcolor="#B82355" style="border-radius:999px;padding:11px 22px;border:3px solid #FFFFFF;">
+                        <span style="font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#FFFFFF;line-height:1.2;">THE BOARD</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="padx" bgcolor="#FFFFFF" style="padding:34px 40px 0;">
+                  <h1 class="dispBig" style="margin:0 0 12px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-weight:800;font-size:40px;line-height:1.06;color:#123A14;">Fifteen stores.<br>One board.</h1>
+                  <p class="dispSub" style="margin:0 0 18px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-weight:700;font-size:19px;line-height:1.35;color:#B82355;">Every verified scan is a point for your&nbsp;store.</p>
+                  <p style="margin:0 0 14px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:16px;font-weight:500;color:#2C3A2C;line-height:1.65;">Hey <template:insert field="first_name">there</template:insert>, the board doesn't care what you spent. One verified scan, one point, for whichever store is printed at the top of the receipt. Your regular spot climbs on the strength of its regulars. That part is for bragging&nbsp;rights.</p>
+                  <p style="margin:0 0 22px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:16px;font-weight:500;color:#2C3A2C;line-height:1.65;">The prize is personal. Each week, one guest at each store takes home a Taco Kit: whoever has the most verified scans there that week, with ties going to whoever got there first. The first one is awarded at the Saturday, October 3 lock.</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="padx" bgcolor="#FFFFFF" style="padding:0 40px 8px;">
+                  <!--[if mso]>
+    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=primary-cta" style="height:56px;v-text-anchor:middle;width:250px;" arcsize="50%" strokecolor="#B82355" fillcolor="#B82355">
+      <w:anchorlock/><center style="color:#ffffff;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;">See the board</center>
+    </v:roundrect>
+    <![endif]-->
+                  <!--[if !mso]><!-->
+                  <table role="presentation" class="btntbl" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td class="btn" bgcolor="#B82355" style="border-radius:999px;padding:17px 38px;mso-padding-alt:17px 38px;">
+                        <a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=primary-cta" style="display:block;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:18px;font-weight:800;color:#FFFFFF;text-decoration:none;line-height:1.2;">See the board &nbsp;&#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                  <!--<![endif]-->
+                </td>
+              </tr>
+              <tr>
+                <td class="padx" bgcolor="#FFFFFF" style="padding:14px 40px 30px;">
+                  <p style="margin:0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#123A14;line-height:1.6;">One thing: say yes to the paper receipt. The game reads the printed one.</p>
+                  <p style="margin:6px 0 0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#5B6B5B;line-height:1.6;">Won't scan? Within 14 days of buying, email a photo with the email on your Crazy Points account to <a href="mailto:bowlgames@crazybowlsandwraps.com" style="color:#5B6B5B;text-decoration:underline;">bowlgames@crazybowlsandwraps.com</a></p>
+                  <p style="margin:6px 0 0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#5B6B5B;line-height:1.6;">The board above is a sample. Open the game to see where your store actually&nbsp;stands.</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="padx" bgcolor="#123A14" style="padding:34px 40px 36px;">
+                  <p style="margin:0 0 8px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#BCD741;">TACO KIT</p>
+                  <h2 class="dispBig" style="margin:0 0 10px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-weight:800;font-size:40px;line-height:1.06;color:#FFFFFF;">One guest per store, every week.</h2>
+                  <p style="margin:0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:17px;font-weight:600;color:#D7E2D5;line-height:1.6;">Most verified scans at your store that week takes it. Dinner for four to five, and one kit per person for the&nbsp;season.</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="padx" bgcolor="#FFFFFF" style="padding:30px 40px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0F2E11" style="background:#0F2E11;">
+                    <tr>
+                      <td class="stack stackimg" width="250" valign="middle" style="padding:20px 0 20px 20px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:13px;color:#D7E2D5;">
+                        <img src="https://paytronix-bee.s3.amazonaws.com/images/bos1px-MID60504-user/Chip-Teriyaki.jpg" width="230" height="256" alt="Chip Teriyaki, the Bowl Games announcer, in a Crazy Bowls dining room. On air. Point your phone at the receipt. I'll point at you." style="width:230px;max-width:100%;height:auto;display:block;">
+                      </td>
+                      <td class="stack stacktxt" valign="middle" style="padding:20px 24px;">
+                        <p style="margin:0 0 10px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;line-height:1.5;">&ldquo;Fifteen stores on one board, and the gap at the top is a&nbsp;lunch&nbsp;rush&nbsp;wide.&rdquo;</p>
+                        <p style="margin:0 0 12px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#BCD741;">Chip Teriyaki &middot; computer-generated announcer &middot; synthetic voice</p>
+                        <a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=hear-it" style="font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:15px;font-weight:800;color:#BCD741;text-decoration:underline;">Hear the call &nbsp;&#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="padx" align="center" bgcolor="#FDFAF1" style="padding:32px 40px;">
+                  <p class="dispSub" style="margin:0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-weight:800;font-size:19px;line-height:1.35;color:#123A14;">Keep the receipt. Go for&nbsp;the&nbsp;good.</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="padx" bgcolor="#0F2E11" style="padding:26px 40px 30px;">
+                  <p style="margin:0 0 14px;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:.08em;color:#fff;text-align:center;line-height:1.8;">
+                    <a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=footer-game" style="color:#fff;text-decoration:none;font-weight:800;">BOWL GAMES</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;
+                    <a href="https://www.crazybowlsandwraps.com/locations?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=footer-locations" style="color:#fff;text-decoration:none;font-weight:800;">LOCATIONS</a>&nbsp;&nbsp;&middot;&nbsp;&nbsp;
+                    <a href="https://crazybowlsandwraps.myguestaccount.com?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=footer-account" style="color:#fff;text-decoration:none;font-weight:800;">MY ACCOUNT</a>
+                  </p>
+                  <p class="fine" style="margin:0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:12px;color:#B7C0B7;line-height:1.7;">
+                    <b style="color:#D7E2D5;">Short version:</b> printed receipt, one card per qualifying receipt, link your Crazy Points account, in-game rewards expire 30 days after they load. The board shown above is a sample.<br><br>
+                    Purchase required. Bowl Games runs September 20 &ndash; November 14, 2026 at participating Missouri and Illinois locations. Play your own printed Crazy Bowls &amp; Wraps receipt within 14 days of purchase; one play per order number. Your order decides which Huddle card a receipt earns, and not every receipt earns one. Rewards require a linked Crazy Points account, load the next day, expire 30 days after they load, and are limited to one of each per person per season. Collect all five Huddle cards and a regular bowl or wrap is on us; the set must be completed within the season. Taco Kit: weeks run Sunday through Saturday. The first kit is awarded at the Saturday, October 3, 2026 lock and weekly thereafter through November 14, 2026. At each participating store, the guest with the most verified receipt scans that week wins a Taco Kit, dinner for four to five; ties are broken by the earliest qualifying scan. Winners are decided by scan count, not by random draw, and are notified by email; one kit per person for the season. Full rules: <a href="https://www.crazybowlsandwraps.com/bowl-games?utm_source=paytronix&amp;utm_medium=email&amp;utm_campaign=bowl-games-promo&amp;utm_content=footer-rules" style="color:#B7C0B7;">crazybowlsandwraps.com/bowl-games</a>. Not affiliated with any league, team or bowl game.
+                  </p>
+                  <p style="margin:10px 0 0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:12px;color:#B7C0B7;line-height:1.7;">Crazy Bowls &amp; Wraps, LLC, 1211 Herr Lane, Suite 290, Louisville, KY 40222</p>
+                  <p style="margin:14px 0 0;font-family:'Bricolage Grotesque','Open Sans',Arial,Helvetica,sans-serif;font-size:12px;color:#B7C0B7;">
+                    <template:link a:style="color:#B7C0B7;text-decoration:underline;" type="unsubscribe_url">Unsubscribe</template:link>&nbsp;&nbsp;&middot;&nbsp;&nbsp;<template:link a:style="color:#B7C0B7;text-decoration:underline;" type="campaign_view_url">View in browser</template:link>
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </div>
+          <!--[if mso | IE]></td></tr></table><![endif]-->
+        </td>
+      </tr>
+    </table>
+  </body>
+
+</html>
