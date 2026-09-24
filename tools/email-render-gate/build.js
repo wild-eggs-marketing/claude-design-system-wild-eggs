@@ -44,6 +44,9 @@ function withImages(h) {
         .replace(/https:\/\/paytronix-bee[^"']*Logo-horizontal-on-dark\.png/g, "bg_logo.png")
         .replace(/https:\/\/paytronix-bee[^"']*Bowl%20Games%20Featured%20Image\.png/g, "bg_hero.png")
         .replace(/https:\/\/paytronix-bee[^"']*image-1789582460776\.jpg/g, "bg3_hero.jpg")
+        // Bowl Games Featured Image (2).png - the "(2)" arrives URL-encoded as %282%29, so
+        // match on that rather than on a literal paren.
+        .replace(/https:\/\/paytronix-bee[^"']*Bowl%20Games%20Featured%20Image%20%282%29\.png/g, "bg3_hero_v2.png")
         .replace(/https:\/\/paytronix-bee[^"']*Chip-Teriyaki\.jpg/g, "bg_chip.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-01-the-closer\.jpg/g, "bg_card1.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-02-double-protein\.jpg/g, "bg_card2.jpg")
