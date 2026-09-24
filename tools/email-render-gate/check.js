@@ -46,6 +46,14 @@ ok = run("toast   — survives the ESP round-trip: heading weight, buttons witho
 // The paste build is what actually goes into Paytronix, so it is not optional and it is not
 // a copy step: regenerate it here and prove it renders identically to the master.
 ok = run("strip   — regenerate the PASTE build", ["strip.js", src, paste], { quiet: true }) && ok
+
+// DATES runs on the PASTE build, after strip, because it audits the copy a guest actually
+// receives rather than the documentation header. It catches claims that are true on send day
+// and false a week later - a bare weekday with no date anchor, a reader-relative "today", a
+// weekday that does not match its date - plus any [PLACEHOLDER] left unfilled.
+// Added after "Receipts from Sunday count" shipped: correct on the send date, wrong for
+// anybody who opened the mail the following Monday, and invisible to every other gate.
+ok = run("dates   — no temporal claim that decays after send day", ["dates.js", paste], { quiet: true }) && ok
 if (ok) {
     spawnSync("node", ["build.js", src], { cwd: here })
     spawnSync("node", ["diff.js", "master"], { cwd: here })

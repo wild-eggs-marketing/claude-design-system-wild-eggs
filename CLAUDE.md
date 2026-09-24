@@ -93,6 +93,28 @@ Confirmed by Elle, 2026-09-23. This is a standing brand fact, not a campaign det
 - Points are attached at order time. An order placed without a Crazy Points account on it cannot
   earn, and points cannot be added afterwards. That part is safe to state.
 
+## Emails are read late. No claim may decay after send day.
+
+An email sits in an inbox, gets forwarded, gets opened from a promotions tab on a Saturday.
+Any temporal claim that resolves against the READER's clock instead of the send date is a
+defect, not a style choice.
+
+"Receipts from Sunday count" shipped in the Bowl Games opener. On the send date it resolved to
+the correct September 20. Opened the following Monday it resolves to September 27, outside the
+qualifying window, and the sentence is silently false while nothing about it looks wrong. The
+master it was compressed from said "from Sunday, September 20 onward"; the date was dropped in
+an edit and no gate could see it.
+
+- Anchor every weekday to a date: "Sunday the 20th", not "Sunday".
+- No "today", "tomorrow", "this week", "next week", "currently", "just launched".
+- A recurring rule says so: "locks **every** Saturday night".
+- A date you do not have is a VISIBLE `[PLACEHOLDER]`, never a smoothed-over sentence. A
+  promotion with no stated end date is the defect the compliance read called certain.
+
+`node check.js` runs a `dates` stage that catches all four, plus weekday/date mismatches. It is
+proven to fail on each. Run a verification agent over the paste build as well for anything
+non-trivial — the gate checks form, the agent checks truth.
+
 ## Build gates before trusting them
 
 Every check in `tools/email-render-gate/` must be proven to FAIL on known-bad input before its
