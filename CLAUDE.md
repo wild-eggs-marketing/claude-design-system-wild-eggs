@@ -142,6 +142,30 @@ an edit and no gate could see it.
 proven to fail on each. Run a verification agent over the paste build as well for anything
 non-trivial — the gate checks form, the agent checks truth.
 
+## Orphans: left-aligned display type counts too
+
+The orphan gate checked CENTRED blocks only. A Gmail screenshot showed why that was not
+enough: the left-aligned pink subhead wrapped to three lines and ended on a single word.
+Centred text makes a runt obvious because it sits alone in the middle, which is why the rule
+started there - but a 20px display line ending on one word reads just as broken flush left,
+and nothing in the gate could see it.
+
+`orphans.js` now checks centred text of any size, PLUS any left-aligned element at 18px or
+larger. The 18px floor is load bearing: a seven-line BODY paragraph ending short is ordinary
+typography and unavoidable at some width, while a three-line subhead ending on "five." is a
+defect. Do not lower it to catch body copy - a gate that cries wolf gets ignored.
+
+Turning it on retroactively failed FOUR already-green files. That is the gate working, not
+the gate being wrong.
+
+- Fix an orphan by binding the tail with `&nbsp;`, not by rewording until it happens to fit.
+  Rewording moves the problem to a different width; binding fixes it at every width.
+- Bind the WHOLE phrase, not two words of it. Binding "bowl or&nbsp;wrap" fixed 414 and broke
+  600, because it only moved where the line breaks. `a&nbsp;regular&nbsp;bowl&nbsp;or&nbsp;wrap`
+  travels as one unit and is stable everywhere.
+- A bound phrase is a min-content floor. Keep it under ~24 characters at display size or it
+  becomes the thing that stops the shell shrinking at 320px.
+
 ## Build gates before trusting them
 
 Every check in `tools/email-render-gate/` must be proven to FAIL on known-bad input before its

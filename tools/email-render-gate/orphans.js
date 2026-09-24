@@ -36,7 +36,21 @@ srv.listen(PORT, "127.0.0.1", async () => {
             document.querySelectorAll("p, h1, div").forEach((el) => {
                 if (el.children.length) return
                 const cs = getComputedStyle(el)
-                if (cs.textAlign !== "center") return
+                // CENTRED text of any size, OR left-aligned DISPLAY type.
+                //
+                // This gate checked centred blocks only, and a Gmail screenshot showed why
+                // that is not enough: the left-aligned pink subhead wrapped to three lines
+                // and ended on a single word. Centred text makes a runt obvious because it
+                // sits alone in the middle, which is why the rule started there - but a
+                // 20px display line ending on one word reads just as broken flush left, and
+                // nothing in the gate could see it.
+                //
+                // The 18px floor is doing real work: a seven-line BODY paragraph ending
+                // short is ordinary typography and unavoidable at some width. A three-line
+                // subhead ending on "five." is a defect. Do not lower it to catch body copy;
+                // that makes the gate cry wolf and someone will start ignoring it.
+                const isDisplay = parseFloat(cs.fontSize) >= 18
+                if (cs.textAlign !== "center" && !isDisplay) return
                 const txt = (el.textContent || "").trim()
                 if (!txt || txt.length > LEGAL_CHARS) return
                 const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.4

@@ -308,6 +308,26 @@ never warned about. Promote it into the story.
   without it. `strip.js` removes these from the paste build.
 - Record open questions in that header as numbered blockers, so they survive the conversation.
 
+## Typography the gate can see, and what it could not
+
+**Orphans are checked on centred text of any size AND on left-aligned type at 18px or
+larger.** The gate originally checked centred blocks only; a Gmail screenshot of a real send
+showed a left-aligned subhead wrapping to three lines and ending on one word, invisible to
+every check. The 18px floor keeps body copy out - a long paragraph ending short is ordinary
+typography, a display line ending on one word is a defect.
+
+**Fix an orphan by binding the tail with `&nbsp;`, never by rewording until it fits.**
+Rewording moves the break to a different width; binding holds at every width. Bind the whole
+phrase rather than two words of it - binding `bowl or&nbsp;wrap` fixed 414px and broke 600px,
+because it only relocated the break. Keep a bound phrase under ~24 characters at display
+size, or it becomes a min-content floor that stops the shell shrinking at 320px.
+
+**A screenshot from a real inbox is worth running the numbers on**, even when it shows an old
+draft. Check first whether the render matches the build you delivered - grep the visible
+strings against the paste build - and say so if it does not. Then measure the current build at
+the same widths anyway: the layout defect is usually still there even when the copy has moved
+on.
+
 ## Verify before delivering. Always. This is not optional.
 
 Emails are read late — days after the send, from a promotions tab, forwarded. **Every claim
