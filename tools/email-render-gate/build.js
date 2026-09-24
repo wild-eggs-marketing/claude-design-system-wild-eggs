@@ -50,6 +50,7 @@ function withImages(h) {
         .replace(/https:\/\/paytronix-bee[^"']*Chip-Teriyaki\.jpg/g, "bg_chip.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*board-hero-mock\.jpg/g, "bg4_board.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*Queso%20at%20Crazy%20Bowls\.png/g, "bg5_queso.png")
+        .replace(/https:\/\/paytronix-bee[^"']*CBW_Wrap_2\.jpg/g, "bg6_wrap.jpg")
         // NOTE: chip-teriyaki-on-air.jpg is a DIFFERENT file from Chip-Teriyaki.jpg (300x330
         // vs 440x489). Must be matched before any looser Chip rule.
         .replace(/https:\/\/paytronix-bee[^"']*chip-teriyaki-on-air\.jpg/g, "bg5_chip.jpg")
