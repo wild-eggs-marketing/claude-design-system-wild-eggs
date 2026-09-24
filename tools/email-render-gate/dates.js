@@ -83,7 +83,18 @@ const notes = []
         // claim and does not decay.
         const recurring =
             /\b(every|each)\s+$/i.test(body.slice(from, m.index)) || /^s\b/i.test(body.slice(m.index + m[0].length, m.index + m[0].length + 2))
-        if (!anchored && !recurring) {
+        // RESOLVED ELSEWHERE. "this Saturday" in a burst is fine when the body ALSO says
+        // "this Saturday, October 3" somewhere a reader will see, because the email as a
+        // whole disambiguates itself. This is deliberately narrow: the SAME weekday must be
+        // anchored to an explicit date in the body. It does not let an unanchored weekday
+        // through just because some other date exists somewhere in the file, which is why
+        // the original "Receipts from Sunday count" defect still fails - no "Sunday" was
+        // ever anchored anywhere in that email.
+        const resolvedElsewhere = new RegExp(
+            `\\b${m[0]}\\b,?\\s+(${MONTHS})\\s+\\d{1,2}|(${MONTHS})\\s+\\d{1,2},?\\s+\\(?${m[0]}\\b`,
+            "i"
+        ).test(body)
+        if (!anchored && !recurring && !resolvedElsewhere) {
             fails.push(
                 `BARE WEEKDAY in body: "${m[0]}" with no date within 40 chars.\n` +
                     `            ...${around.trim()}...\n` +
