@@ -328,6 +328,30 @@ strings against the paste build - and say so if it does not. Then measure the cu
 the same widths anyway: the layout defect is usually still there even when the copy has moved
 on.
 
+## Triggered sends have no send date. Everything in them must be evergreen.
+
+A scheduled email goes out once, on a day somebody picks. A TRIGGERED email fires whenever a
+guest does the thing - for weeks or months, to a different person each time. That changes what
+counts as a true sentence.
+
+- **"From week two", "this Saturday", "you might already have one"** are all fine in a
+  scheduled send and wrong in a triggered one, because most firings happen on a day where they
+  are false. Naming the explicit date is NOT the fix either: "the first kit is Saturday
+  October 3" is stale for a trigger that fires in November.
+- Describe the mechanic as what it permanently IS: "each week, whoever has the most verified
+  scans at that store." No first-time framing, no countdown, no anchor to a launch.
+- Test every claim against **"is this true in week one AND week eight?"**
+- The end date is the exception and it must stay: a promotion with no stated close is the one
+  defect the compliance read called certain.
+
+## Reader-relative time: a CLAIM decays, an INSTRUCTION does not
+
+"The season starts today" is a claim, and it is false the moment somebody opens the mail on a
+different day. "Use it today" on a button is an instruction, and it still means use it now
+whenever it is read. The `dates` gate flags the first and exempts CTA text for exactly this
+reason. Do not weaken a good button to satisfy a gate - check whether the word is asserting
+something or asking for something.
+
 ## Verify before delivering. Always. This is not optional.
 
 Emails are read late — days after the send, from a promotions tab, forwarded. **Every claim

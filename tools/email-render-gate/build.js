@@ -49,6 +49,10 @@ function withImages(h) {
         .replace(/https:\/\/paytronix-bee[^"']*Bowl%20Games%20Featured%20Image%20%282%29\.png/g, "bg3_hero_v2.png")
         .replace(/https:\/\/paytronix-bee[^"']*Chip-Teriyaki\.jpg/g, "bg_chip.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*board-hero-mock\.jpg/g, "bg4_board.jpg")
+        .replace(/https:\/\/paytronix-bee[^"']*Queso%20at%20Crazy%20Bowls\.png/g, "bg5_queso.png")
+        // NOTE: chip-teriyaki-on-air.jpg is a DIFFERENT file from Chip-Teriyaki.jpg (300x330
+        // vs 440x489). Must be matched before any looser Chip rule.
+        .replace(/https:\/\/paytronix-bee[^"']*chip-teriyaki-on-air\.jpg/g, "bg5_chip.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-01-the-closer\.jpg/g, "bg_card1.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-02-double-protein\.jpg/g, "bg_card2.jpg")
         .replace(/https:\/\/paytronix-bee[^"']*card-03-the-regular\.jpg/g, "bg_card3.jpg")

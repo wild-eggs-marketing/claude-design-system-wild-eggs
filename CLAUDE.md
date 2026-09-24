@@ -172,6 +172,21 @@ the gate being wrong.
 - A bound phrase is a min-content floor. Keep it under ~24 characters at display size or it
   becomes the thing that stops the shell shrinking at 320px.
 
+## Triggered sends have no send date
+
+A scheduled send goes out once. A TRIGGERED send fires whenever a guest does the thing, for
+weeks, to a different person each time. "From week two", "this Saturday" and "you might
+already have one" are all fine in a scheduled send and wrong in a triggered one, because most
+firings land on a day where they are false. Naming the explicit date is not the fix either -
+"the first kit is Saturday October 3" is stale for a trigger firing in November.
+
+Describe the mechanic as what it permanently IS, and test every claim against "is this true in
+week one AND week eight?" The end date is the exception and always stays.
+
+Related, and the reason the `dates` gate exempts CTA text: a reader-relative word is a defect
+when it makes a CLAIM ("the season starts today") and not when it is an INSTRUCTION ("use it
+today"). One decays, the other does not. Do not weaken a good button to satisfy a gate.
+
 ## Build gates before trusting them
 
 Every check in `tools/email-render-gate/` must be proven to FAIL on known-bad input before its

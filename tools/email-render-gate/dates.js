@@ -139,7 +139,21 @@ const notes = []
 }
 
 // ---------------------------------------------------------------- 4. reader-relative words
+//
+// CTA TEXT IS EXEMPT, and the distinction is the whole point of this check: a
+// reader-relative word is a defect when it makes a CLAIM about when something happens, and
+// not when it is an INSTRUCTION to act now. "The season starts today" decays - open it on
+// Friday and it is false. "Use it today" does not - open it on Friday and it still means
+// use it now, which is what a button is for.
+//
+// So anchors and the VML <center> twin are stripped before this check only. The other three
+// checks still see the whole document, because a bare weekday or an unfilled placeholder
+// inside a button is just as broken as anywhere else.
 {
+    const bodyNoCta = bodyHtml
+        .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, " ")
+        .replace(/<center\b[^>]*>[\s\S]*?<\/center>/gi, " ")
+    const ctaFree = text(bodyNoCta)
     const BAD = [
         "yesterday", "tomorrow", "today", "tonight",
         "last week", "next week", "this week(?!end)", "this coming",
@@ -148,12 +162,12 @@ const notes = []
     for (const w of BAD) {
         const re = new RegExp(`\\b(${w})\\b`, "gi")
         let m
-        while ((m = re.exec(body)) !== null) {
+        while ((m = re.exec(ctaFree)) !== null) {
             const from = Math.max(0, m.index - 35)
-            const to = Math.min(body.length, m.index + m[0].length + 35)
+            const to = Math.min(ctaFree.length, m.index + m[0].length + 35)
             fails.push(
                 `READER-RELATIVE TIME in body: "${m[0]}"\n` +
-                    `            ...${body.slice(from, to).trim()}...\n` +
+                    `            ...${ctaFree.slice(from, to).trim()}...\n` +
                     `            Resolves against the READER's clock, not the send date.`
             )
         }
