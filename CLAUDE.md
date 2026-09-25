@@ -101,7 +101,7 @@ carries a reward" and named none of them, which is an IOU written by the party w
 | Card | Earned by | Pays |
 |---|---|---|
 | THE CLOSER | entree plus a paid drink | chips and queso |
-| DOUBLE PROTEIN | a second protein, or a High Protein or Jerk bowl | a crispy treat |
+| DOUBLE PROTEIN | a second protein, or a High Protein or Jerk bowl | a Crazy Crispy Treat |
 | THE REGULAR | any entree on its own | a regular drink |
 | GREEN ZONE | skip the protein, or tofu or falafel | edamame |
 | SPECIAL TEAMS | a paid side, starter, topping or dessert | a cheese quesadilla |
@@ -123,8 +123,18 @@ Say **"most verified scans"**, not "most verified receipts". The board's own col
 SCANS, and one receipt can be re-scanned or fail verification, so the two are not the same
 object.
 
-Still unnamed: "a crispy treat" is a category where the other four are things. Ask for the menu
-name.
+**"A crispy treat" was a real menu item with its name filed off, and I called it vague.**
+The Crazy Crispy Treat appears in Family Night sends 6 and 7, both of which shipped before
+Bowl Games. It reached the card-rewards draft shortened to "a crispy treat", which is why it
+read as a category next to chips and queso, edamame and a cheese quesadilla. The flag was
+right about the symptom and wrong about the cause: the fix was the full name, not a new item.
+**Before flagging a menu word as vague, grep the shipped sends for it.** This repo is the menu
+dictionary and it already had the answer.
+
+**All fifteen locations participate.** Confirmed by Elle, 2026-09-25. The legal block says
+"all fifteen Crazy Bowls & Wraps locations in Missouri and Illinois", not "participating
+locations" - the hedge implied a guest's own store might be excluded, while the body and the
+leaderboard art both promise fifteen.
 
 ## Emails are read late. No claim may decay after send day.
 
