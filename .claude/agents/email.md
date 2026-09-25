@@ -343,6 +343,16 @@ counts as a true sentence.
 - Test every claim against **"is this true in week one AND week eight?"**
 - The end date is the exception and it must stay: a promotion with no stated close is the one
   defect the compliance read called certain.
+- **A triggered send fires at the moment the guest EARNS the thing, which is not the moment
+  they HAVE it.** CBW rewards load the next day (confirmed 2026-09-25), so "it's already on
+  your account", "Reward loaded", "In your wallet now" and "Use it today" were all false for
+  every single recipient at fire time - and true for the same recipient two days later. Write
+  the mechanic instead: "it lands on your Crazy Points account the day after your scan" is true
+  at every opening. A CTA must not assume a state the email cannot guarantee; "Use it today"
+  became "Find your store".
+- The fine print knew. Both files said "rewards load the next day" in the footer while the body
+  said the opposite four inches above it. **Read the body against the legal block as one
+  document before delivering** - a gate cannot see a contradiction, only a reader can.
 
 ## Reader-relative time: a CLAIM decays, an INSTRUCTION does not
 

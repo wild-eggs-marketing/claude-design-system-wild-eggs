@@ -93,6 +93,28 @@ Confirmed by Elle, 2026-09-23. This is a standing brand fact, not a campaign det
 - Points are attached at order time. An order placed without a Crazy Points account on it cannot
   earn, and points cannot be added afterwards. That part is safe to state.
 
+## Rewards load the NEXT DAY. Never write copy that says one is already there.
+
+Confirmed by Elle, 2026-09-25. A reward is earned at scan time and lands on the guest's Crazy
+Points account the following day. It is NOT on the account at the moment the guest earns it,
+which is the moment a triggered send fires.
+
+Sends 5 and 6 shipped their drafts asserting the opposite in five places each - a "Reward
+loaded" burst, "It's already on your Crazy Points account", an "In your wallet now" eyebrow,
+a "Use it today" button, and a preheader that Paytronix can surface as visible copy. Every one
+of them sends a guest to a counter to claim something that is not there yet. The fine print in
+the same email said "load the next day" the whole time; nobody read the two together.
+
+- State the MECHANIC, not the current state: "it lands on your Crazy Points account the day
+  after your scan". That is true the hour it fires and true three days later, which is what a
+  triggered send needs. "Already on your account" is true for nobody at fire time and true for
+  everybody a week later, so it is wrong exactly when it is read most.
+- The CTA on a reward email cannot assume the reward is loaded. "Use it today" became "Find
+  your store": a guest can always find a store, and the reward is waiting when they get there.
+- Put the load timing in the SHORT VERSION, not only the long fine print. "Expire 30 days after
+  they load" is meaningless to a guest who has not been told when loading happens. All six
+  sends now read "rewards load the next day and expire 30 days after that".
+
 ## Bowl Games: what the five cards pay
 
 Supplied by Elle 2026-09-24. Standing campaign fact - before this, four sends said "every card
